@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mockup - Dashboard STD Andaime</title>
+    <!-- Link para CSS externo -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wrap" id="dashboardWrap">
+        <header>
+            <div>
+                <h1>STD Dashboard — Andaime</h1>
+                <div class="subtitle">Visão diária e semanal de montagem / desmontagem — Padrão STD = 0,22</div>
+            </div>
+            <div style="text-align:right">
+                <div class="tag">STD padrão montagem: 0,22</div>
+                <div style="height:6px"></div>
+                <div class="mini">Última atualização: <strong>Hoje</strong></div>
+            </div>
+        </header>
+
+        <div id="filter-container">
+            <label>Data Início: <input type="date" id="dataInicio" /></label>
+            <label>Data Fim: <input type="date" id="dataFim" /></label>
+            <button id="btnApplyFilter">Aplicar filtro</button>
+            <button id="btnExportPDF">Exportar PDF</button>
+        </div>
+
+        <div class="grid" style="margin-top:18px">
+            <div class="card kpi">
+                <div class="label">HH Total (h)</div>
+                <div class="value" id="hhTotal">0</div>
+                <div class="small">Cálculo: soma da coluna HH Total</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">ML Montados</div>
+                <div class="value" id="mlMontados">0 m</div>
+                <div class="small">Meta por montador: 0,22</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">Montadores Presentes (média/dia)</div>
+                <div class="value" id="montPresente">0</div>
+                <div class="small">Faltaram: -</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">STD Semanal (HH Total / ML Montados)</div>
+                <div class="value" id="stdSemanal">0,00</div>
+                <div class="small">STD montagem = HH Total ÷ ML Montados</div>
+            </div>
+
+            <div class="card wide">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div style="font-weight:700">Tendência semanal — ML montados / dia</div>
+                    <div class="mini" id="semanaLabel">Período completo</div>
+                </div>
+                <div class="chart-box">
+                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none" style="overflow: visible;">
+                        <g font-size="3" fill="#0b2340" font-weight="600">
+                            <text x="0" y="33" text-anchor="start">Seg</text>
+                            <text x="16.66" y="33" text-anchor="middle">Ter</text>
+                            <text x="33.32" y="33" text-anchor="middle">Qua</text>
+                            <text x="49.98" y="33" text-anchor="middle">Qui</text>
+                            <text x="66.64" y="33" text-anchor="middle">Sex</text>
+                            <text x="83.3" y="33" text-anchor="middle">Sáb</text>
+                            <text x="99.96" y="33" text-anchor="end">Dom</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="card full">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div style="font-weight:700">Dados (amostra)</div>
+                    <div class="mini">Filtro: Data | Área | Encarregado</div>
+                </div>
+                <div id="tabelaDadosWrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Semana</th><th>OS</th><th>Matrícula</th><th>Encarregado</th><th>Área</th><th>Mont.Presente</th><th>HH Total</th><th>ML Montados</th><th>STD Montado</th><th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaDados">
+                            <tr><td colspan="10" style="text-align:center; color: var(--gray);">Importe o CSV para visualizar</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <input type="file" id="fileInput" accept=".csv" />
+        </div>
+    </div>
+
+    <!-- Bibliotecas externas -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- JS externo -->
+    <script src="script.js"></script>
+</body>
+</html>
