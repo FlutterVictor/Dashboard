@@ -1,84 +1,82 @@
 let dadosCSV = [];
-let setores = [
-    {
-        area: "Canteiro de Obras",
-        lat: -19.4848081040112,
-        lng: -42.528268838465145,
-        produtividade: 0.8,
-        comentario: "Produção estável",
-        foto: "fotos/canteiro.jpg"
-    },
-    {
-        area: "Prédio GAD",
-        lat: -19.485730911089373,
-        lng: -42.527222305029305,
-        produtividade: 0.6,
-        comentario: "Retrabalho em algumas estruturas",
-        foto: "fotos/predioGAD.jpg"
-    }
+
+// Coordenadas fixas dos setores
+const setores = [
+    {nome:'Canteiro de Obras', lat:-19.4848081040112, lng:-42.528268838465145},
+    {nome:'Prédio GAD', lat:-19.485730911089373, lng:-42.527222305029305}
 ];
 
 // Inicializa mapa
-const centroUsina = {lat: -19.4848081, lng: -42.5282688};
-const map = L.map('map').setView([centroUsina.lat, centroUsina.lng], 16);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+const map = L.map('map').setView([-19.485, -42.528], 17);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Função para atualizar marcadores
-function atualizarMapa(dataInicio, dataFim){
-    // Remove todos marcadores antigos
-    if(window.markersLayer) window.markersLayer.clearLayers();
-    window.markersLayer = L.layerGroup().addTo(map);
+// Marcadores dos setores
+let markers = [];
+setores.forEach(s=>{
+    const marker = L.marker([s.lat,s.lng]).addTo(map)
+        .bindPopup(`${s.nome}<br>Produtividade: carregando...`);
+    markers.push(marker);
+});
 
-    // Para cada setor, cria o marcador
-    setores.forEach(s => {
-        const color = s.produtividade >= 0.8 ? 'green' : s.produtividade >= 0.5 ? 'orange' : 'red';
-        const marker = L.circleMarker([s.lat, s.lng], {
-            radius: 12,
-            color: color,
-            fillColor: color,
-            fillOpacity: 0.6
-        }).addTo(window.markersLayer);
+// Carrega CSV automaticamente
+function carregarCSVPadrao(){
+    fetch('STD_Geral.csv')
+        .then(response => response.text())
+        .then(csvText => {
+            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines:true });
+            dadosCSV = resultados.data.filter(row => row['Data']); // ignora linhas incompletas
+            aplicarFiltro();
+        })
+        .catch(err => alert('Erro ao carregar CSV: '+err));
+}
 
-        marker.bindPopup(`
-            <b>${s.area}</b><br>
-            Produtividade: ${(s.produtividade*100).toFixed(0)}%<br>
-            Comentário: ${s.comentario}<br>
-            <img src="${s.foto}" alt="${s.area}" width="120">
-        `);
-    });
-
-    // Atualiza cards informativos
-    const mediaProd = setores.reduce((sum,s)=>sum+s.produtividade,0)/setores.length;
-    document.getElementById('prodMedia').textContent = (mediaProd*100).toFixed(0) + '%';
-
-    const topSetores = setores.sort((a,b)=>b.produtividade-a.produtividade).slice(0,3);
-    const ul = document.getElementById('topSetores');
-    ul.innerHTML = '';
-    topSetores.forEach(s => ul.innerHTML += `<li>${s.area} - ${(s.produtividade*100).toFixed(0)}%</li>`);
-
-    const fotosDiv = document.getElementById('fotosRecentes');
-    fotosDiv.innerHTML = '';
-    topSetores.forEach(s => {
-        const img = document.createElement('img');
-        img.src = s.foto;
-        img.alt = s.area;
-        fotosDiv.appendChild(img);
+// Função para filtrar por datas
+function filtrarDadosPorData(dados, dataInicio, dataFim){
+    if(!dataInicio && !dataFim) return dados;
+    let dtInicio = dataInicio ? new Date(dataInicio) : null;
+    let dtFim = dataFim ? new Date(dataFim) : null;
+    return dados.filter(row=>{
+        if(!row['Data']) return false;
+        const parts=row['Data'].split('/');
+        if(parts.length!==3) return false;
+        const [d,m,y] = parts;
+        const dataRow=new Date(+y, m-1, +d);
+        if(dtInicio && dataRow<dtInicio) return false;
+        if(dtFim && dataRow>dtFim) return false;
+        return true;
     });
 }
 
-// Botão aplicar filtro
-document.getElementById('btnApplyFilter').addEventListener('click', ()=>{
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
-    atualizarMapa(dataInicio,dataFim);
+// Atualiza os cards
+function atualizarCards(dados){
+    // Produtividade Média (STD = HH/ML)
+    let totalHH=0, totalML=0;
+    dados.forEach(row=>{
+        totalHH += parseFloat(row['HH Total'])||0;
+        totalML += parseFloat(row['ML Montados'])||0;
+    });
+    const std = totalML>0 ? (totalHH/totalML).toFixed(2) : '0.00';
+    document.getElementById('valorProdutividadeMedia').textContent = std;
+
+    // Top Setores (para teste, apenas os nomes fixos)
+    document.getElementById('valorTopSetores').textContent = setores.map(s=>s.nome).join(', ');
+}
+
+// Aplica filtro e atualiza dashboard
+function aplicarFiltro(){
+    const dataInicio=document.getElementById('dataInicio').value;
+    const dataFim=document.getElementById('dataFim').value;
+    const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
+    atualizarCards(dadosFiltrados);
+}
+
+// Eventos
+document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
+document.getElementById('btnVoltar').addEventListener('click', ()=>{
+    window.location.href='dashboard.html';
 });
 
-// Botão voltar
-document.getElementById('btnBack').addEventListener('click', ()=>{
-    window.location.href = 'dashboard.html'; // link para o Dashboard STD
-});
-
-// Inicializa mapa com todos os dados
-window.addEventListener('load', ()=>atualizarMapa());
+// Inicializa
+window.addEventListener('load', carregarCSVPadrao);
