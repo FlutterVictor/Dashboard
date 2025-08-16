@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Mockup - Dashboard STD Andaime</title>
+    <title>Dashboard STD Andaime</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,21 +20,44 @@
             </div>
         </header>
 
-        <!-- Linha 1: Cards principais -->
+        <!-- Linha 1 - Cards principais -->
         <div class="grid" style="margin-top:18px">
-            <div class="card kpi"><div class="label">HH Total (h)</div><div class="value" id="hhTotal">0</div></div>
-            <div class="card kpi"><div class="label">ML Montados</div><div class="value" id="mlMontados">0 m</div></div>
-            <div class="card kpi"><div class="label">Montadores Presentes</div><div class="value" id="montPresente">0</div></div>
-            <div class="card kpi"><div class="label">STD Semanal</div><div class="value" id="stdSemanal">0,00</div></div>
-            <div class="card kpi"><div class="label">Meta Atingida</div><div class="value" id="metaAtingida">0%</div></div>
+            <div class="card kpi">
+                <div class="label">HH Total (h)</div>
+                <div class="value" id="hhTotal">0</div>
+                <div class="small">Cálculo: soma da coluna HH Total</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">ML Montados</div>
+                <div class="value" id="mlMontados">0 m</div>
+                <div class="small">Meta por montador: 0,22</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">Montadores Presentes (média/dia)</div>
+                <div class="value" id="montPresente">0</div>
+                <div class="small">Faltaram: -</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">STD Semanal (HH Total / ML Montados)</div>
+                <div class="value" id="stdSemanal">0,00</div>
+                <div class="small">STD montagem = HH Total ÷ ML Montados</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">% Meta Atingida</div>
+                <div class="value" id="metaAtingida">0%</div>
+                <div class="small">ML Montados ÷ ML Previsto</div>
+            </div>
         </div>
 
-        <!-- Linha 2: Gráfico e Ranking -->
+        <!-- Linha 2 - Gráfico de Tendência e Ranking Top 5 -->
         <div class="grid" style="margin-top:18px">
-            <div class="card wide" style="flex:2">
-                <div style="font-weight:700;margin-bottom:6px">Tendência semanal — ML montados/dia</div>
+            <div class="card wide">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div style="font-weight:700">Tendência semanal — ML montados / dia</div>
+                    <div class="mini" id="semanaLabel">Período completo</div>
+                </div>
                 <div class="chart-box">
-                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none" style="overflow: visible;">
+                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none">
                         <g font-size="3" fill="#0b2340" font-weight="600">
                             <text x="0" y="33" text-anchor="start">Seg</text>
                             <text x="16.66" y="33" text-anchor="middle">Ter</text>
@@ -48,21 +71,32 @@
                 </div>
             </div>
 
-            <div class="card wide" style="flex:1; padding:10px;">
-                <div style="font-weight:700; margin-bottom:6px">Ranking de Produtividade Top 5</div>
-                <div id="rankingProdutividade"></div>
+            <div class="card wide" id="rankingCard">
+                <div style="font-weight:700; margin-bottom:8px;">Ranking de Produtividade — Top 5</div>
+                <table id="rankingTable">
+                    <thead>
+                        <tr>
+                            <th>Encarregado</th>
+                            <th>% Meta Atingida</th>
+                            <th>Desempenho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="3" style="text-align:center;color:#475569">Sem dados</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Linha 3: Filtro de Data -->
+        <!-- Linha 3 - Filtro de datas -->
         <div id="filter-container">
             <label>Data Início: <input type="date" id="dataInicio" /></label>
             <label>Data Fim: <input type="date" id="dataFim" /></label>
-            <button id="btnApplyFilter">Aplicar filtro</button>
-            <button id="btnExportPDF">Exportar PDF</button>
+            <button id="btnApplyFilter" style="background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer">Aplicar filtro</button>
+            <button id="btnExportPDF" style="margin-left:auto; background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer">Exportar PDF</button>
         </div>
 
-        <!-- Linha 4: Tabela de amostra CSV -->
+        <!-- Linha 4 - Tabela CSV -->
         <div class="grid" style="margin-top:18px">
             <div class="card full">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -74,8 +108,8 @@
                         <thead>
                             <tr>
                                 <th>Semana</th><th>OS</th><th>Matrícula</th><th>Encarregado</th>
-                                <th>Área</th><th>Mont.Presente</th><th>HH Total</th>
-                                <th>ML Montados</th><th>STD Montado</th><th>Data</th>
+                                <th>Área</th><th>Mont.Presente</th><th>HH Total</th><th>ML Montados</th>
+                                <th>STD Montado</th><th>Data</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaDados">
