@@ -16,7 +16,7 @@ function parseDateBR(str){
 }
 
 function diaSemanaIndex(diaJS){
-    if(diaJS === 0) return 6; else return diaJS-1;
+    return diaJS === 0 ? 6 : diaJS-1;
 }
 
 function filtrarDadosPorData(dados, dataInicio, dataFim){
@@ -34,146 +34,158 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
 }
 
 function atualizarDashboard(dados){
-    const diasSet = new Set();
-    let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
-    let mlPorDia = Array(7).fill(0);
-    let rankingMap = {};
+    if(!dados || dados.length===0){
+        document.getElementById('hhTotal').textContent='0';
+        document.getElementById('mlMontados').textContent='0 m';
+        document.getElementById('montPresente').textContent='0';
+        document.getElementById('stdSemanal').textContent='0,00';
+        document.getElementById('metaAtingida').textContent='0%';
+        document.getElementById('rankingTable').querySelector('tbody').innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
+        document.getElementById('tabelaDados').innerHTML='<tr><td colspan="10" style="text-align:center;color:gray;">Sem dados</td></tr>';
+        atualizarGraficoLinha(Array(7).fill(0));
+        return;
+    }
+
+    // Soma e média
+    let somaHH=0,somaML=0,somaMont=0,somaMLPrevisto=0;
+    let mlPorDia=Array(7).fill(0);
+    let ranking={};
 
     dados.forEach(row=>{
-        const hhRow = parseNumber(row['HH Total']);
-        const mlRow = parseNumber(row['ML Montados']);
-        const montRow = parseNumber(row['Mont.Presente']);
-        const mlPrevistoRow = parseNumber(row['ML PREVISTO']);
-        somaHH += hhRow;
-        somaML += mlRow;
-        somaMont += montRow;
-        somaMLPrevisto += mlPrevistoRow;
-        if(row['Data']) diasSet.add(row['Data'].trim());
+        const hh=parseNumber(row['HH Total']);
+        const ml=parseNumber(row['ML Montados']);
+        const mont=parseNumber(row['Mont.Presente']);
+        const mlPrev=parseNumber(row['ML PREVISTO']);
 
-        // Tendência
+        somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
+
         if(row['Data']){
-            const dataObj = parseDateBR(row['Data']);
-            if(dataObj && !isNaN(dataObj)) mlPorDia[diaSemanaIndex(dataObj.getDay())] += mlRow;
+            const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
+            mlPorDia[ds]+=ml;
         }
 
-        // Ranking
-        const enc = row['Encarregado Responsavel']?.trim();
-        if(enc){
-            if(!rankingMap[enc]) rankingMap[enc] = {ml:0, mlPrevisto:0, stdAcumulado:0, qtd:0};
-            rankingMap[enc].ml += mlRow;
-            rankingMap[enc].mlPrevisto += mlPrevistoRow;
-            rankingMap[enc].stdAcumulado += parseNumber(row['STD Montado']);
-            rankingMap[enc].qtd++;
+        const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
+        if(nome){
+            if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
+            ranking[nome].ml+=ml;
+            ranking[nome].mlPrev+=mlPrev;
+            ranking[nome].hh+=hh;
         }
     });
 
-    // Atualiza cards linha 1
-    document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
-    document.getElementById('mlMontados').textContent = somaML.toFixed(0)+' m';
-    document.getElementById('montPresente').textContent = (diasSet.size>0? (somaMont/diasSet.size).toFixed(1) : 0);
-    document.getElementById('stdSemanal').textContent = (somaML>0?(somaHH/somaML).toFixed(2):0);
-    document.getElementById('metaAtingida').textContent = (somaMLPrevisto>0?(somaML/somaMLPrevisto*100).toFixed(0):0)+'%';
+    document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
+    document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
+    const mediaMont=somaMont/dados.length;
+    document.getElementById('montPresente').textContent=mediaMont.toFixed(1);
+    const std=somaML>0?somaHH/somaML:0;
+    document.getElementById('stdSemanal').textContent=std.toFixed(2);
+    const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
+    document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
 
     // Ranking Top 5
-    let rankingArr = Object.entries(rankingMap)
-        .map(([enc, val])=>{
-            const pctMeta = val.mlPrevisto>0 ? (val.ml/val.mlPrevisto*100):0;
-            const stdMedio = val.qtd>0 ? (val.stdAcumulado/val.qtd) : 0;
-            return {enc,pctMeta,stdMedio};
-        })
-        .filter(r=>r.pctMeta>0)
-        .sort((a,b)=>b.pctMeta-a.pctMeta)
-        .slice(0,5);
+    const rankingArr=Object.entries(ranking).map(([nome,val])=>{
+        const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
+        const stdReal=val.ml>0?val.hh/val.ml:0;
+        const indicador=stdReal<=0.22 ? '↑' : '↓';
+        return {nome,pctMeta,indicador};
+    }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
 
-    const tbodyRank = document.querySelector('#rankingTable tbody');
-    tbodyRank.innerHTML='';
-    if(rankingArr.length===0){
-        tbodyRank.innerHTML='<tr><td colspan="3" style="text-align:center;color:#475569">Sem dados</td></tr>';
-    } else {
-        rankingArr.forEach(r=>{
-            const trend = r.stdMedio>0.22 ? '▲' : '▼';
-            const color = r.stdMedio>0.22 ? 'green' : 'crimson';
-            tbodyRank.innerHTML+=`<tr>
-                <td>${r.enc}</td>
-                <td>${r.pctMeta.toFixed(0)}%</td>
-                <td style="color:${color};font-weight:700">${trend}</td>
-            </tr>`;
-        });
-    }
+    const tbodyRanking=document.getElementById('rankingTable').querySelector('tbody');
+    tbodyRanking.innerHTML='';
+    rankingArr.forEach(r=>{
+        const row=document.createElement('tr');
+        row.innerHTML=`<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
+        tbodyRanking.appendChild(row);
+    });
+    if(rankingArr.length===0) tbodyRanking.innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
 
-    // Atualiza gráfico de linha
-    const svg = document.getElementById('graficoLinha');
-    svg.querySelectorAll('circle, line, text.valueLabel').forEach(n=>n.remove());
-    const maxML = Math.max(...mlPorDia,1);
-    mlPorDia.forEach((ml, i)=>{
-        const x = i*16.66;
-        const y = 35 - (ml/maxML*30);
-        const c = document.createElementNS("http://www.w3.org/2000/svg",'circle');
-        c.setAttribute('cx',x);
-        c.setAttribute('cy',y);
-        c.setAttribute('r',1.5);
-        c.setAttribute('fill','#0b63d6');
-        svg.appendChild(c);
-
-        // Label de valor
-        const t = document.createElementNS("http://www.w3.org/2000/svg",'text');
-        t.setAttribute('x',x);
-        t.setAttribute('y',y-1.5);
-        t.setAttribute('class','valueLabel');
-        t.setAttribute('font-size','3');
-        t.setAttribute('text-anchor','middle');
-        t.setAttribute('fill','#0b2340');
-        t.textContent = ml.toFixed(0);
-        svg.appendChild(t);
-
-        if(i>0){
-            const line = document.createElementNS("http://www.w3.org/2000/svg",'line');
-            line.setAttribute('x1',(i-1)*16.66);
-            line.setAttribute('y1',35-(mlPorDia[i-1]/maxML*30));
-            line.setAttribute('x2',x);
-            line.setAttribute('y2',y);
-            line.setAttribute('stroke','#0b63d6');
-            line.setAttribute('stroke-width',0.7);
-            svg.appendChild(line);
-        }
+    // Tabela de dados (amostra)
+    const tbodyDados=document.getElementById('tabelaDados');
+    tbodyDados.innerHTML='';
+    dados.slice(0,5).forEach(row=>{
+        tbodyDados.innerHTML+=`<tr>
+            <td>${row['Semanas']||''}</td>
+            <td>${row['OS']||''}</td>
+            <td>${row['Matricula']||''}</td>
+            <td>${row['Encarregado Responsavel']||''}</td>
+            <td>${row['ÁREA']||''}</td>
+            <td>${row['Mont.Presente']||''}</td>
+            <td>${parseNumber(row['HH Total']).toFixed(1)}</td>
+            <td>${parseNumber(row['ML Montados']).toFixed(0)}</td>
+            <td>${parseNumber(row['STD Montado']).toFixed(2)}</td>
+            <td>${row['Data']||''}</td>
+        </tr>`;
     });
 
-    // Atualiza tabela de amostra CSV
-    const tbody = document.getElementById('tabelaDados');
-    tbody.innerHTML='';
-    if(dados.length===0){
-        tbody.innerHTML='<tr><td colspan="10" style="text-align:center; color: var(--gray);">Sem dados</td></tr>';
-    } else {
-        dados.forEach(r=>{
-            tbody.innerHTML+=`<tr>
-                <td>${r['Semanas']||''}</td>
-                <td>${r['OS']||''}</td>
-                <td>${r['Matricula']||''}</td>
-                <td>${r['Encarregado Responsavel']||''}</td>
-                <td>${r['ÁREA']||''}</td>
-                <td>${r['Mont.Presente']||''}</td>
-                <td>${r['HH Total']||''}</td>
-                <td>${r['ML Montados']||''}</td>
-                <td>${r['STD Montado']||''}</td>
-                <td>${r['Data']||''}</td>
-            </tr>`;
-        });
-    }
+    atualizarGraficoLinha(mlPorDia);
 }
 
-// Eventos
-document.getElementById('fileInput').addEventListener('change', function(e){
-    const file = e.target.files[0];
+function atualizarGraficoLinha(mlPorDia){
+    const svg=document.getElementById('graficoLinha');
+    while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
+    while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
+
+    const width=100,height=35,marginBottom=8;
+    const maxML=Math.max(...mlPorDia,1);
+    const pontos=mlPorDia.map((v,i)=>{
+        const x=i*(width/6);
+        const y=height-marginBottom-(v/maxML*(height-marginBottom*2));
+        return [x,y];
+    });
+
+    const pointsStr=pontos.map(p=>p.join(',')).join(' ');
+    const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    polyline.setAttribute("fill","none");
+    polyline.setAttribute("stroke","#0b63d6");
+    polyline.setAttribute("stroke-width","1.6");
+    polyline.setAttribute("points",pointsStr);
+    svg.appendChild(polyline);
+
+    pontos.forEach((p,i)=>{
+        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
+        text.classList.add('data-label');
+        text.setAttribute('x',p[0]);
+        text.setAttribute('y',p[1]-3);
+        text.setAttribute('font-size','3');
+        text.setAttribute('fill','#0b2340');
+        text.setAttribute('text-anchor','middle');
+        text.textContent=mlPorDia[i].toFixed(0);
+        svg.appendChild(text);
+    });
+}
+
+document.getElementById('fileInput').addEventListener('change', e=>{
+    const file=e.target.files[0];
     if(!file) return;
-    Papa.parse(file, {header:true, skipEmptyLines:true, complete:function(results){
-        dadosCSV = results.data;
-        atualizarDashboard(dadosCSV);
-    }});
+    Papa.parse(file,{header:true,skipEmptyLines:true,
+        complete: results=>{
+            dadosCSV=results.data;
+            aplicarFiltro();
+        },
+        error: err=>alert('Erro ao ler o arquivo: '+err)
+    });
 });
 
-document.getElementById('btnApplyFilter').addEventListener('click', function(){
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
-    const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
+function aplicarFiltro(){
+    const dataInicio=document.getElementById('dataInicio').value;
+    const dataFim=document.getElementById('dataFim').value;
+    const dadosFiltrados=filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
     atualizarDashboard(dadosFiltrados);
+}
+
+document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
+
+document.getElementById('btnExportPDF').addEventListener('click',()=>{
+    const dashboardWrap=document.getElementById('dashboardWrap');
+    html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
+        const imgData=canvas.toDataURL('image/png');
+        const { jsPDF }=window.jspdf;
+        const pdf=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+        const pdfWidth=pdf.internal.pageSize.getWidth();
+        const pdfHeight=pdf.internal.pageSize.getHeight();
+        const imgProps=pdf.getImageProperties(imgData);
+        const imgHeight=(imgProps.height*pdfWidth)/imgProps.width;
+        pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
+        pdf.save('dashboard.pdf');
+    });
 });
