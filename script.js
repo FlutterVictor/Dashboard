@@ -1,6 +1,5 @@
 let dadosCSV = [];
 
-// Funções utilitárias
 function parseNumber(str){
     if(!str) return 0;
     str = str.toString().trim().replace(',', '.');
@@ -34,8 +33,7 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     });
 }
 
-// Função principal de atualização
-function atualizarDashboard(dados, dataInicio='', dataFim=''){
+function atualizarDashboard(dados, dataInicio, dataFim){
     if(!dados || dados.length===0){
         document.getElementById('hhTotal').textContent='0';
         document.getElementById('mlMontados').textContent='0 m';
@@ -49,85 +47,80 @@ function atualizarDashboard(dados, dataInicio='', dataFim=''){
     }
 
     // Soma e média
-    let somaHH=0, somaML=0, somaMLPrevisto=0, montadoresSet = new Set();
+    let somaHH=0,somaML=0,somaMLPrevisto=0;
     let mlPorDia=Array(7).fill(0);
-    let datasPorDia = [];
-    let ranking = {};
+    let datasPorDia=Array(7).fill('');
+    let ranking={};
+    let totalMontadoresSet = new Set();
 
     dados.forEach(row=>{
-        const hh = parseNumber(row['HH Total']);
-        const ml = parseNumber(row['ML Montados']);
-        const mlPrev = parseNumber(row['ML PREVISTO']);
-        const mont = parseNumber(row['Mont.Presente']);
+        const hh=parseNumber(row['HH Total']);
+        const ml=parseNumber(row['ML Montados']);
+        const mlPrev=parseNumber(row['ML PREVISTO']);
+        const mont=parseNumber(row['Mont.Presente']);
+        const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
 
-        somaHH += hh;
-        somaML += ml;
-        somaMLPrevisto += mlPrev;
+        somaHH+=hh; somaML+=ml; somaMLPrevisto+=mlPrev;
+
+        if(nome) totalMontadoresSet.add(nome);
 
         if(row['Data']){
-            const ds = diaSemanaIndex(parseDateBR(row['Data']).getDay());
-            mlPorDia[ds] += ml;
-            datasPorDia[ds] = row['Data']; // grava a última data para cada dia da semana
+            const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
+            mlPorDia[ds]+=ml;
+            datasPorDia[ds] = row['Data']; // substitui dias da semana por data
         }
 
-        // Ranking por Encarregado
-        const nome = row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
         if(nome){
-            montadoresSet.add(nome);
             if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
-            ranking[nome].ml += ml;
-            ranking[nome].mlPrev += mlPrev;
-            ranking[nome].hh += hh;
+            ranking[nome].ml+=ml;
+            ranking[nome].mlPrev+=mlPrev;
+            ranking[nome].hh+=hh;
         }
     });
 
-    // HH Total e ML Montados
-    document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
-    document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
+    // Atualiza cards
+    document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
+    document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
 
     // ML por Montador
-    let diasSelecionados = 0;
-    if(dataInicio && dataFim){
-        const dtInicio = new Date(dataInicio);
-        const dtFim = new Date(dataFim);
-        diasSelecionados = Math.ceil((dtFim - dtInicio)/(1000*60*60*24)) +1;
+    let mlPorMontador = 0;
+    if(dataInicio || dataFim){
+        // filtro ativo, média sobre os dias filtrados
+        mlPorMontador = somaML / totalMontadoresSet.size;
+    }else{
+        // sem filtro, média semanal
+        mlPorMontador = somaML / totalMontadoresSet.size;
     }
-    let mlPorMontador;
-    const qtMontadores = montadoresSet.size || 1;
-    if(diasSelecionados === 1){
-        mlPorMontador = Math.min(somaML/qtMontadores, 60);
-    } else {
-        mlPorMontador = somaML/qtMontadores;
+    // Limite 60 se único dia
+    if(dataInicio === dataFim && dataInicio){
+        mlPorMontador = Math.min(mlPorMontador, 60);
     }
     document.getElementById('montPresente').textContent = mlPorMontador.toFixed(1);
 
-    // STD Semanal
-    const std = somaML>0 ? somaHH/somaML : 0;
-    document.getElementById('stdSemanal').textContent = std.toFixed(2);
-
-    // % Meta Atingida
-    const meta = (somaMLPrevisto>0 ? somaML/somaMLPrevisto*100 : 0);
-    document.getElementById('metaAtingida').textContent = meta.toFixed(0)+'%';
+    const std=somaML>0?somaHH/somaML:0;
+    document.getElementById('stdSemanal').textContent=std.toFixed(2);
+    const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
+    document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
 
     // Ranking Top 5
-    const rankingArr = Object.entries(ranking).map(([nome,val])=>{
-        const pctMeta = val.mlPrev>0 ? val.ml/val.mlPrev*100 : 0;
-        const stdReal = val.ml>0 ? val.hh/val.ml : 0;
-        const indicador = stdReal <= 0.22 ? '↑' : '↓';
+    const rankingArr=Object.entries(ranking).map(([nome,val])=>{
+        const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
+        const stdReal=val.ml>0?val.hh/val.ml:0;
+        const indicador=stdReal<=0.22 ? '↑' : '↓';
         return {nome,pctMeta,indicador};
     }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
 
-    const tbodyRanking = document.getElementById('rankingTable').querySelector('tbody');
+    const tbodyRanking=document.getElementById('rankingTable').querySelector('tbody');
     tbodyRanking.innerHTML='';
     rankingArr.forEach(r=>{
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
+        const row=document.createElement('tr');
+        row.innerHTML=`<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
         tbodyRanking.appendChild(row);
     });
     if(rankingArr.length===0) tbodyRanking.innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
 
-    // Tabela de amostra
-    const tbodyDados = document.getElementById('tabelaDados');
+    // Tabela de dados (amostra)
+    const tbodyDados=document.getElementById('tabelaDados');
     tbodyDados.innerHTML='';
     dados.slice(0,5).forEach(row=>{
         tbodyDados.innerHTML+=`<tr>
@@ -144,74 +137,64 @@ function atualizarDashboard(dados, dataInicio='', dataFim=''){
         </tr>`;
     });
 
-    // Atualiza gráfico de linha
     atualizarGraficoLinha(mlPorDia, datasPorDia);
 }
 
-// Função do gráfico de linha com dias da semana
-function atualizarGraficoLinha(mlPorDia, datasPorDia){
-    const svg = document.getElementById('graficoLinha');
+function atualizarGraficoLinha(mlPorDia, datas){
+    const svg=document.getElementById('graficoLinha');
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
     while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
     while(svg.querySelectorAll('.dia-label').length) svg.querySelectorAll('.dia-label').forEach(el=>el.remove());
 
-    const width = 100, height = 35, marginBottom = 8;
-    const maxML = Math.max(...mlPorDia,1);
-    const pontos = mlPorDia.map((v,i)=>{
-        const x = i*(width/(mlPorDia.length-1));
-        const y = height - marginBottom - (v/maxML*(height-marginBottom*2));
+    const width=100,height=35,marginBottom=8;
+    const maxML=Math.max(...mlPorDia,1);
+    const pontos=mlPorDia.map((v,i)=>{
+        const x=i*(width/6);
+        const y=height-marginBottom-(v/maxML*(height-marginBottom*2));
         return [x,y];
     });
 
-    // linha do gráfico
-    const pointsStr = pontos.map(p => p.join(',')).join(' ');
-    const polyline = document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    const pointsStr=pontos.map(p=>p.join(',')).join(' ');
+    const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
     polyline.setAttribute("stroke","#0b63d6");
     polyline.setAttribute("stroke-width","1.6");
-    polyline.setAttribute("points", pointsStr);
+    polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
-    // rótulos de ML
+    // rótulos de dados
     pontos.forEach((p,i)=>{
-        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
-        text.setAttribute('x', p[0]);
-        text.setAttribute('y', p[1]-2);
+        text.setAttribute('x',p[0]);
+        text.setAttribute('y',p[1]-2);
         text.setAttribute('font-size','2.5');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
-        text.textContent = mlPorDia[i].toFixed(0);
+        text.textContent=mlPorDia[i].toFixed(0);
         svg.appendChild(text);
     });
 
-    // dias da semana
+    // datas do gráfico
     pontos.forEach((p,i)=>{
-        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('dia-label');
-        text.setAttribute('x', p[0]);
-        text.setAttribute('y', height + 4);
+        text.setAttribute('x',p[0]);
+        text.setAttribute('y',height+4);
         text.setAttribute('font-size','3');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
-        if(datasPorDia && datasPorDia[i]){
-            const dt = parseDateBR(datasPorDia[i]);
-            const diasSemana = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-            text.textContent = diasSemana[dt.getDay()===0?6:dt.getDay()-1] + ' ' + dt.getDate();
-        } else {
-            text.textContent = '';
-        }
+        text.textContent=datas[i] || '';
         svg.appendChild(text);
     });
 }
 
-// Eventos
 document.getElementById('fileInput').addEventListener('change', e=>{
-    const file = e.target.files[0];
+    const file=e.target.files[0];
     if(!file) return;
-    Papa.parse(file, {header:true, skipEmptyLines:true,
+    Papa.parse(file,{header:true,skipEmptyLines:true,
         complete: results=>{
-            dadosCSV = results.data;
+            dadosCSV=results.data;
             aplicarFiltro(true);
         },
         error: err=>alert('Erro ao ler o arquivo: '+err)
@@ -219,9 +202,9 @@ document.getElementById('fileInput').addEventListener('change', e=>{
 });
 
 function aplicarFiltro(importCSV=false){
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
-    const dadosFiltrados = filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
+    const dataInicio=document.getElementById('dataInicio').value;
+    const dataFim=document.getElementById('dataFim').value;
+    const dadosFiltrados=filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
     atualizarDashboard(dadosFiltrados, dataInicio, dataFim);
 
     if(importCSV && !dataInicio && !dataFim){
@@ -232,21 +215,21 @@ function aplicarFiltro(importCSV=false){
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
-    const dashboardWrap = document.getElementById('dashboardWrap');
+    const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height*pdfWidth)/imgProps.width;
+        const imgData=canvas.toDataURL('image/png');
+        const { jsPDF }=window.jspdf;
+        const pdf=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+        const pdfWidth=pdf.internal.pageSize.getWidth();
+        const pdfHeight=pdf.internal.pageSize.getHeight();
+        const imgProps=pdf.getImageProperties(imgData);
+        const imgHeight=(imgProps.height*pdfWidth)/imgProps.width;
         pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
         pdf.save('dashboard.pdf');
     });
 });
 
-// Atualiza automaticamente ao carregar a página se houver dados
+// Atualiza automaticamente ao carregar todos os dados
 window.addEventListener('load', ()=>{
     if(dadosCSV.length>0) atualizarDashboard(dadosCSV);
 });
