@@ -54,7 +54,7 @@ function atualizarDashboard(dados){
     dados.forEach(row=>{
         const hh=parseNumber(row['HH Total']);
         const ml=parseNumber(row['ML Montados']);
-        const mont=parseNumber(row['Mont.Presente']);
+        const mont=parseNumber(row['ML por Montador']);
         const mlPrev=parseNumber(row['ML PREVISTO']);
 
         somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
