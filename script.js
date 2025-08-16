@@ -36,18 +36,16 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     });
 }
 
-// Atualizar Dashboard
+// Atualizar dashboard
 function atualizarDashboard(dados){
     const diasSet = new Set();
     let somaHH = 0, somaML = 0, somaMont = 0, somaMLPrevisto = 0;
 
     let mlPorDia = Array(7).fill(0);
     let areas = { 'Estrutura': {ml:0, hh:0}, 'Elétrica': {ml:0, hh:0}, 'Pintura': {ml:0, hh:0}, 'Mecânica': {ml:0, hh:0} };
+    let rankingMap = {};
 
-    // Ranking histórico (para comparação de STD)
-    let rankingHistorico = {};
-
-    dados.forEach(row=>{
+    dados.forEach(row => {
         const hhRow = parseNumber(row['HH Total']);
         const mlRow = parseNumber(row['ML Montados']);
         const montRow = parseNumber(row['Mont.Presente']);
@@ -69,72 +67,37 @@ function atualizarDashboard(dados){
         }
 
         const area = row['ÁREA'] ? row['ÁREA'].trim() : '';
-        if(areas[area]){
-            areas[area].ml += mlRow;
-            areas[area].hh += hhRow;
-        }
+        if(areas[area]) { areas[area].ml += mlRow; areas[area].hh += hhRow; }
 
-        // Ranking
-        const nome = row['Encarregado Responsavel'] || 'Sem Nome';
-        const meta = mlPrevistoRow>0 ? (mlRow/mlPrevistoRow)*100 : 0;
-        const stdReal = hhRow>0 ? (mlRow/hhRow) : 0;
-
-        if(!rankingHistorico[nome]){
-            rankingHistorico[nome] = {totalMeta:0, totalSTD:0, count:0, ultimaMeta:0, ultimaSTD:0};
+        // Ranking por Encarregado
+        const nome = row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
+        if(nome){
+            if(!rankingMap[nome]) rankingMap[nome] = {ml:0, meta:0, stdReal:0, stdPadrao:0, dias:0, prevML:0};
+            rankingMap[nome].ml += mlRow;
+            rankingMap[nome].meta += mlPrevistoRow;
+            rankingMap[nome].stdReal += hhRow / (mlRow || 1);
+            rankingMap[nome].stdPadrao += 0.22;
+            rankingMap[nome].dias++;
         }
-        rankingHistorico[nome].totalMeta += meta;
-        rankingHistorico[nome].totalSTD += stdReal;
-        rankingHistorico[nome].count += 1;
     });
 
-    // Atualizar KPIs
-    const mediaMont = diasSet.size>0 ? somaMont/diasSet.size : 0;
-    const stdSemanalCalc = somaML>0 ? (somaHH/somaML) : 0;
-
+    // Atualiza KPIs
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
-    document.getElementById('mlMontados').textContent = somaML.toFixed(0)+' m';
-    document.getElementById('montPresente').textContent = mediaMont.toFixed(1);
-    document.getElementById('stdSemanal').textContent = stdSemanalCalc.toFixed(2);
+    document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
+    document.getElementById('montPresente').textContent = (diasSet.size ? somaMont/diasSet.size : 0).toFixed(1);
+    document.getElementById('stdSemanal').textContent = (somaML ? (somaHH/somaML) : 0).toFixed(2);
 
-    const atingMeta = somaMLPrevisto>0 ? (somaML/somaMLPrevisto)*100 : 0;
-    document.getElementById('metaAtingida').textContent = atingMeta.toFixed(0)+'%';
+    document.getElementById('prodMedia').textContent = (diasSet.size ? somaML/(somaMont/diasSet.size) : 0).toFixed(0) + ' m';
+    document.getElementById('metaAtingida').textContent = (somaMLPrevisto ? (somaML/somaMLPrevisto*100) : 0).toFixed(0) + '%';
+    document.getElementById('desvioSTD').textContent = ((somaML ? (somaHH/somaML) : 0) - 0.22).toFixed(2);
 
-    // Ranking Top 5
-    const rankingArray = Object.entries(rankingHistorico).map(([nome,data])=>{
-        const mediaMeta = data.totalMeta/data.count;
-        const mediaSTD = data.totalSTD/data.count;
-        const melhorQuePassado = mediaSTD>=0.22 ? 'up' : 'down';
-        return {nome, mediaMeta, indicador: melhorQuePassado};
-    });
-
-    rankingArray.sort((a,b)=>b.mediaMeta - a.mediaMeta);
-    const top5 = rankingArray.slice(0,5);
-
-    const tbodyRanking = document.querySelector('#rankingTable tbody');
-    tbodyRanking.innerHTML = '';
-    if(top5.length===0){
-        tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--gray)">Sem dados</td></tr>';
-    } else {
-        top5.forEach(item=>{
-            let indicadorHTML = item.indicador==='up' ? `<span class="trend-up">&#9650;</span>` : `<span class="trend-down">&#9660;</span>`;
-            tbodyRanking.innerHTML += `<tr>
-                <td>${item.nome}</td>
-                <td>${item.mediaMeta.toFixed(0)}%</td>
-                <td class="indicator">${indicadorHTML}</td>
-            </tr>`;
-        });
-    }
-
-    // Atualizar gráfico de linhas
-    atualizarGraficoLinha(mlPorDia);
-
-    // Atualizar tabela de áreas (amostra)
+    // Atualiza tabela de amostra
     const tbodyDados = document.getElementById('tabelaDados');
     tbodyDados.innerHTML = '';
-    if(dados.length===0){
-        tbodyDados.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray)">Sem dados para o filtro selecionado</td></tr>`;
+    if(dados.length === 0){
+        tbodyDados.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray)">Sem dados para o filtro</td></tr>`;
     } else {
-        dados.slice(0,5).forEach(row=>{
+        dados.slice(0,5).forEach(row => {
             tbodyDados.innerHTML += `<tr>
                 <td>${row['Semanas']||''}</td>
                 <td>${row['OS']||''}</td>
@@ -149,9 +112,23 @@ function atualizarDashboard(dados){
             </tr>`;
         });
     }
+
+    // Atualiza label período
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+    let labelSemana = 'Período completo';
+    if(dataInicio || dataFim){
+        labelSemana = 'Período: ';
+        if(dataInicio) labelSemana += dataInicio;
+        if(dataFim) labelSemana += ' a ' + dataFim;
+    }
+    document.getElementById('semanaLabel').textContent = labelSemana;
+
+    atualizarGraficoLinha(mlPorDia);
+    atualizarRanking(rankingMap);
 }
 
-// Gráfico de linhas
+// Atualiza gráfico de linhas
 function atualizarGraficoLinha(mlPorDia){
     const svg = document.getElementById('graficoLinha');
     const width = 100;
@@ -159,14 +136,12 @@ function atualizarGraficoLinha(mlPorDia){
     const marginBottom = 8;
 
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
-    while(svg.querySelectorAll('.data-label').length){
-        svg.querySelectorAll('.data-label').forEach(el=>el.remove());
-    }
+    while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el => el.remove());
 
     const maxML = Math.max(...mlPorDia,1);
     const pontos = mlPorDia.map((v,i)=>{
         const x = i*(width/6);
-        const y = height - marginBottom - (v/maxML*(height-marginBottom*2));
+        const y = height - marginBottom - (v/maxML*(height - marginBottom*2));
         return [x,y];
     });
 
@@ -178,6 +153,7 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
+    // Labels
     pontos.forEach((p,i)=>{
         const text = document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
@@ -191,44 +167,57 @@ function atualizarGraficoLinha(mlPorDia){
     });
 }
 
-// Upload CSV
-document.getElementById('fileInput').addEventListener('change', e=>{
-    const file = e.target.files[0];
-    if(!file) return;
-
-    Papa.parse(file,{
-        header:true,
-        skipEmptyLines:true,
-        complete:function(results){
-            dadosCSV = results.data;
-            aplicarFiltro();
-        },
-        error:function(err){
-            alert('Erro ao ler o arquivo: '+err);
-        }
+// Atualiza ranking Top 5
+function atualizarRanking(rankingMap){
+    const rankingArray = Object.entries(rankingMap).map(([nome,val])=>{
+        const percMeta = val.meta ? (val.ml/val.meta*100) : 0;
+        const stdReal = val.dias ? (val.stdReal/val.dias) : 0;
+        const indicador = stdReal <= 0.22 ? '▲' : '▼';
+        const cor = stdReal <= 0.22 ? 'trend-up' : 'trend-down';
+        return {nome, percMeta, indicador, cor};
     });
-});
+    rankingArray.sort((a,b)=>b.percMeta - a.percMeta);
+    const top5 = rankingArray.slice(0,5);
 
-// Aplicar filtro
-function aplicarFiltro(){
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
-    const dadosFiltrados = filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
-    atualizarDashboard(dadosFiltrados);
+    const tbody = document.querySelector('#rankingTable tbody');
+    tbody.innerHTML = '';
+    if(top5.length===0){
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--gray)">Sem dados</td></tr>`;
+    } else {
+        top5.forEach(item=>{
+            tbody.innerHTML += `<tr>
+                <td>${item.nome}</td>
+                <td>${item.percMeta.toFixed(0)}%</td>
+                <td class="${item.cor}" style="text-align:center">${item.indicador}</td>
+            </tr>`;
+        });
+    }
 }
 
-document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
+// Carregar CSV
+document.getElementById('csvFile').addEventListener('change',function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+        const text = ev.target.result;
+        const linhas = text.split('\n').filter(l=>l.trim());
+        const headers = linhas[0].split(';');
+        dadosCSV = linhas.slice(1).map(l=>{
+            const cols = l.split(';');
+            const obj = {};
+            headers.forEach((h,i)=> obj[h.trim()] = cols[i]?cols[i].trim(): '');
+            return obj;
+        });
+        atualizarDashboard(dadosCSV);
+    }
+    reader.readAsText(file, 'ISO-8859-1');
+});
 
-// Export PDF
-document.getElementById('btnExportPDF').addEventListener('click', ()=>{
-    const dashboardWrap = document.getElementById('dashboardWrap');
-    html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
-        const imgData = canvas.toDataURL('image/png');
-        const {jsPDF} = window.jspdf;
-        const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
-        pdf.save('Dashboard.pdf');
-    });
+// Filtros
+document.getElementById('btnApplyFilter').addEventListener('click',()=>{
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+    const filtrado = filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
+    atualizarDashboard(filtrado);
 });
