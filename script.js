@@ -37,7 +37,7 @@ function atualizarDashboard(dados){
     if(!dados || dados.length===0){
         document.getElementById('hhTotal').textContent='0';
         document.getElementById('mlMontados').textContent='0 m';
-        document.getElementById('mlPorMontador').textContent='0 m';
+        document.getElementById('montPresente').textContent='0 m/mont';
         document.getElementById('stdSemanal').textContent='0,00';
         document.getElementById('metaAtingida').textContent='0%';
         document.getElementById('rankingTable').querySelector('tbody').innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
@@ -47,17 +47,19 @@ function atualizarDashboard(dados){
     }
 
     // Soma e média
-    let somaHH=0,somaML=0,somaMont=0,somaMLPrevisto=0;
+    let somaHH=0, somaML=0, somaMLPrevisto=0, montadoresSet=new Set();
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
     dados.forEach(row=>{
         const hh=parseNumber(row['HH Total']);
         const ml=parseNumber(row['ML Montados']);
-        const mont=parseNumber(row['Mont.Presente']);
         const mlPrev=parseNumber(row['ML PREVISTO']);
+        const mont=parseNumber(row['Mont.Presente']);
 
-        somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
+        somaHH+=hh;
+        somaML+=ml;
+        somaMLPrevisto+=mlPrev;
 
         if(row['Data']){
             const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
@@ -70,34 +72,26 @@ function atualizarDashboard(dados){
             ranking[nome].ml+=ml;
             ranking[nome].mlPrev+=mlPrev;
             ranking[nome].hh+=hh;
+            montadoresSet.add(nome);
         }
     });
 
+    // HH Total
     document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
+
+    // ML Montados
     document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
 
-    // ML por Montador
-    const dataInicio=document.getElementById('dataInicio').value;
-    const dataFim=document.getElementById('dataFim').value;
-    let diasSelecionados = 1;
-    if(dataInicio && dataFim){
-        const dtIni = new Date(dataInicio);
-        const dtFim = new Date(dataFim);
-        diasSelecionados = Math.ceil((dtFim - dtIni) / (1000*60*60*24)) + 1;
-    } else {
-        diasSelecionados = 7; // padrão quando não filtra
-    }
+    // Montadores presentes -> ML por montador, limitado a 45 por dia
+    const numMontadores = montadoresSet.size || 1;
+    const mlPorMontador = Math.min(45, somaML / numMontadores);
+    document.getElementById('montPresente').textContent=mlPorMontador.toFixed(1)+' m/mont';
 
-    let mlPorMontador=0;
-    if(somaMont>0){
-        mlPorMontador=somaML/somaMont;
-        if(diasSelecionados===1 && mlPorMontador>60) mlPorMontador=60;
-    }
-    document.getElementById('mlPorMontador').textContent=mlPorMontador.toFixed(1)+' m';
-
-    const mediaMont=somaMont/dados.length;
+    // STD Semanal
     const std=somaML>0?somaHH/somaML:0;
     document.getElementById('stdSemanal').textContent=std.toFixed(2);
+
+    // Meta atingida
     const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
     document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
 
@@ -144,7 +138,7 @@ function atualizarGraficoLinha(mlPorDia){
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
     while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
 
-    const width=100,height=35,marginBottom=8;
+    const width=100, height=35, marginBottom=10;
     const maxML=Math.max(...mlPorDia,1);
     const pontos=mlPorDia.map((v,i)=>{
         const x=i*(width/6);
@@ -160,17 +154,30 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
+    // Dias da semana
     const dias=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
     pontos.forEach((p,i)=>{
+        // valor ML
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
         text.setAttribute('x',p[0]);
         text.setAttribute('y',p[1]-2);
-        text.setAttribute('font-size','2.5'); // menor para não cortar
+        text.setAttribute('font-size','2.5');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
-        text.textContent=`${mlPorDia[i].toFixed(0)}\n${dias[i]}`;
+        text.textContent=mlPorDia[i].toFixed(0);
         svg.appendChild(text);
+
+        // dia da semana
+        const dayLabel=document.createElementNS("http://www.w3.org/2000/svg","text");
+        dayLabel.setAttribute('x',p[0]);
+        dayLabel.setAttribute('y',height+3);
+        dayLabel.setAttribute('font-size','3');
+        dayLabel.setAttribute('fill','#0b2340');
+        dayLabel.setAttribute('text-anchor','middle');
+        dayLabel.textContent=dias[i];
+        svg.appendChild(dayLabel);
     });
 }
 
@@ -180,7 +187,7 @@ document.getElementById('fileInput').addEventListener('change', e=>{
     Papa.parse(file,{header:true,skipEmptyLines:true,
         complete: results=>{
             dadosCSV=results.data;
-            aplicarFiltro(); // atualiza dashboard automaticamente
+            aplicarFiltro(); // Atualiza dashboard imediatamente
         },
         error: err=>alert('Erro ao ler o arquivo: '+err)
     });
