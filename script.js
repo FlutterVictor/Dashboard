@@ -1,20 +1,6 @@
 let dadosCSV = [];
 
-// Função para carregar CSV automaticamente
-function carregarCSVPadrao(){
-    fetch('STD_Geral.csv') // <- nome atualizado
-        .then(response => response.text())
-        .then(csvText => {
-            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-            dadosCSV = resultados.data;
-            aplicarFiltro(); // Atualiza o Dashboard com todos os dados
-        })
-        .catch(err => alert('Erro ao carregar CSV: ' + err));
-}
-
-// Chama ao iniciar a página
-window.addEventListener('load', carregarCSVPadrao);
-
+// --- Funções de utilidade ---
 function parseNumber(str){
     if(!str) return 0;
     str = str.toString().trim().replace(',', '.');
@@ -31,9 +17,10 @@ function parseDateBR(str){
 }
 
 function diaSemanaIndex(diaJS){
-    return diaJS === 0 ? 6 : diaJS-1;
+    return diaJS === 0 ? 6 : diaJS-1; // 0 = domingo -> 6
 }
 
+// --- Filtragem de dados ---
 function filtrarDadosPorData(dados, dataInicio, dataFim){
     if(!dataInicio && !dataFim) return dados;
     let dtInicio = dataInicio ? new Date(dataInicio) : null;
@@ -48,6 +35,7 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     });
 }
 
+// --- Atualiza Dashboard ---
 function atualizarDashboard(dados){
     if(!dados || dados.length===0){
         document.getElementById('hhTotal').textContent='0';
@@ -62,7 +50,7 @@ function atualizarDashboard(dados){
     }
 
     // Soma e média
-    let somaHH=0,somaML=0,somaMont=0,somaMLPrevisto=0;
+    let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
@@ -72,7 +60,10 @@ function atualizarDashboard(dados){
         const mont=parseNumber(row['Mont.Presente']);
         const mlPrev=parseNumber(row['ML PREVISTO']);
 
-        somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
+        somaHH += hh;
+        somaML += ml;
+        somaMont += mont;
+        somaMLPrevisto += mlPrev;
 
         if(row['Data']){
             const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
@@ -82,26 +73,26 @@ function atualizarDashboard(dados){
         const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
         if(nome){
             if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
-            ranking[nome].ml+=ml;
-            ranking[nome].mlPrev+=mlPrev;
-            ranking[nome].hh+=hh;
+            ranking[nome].ml += ml;
+            ranking[nome].mlPrev += mlPrev;
+            ranking[nome].hh += hh;
         }
     });
 
     document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
-    const mediaMont=somaMont/dados.length;
-    document.getElementById('montPresente').textContent=mediaMont.toFixed(1);
-    const std=somaML>0?somaHH/somaML:0;
-    document.getElementById('stdSemanal').textContent=std.toFixed(2);
-    const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
-    document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
+    const mediaMont = somaMont/dados.length;
+    document.getElementById('montPresente').textContent = mediaMont.toFixed(1);
+    const std = somaML>0 ? somaHH/somaML : 0;
+    document.getElementById('stdSemanal').textContent = std.toFixed(2);
+    const meta = somaMLPrevisto>0 ? somaML/somaMLPrevisto*100 : 0;
+    document.getElementById('metaAtingida').textContent = meta.toFixed(0)+'%';
 
     // Ranking Top 5
-    const rankingArr=Object.entries(ranking).map(([nome,val])=>{
-        const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
-        const stdReal=val.ml>0?val.hh/val.ml:0;
-        const indicador=stdReal<=0.22 ? '↑' : '↓';
+    const rankingArr = Object.entries(ranking).map(([nome,val])=>{
+        const pctMeta = val.mlPrev>0 ? val.ml/val.mlPrev*100 : 0;
+        const stdReal = val.ml>0 ? val.hh/val.ml : 0;
+        const indicador = stdReal<=0.22 ? '↑' : '↓';
         return {nome,pctMeta,indicador};
     }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
 
@@ -135,7 +126,9 @@ function atualizarDashboard(dados){
     atualizarGraficoLinha(mlPorDia);
 }
 
+// --- Gráfico de linhas ---
 function atualizarGraficoLinha(mlPorDia){
+    const diasSemana = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
     const svg=document.getElementById('graficoLinha');
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
     while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
@@ -148,7 +141,6 @@ function atualizarGraficoLinha(mlPorDia){
         return [x,y];
     });
 
-    // Polyline do gráfico
     const pointsStr=pontos.map(p=>p.join(',')).join(' ');
     const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
@@ -157,54 +149,45 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
-    const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-
+    // Rótulos com valor e dia da semana
     pontos.forEach((p,i)=>{
-        // Valor do ponto
-        const textValue=document.createElementNS("http://www.w3.org/2000/svg","text");
-        textValue.classList.add('data-label');
-        textValue.setAttribute('x',p[0]);
-        textValue.setAttribute('y',p[1]-3);
-        textValue.setAttribute('font-size','3');
-        textValue.setAttribute('fill','#0b2340');
-        textValue.setAttribute('text-anchor','middle');
-        textValue.textContent=mlPorDia[i].toFixed(0);
-        svg.appendChild(textValue);
-
-        // Dia da semana
-        const textDia=document.createElementNS("http://www.w3.org/2000/svg","text");
-        textDia.classList.add('data-label');
-        textDia.setAttribute('x',p[0]);
-        textDia.setAttribute('y',height); // base do SVG
-        textDia.setAttribute('font-size','3');
-        textDia.setAttribute('fill','#0b2340');
-        textDia.setAttribute('text-anchor','middle');
-        textDia.textContent=diasSemana[i];
-        svg.appendChild(textDia);
+        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
+        text.classList.add('data-label');
+        text.setAttribute('x',p[0]);
+        text.setAttribute('y',p[1]-3);
+        text.setAttribute('font-size','3');
+        text.setAttribute('fill','#0b2340');
+        text.setAttribute('text-anchor','middle');
+        text.textContent = `${mlPorDia[i].toFixed(0)}\n${diasSemana[i]}`;
+        svg.appendChild(text);
     });
 }
 
-document.getElementById('fileInput').addEventListener('change', e=>{
-    const file=e.target.files[0];
-    if(!file) return;
-    Papa.parse(file,{header:true,skipEmptyLines:true,
-        complete: results=>{
-            dadosCSV=results.data;
+// --- Carregar CSV automaticamente ---
+function carregarCSVPadrao(){
+    fetch('STD_Geral.csv')
+        .then(response => response.text())
+        .then(csvText => {
+            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            dadosCSV = resultados.data;
             aplicarFiltro();
-        },
-        error: err=>alert('Erro ao ler o arquivo: '+err)
-    });
-});
+        })
+        .catch(err => alert('Erro ao carregar CSV: ' + err));
+}
 
+window.addEventListener('load', carregarCSVPadrao);
+
+// --- Filtro ---
 function aplicarFiltro(){
     const dataInicio=document.getElementById('dataInicio').value;
     const dataFim=document.getElementById('dataFim').value;
-    const dadosFiltrados=filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
+    const dadosFiltrados = filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
     atualizarDashboard(dadosFiltrados);
 }
 
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
+// --- Exportar PDF ---
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
@@ -220,7 +203,7 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-// Novo botão para abrir outro dashboard
-document.getElementById('btnAbrirOutroDashboard').addEventListener('click', () => {
-    window.open('outro-dashboard.html', '_blank');
+// --- Abrir outro Dashboard ---
+document.getElementById('btnAbrirOutroDashboard').addEventListener('click',()=>{
+    window.open('outro-dashboard.html', '_blank'); // substitua pelo nome real do novo dashboard
 });
