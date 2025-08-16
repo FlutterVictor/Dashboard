@@ -13,7 +13,8 @@ function parseDateBR(str){
     const parts = str.split('/');
     if(parts.length !== 3) return null;
     const [d,m,y] = parts;
-    return new Date(+y, m-1, +d);
+    const date = new Date(+y, m-1, +d);
+    return isNaN(date.getTime()) ? null : date;
 }
 
 function diaSemanaIndex(diaJS){
@@ -65,9 +66,10 @@ function atualizarDashboard(dados){
         somaMont += mont;
         somaMLPrevisto += mlPrev;
 
-        if(row['Data']){
-            const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
-            mlPorDia[ds]+=ml;
+        // --- Tratamento de datas ---
+        const data = parseDateBR(row['Data']);
+        if(data){
+            mlPorDia[diaSemanaIndex(data.getDay())] += ml;
         }
 
         const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
@@ -149,7 +151,6 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
-    // Rótulos com valor e dia da semana
     pontos.forEach((p,i)=>{
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
@@ -205,5 +206,5 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
 
 // --- Abrir outro Dashboard ---
 document.getElementById('btnAbrirOutroDashboard').addEventListener('click',()=>{
-    window.open('outro-dashboard.html', '_blank'); // substitua pelo nome real do novo dashboard
+    window.open('outro-dashboard.html', '_blank');
 });
