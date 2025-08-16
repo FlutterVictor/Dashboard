@@ -11,7 +11,15 @@
 body{margin:0;background:var(--muted);color:var(--dark);}
 .wrap{max-width:1400px;margin:28px auto;padding:20px}
 
-header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:4px;}
+header{
+    background:linear-gradient(90deg,var(--blue),#1370e8);
+    color:white;
+    padding:18px;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
 header h1{margin:0;font-size:22px}
 .subtitle{font-size:14px;opacity:.9}
 
@@ -35,6 +43,36 @@ header h1{margin:0;font-size:22px}
 .wide{grid-column:span 1}
 .full{grid-column:span 1}
 
-#tabelaDadosWrapper{max-height: 200px;overflow-y:auto;}
-#filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
-#btnApplyFilter,#btnExportPDF{background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
+#tabelaDadosWrapper {
+    max-height: none;           /* remove limite de altura */
+    overflow-y: auto;           /* mantém scroll vertical */
+}
+
+#tabelaDadosWrapper table {
+    width: 100%;                /* ocupa todo o card */
+    table-layout: fixed;        /* ajusta colunas para preencher espaço */
+    border-collapse: collapse;
+}
+
+#tabelaDadosWrapper th, #tabelaDadosWrapper td {
+    word-wrap: break-word;      /* quebra conteúdo longo */
+    padding: 6px;
+    text-align: left;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 13px;
+}
+
+#filter-container{
+    margin-top: 12px; 
+    display:flex; 
+    gap:10px; 
+    align-items:center;
+}
+#btnApplyFilter,#btnExportPDF{
+    background:#0b63d6;
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
