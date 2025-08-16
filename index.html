@@ -1,131 +1,95 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dashboard STD Andaime</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard STD Andaime</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="wrap" id="dashboardWrap">
-        <header>
-            <div>
-                <h1>STD Dashboard — Andaime</h1>
-                <div class="subtitle">Visão diária e semanal de montagem / desmontagem — Padrão STD = 0,22</div>
-            </div>
-            <div style="text-align:right">
-                <div class="tag">STD padrão montagem: 0,22</div>
-                <div style="height:6px"></div>
-                <div class="mini">Última atualização: <strong>Hoje</strong></div>
-            </div>
-        </header>
+  <div class="wrap">
+    <header>
+      <h1>Dashboard STD Andaime</h1>
+      <span class="subtitle">Visualização de produção e metas</span>
+    </header>
 
-        <!-- Linha 1 - Cards principais ajustados em 1 linha -->
-        <div class="grid grid-line1" style="margin-top:18px">
-            <div class="card kpi">
-                <div class="label">HH Total (h)</div>
-                <div class="value" id="hhTotal">0</div>
-                <div class="small">Cálculo: soma da coluna HH Total</div>
-            </div>
-            <div class="card kpi">
-                <div class="label">ML Montados</div>
-                <div class="value" id="mlMontados">0 m</div>
-                <div class="small">Meta por montador: 0,22</div>
-            </div>
-            <div class="card kpi">
-                <div class="label">Montadores Presentes</div>
-                <div class="value" id="montPresente">0</div>
-                <div class="small">Média diária</div>
-            </div>
-            <div class="card kpi">
-                <div class="label">STD Semanal</div>
-                <div class="value" id="stdSemanal">0,00</div>
-                <div class="small">HH Total ÷ ML Montados</div>
-            </div>
-            <div class="card kpi">
-                <div class="label">% Meta Atingida</div>
-                <div class="value" id="metaAtingida">0%</div>
-                <div class="small">ML Montados ÷ ML Previsto</div>
-            </div>
-        </div>
-
-        <!-- Linha 2 - Gráfico e Ranking -->
-        <div class="grid grid-line2" style="margin-top:18px">
-            <div class="card wide tend-chart">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <div style="font-weight:700">Tendência semanal — ML montados / dia</div>
-                    <div class="mini" id="semanaLabel">Período completo</div>
-                </div>
-
-                <!-- Filtro e botões logo abaixo do título -->
-                <div id="filter-container">
-                    <label>Data Início: <input type="date" id="dataInicio" /></label>
-                    <label>Data Fim: <input type="date" id="dataFim" /></label>
-                    <button id="btnApplyFilter">Aplicar filtro</button>
-                    <button id="btnExportPDF">Exportar PDF</button>
-                    <input type="file" id="fileInput" accept=".csv" />
-                </div>
-
-                <div class="chart-box">
-                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none">
-                        <g font-size="3" fill="#0b2340" font-weight="600">
-                            <text x="0" y="33" text-anchor="start">Seg</text>
-                            <text x="16.66" y="33" text-anchor="middle">Ter</text>
-                            <text x="33.32" y="33" text-anchor="middle">Qua</text>
-                            <text x="49.98" y="33" text-anchor="middle">Qui</text>
-                            <text x="66.64" y="33" text-anchor="middle">Sex</text>
-                            <text x="83.3" y="33" text-anchor="middle">Sáb</text>
-                            <text x="99.96" y="33" text-anchor="end">Dom</text>
-                        </g>
-                    </svg>
-                </div>
-            </div>
-
-            <div class="card ranking-card">
-                <div style="font-weight:700; margin-bottom:8px;">Ranking de Produtividade — Top 5</div>
-                <table id="rankingTable">
-                    <thead>
-                        <tr>
-                            <th>Encarregado</th>
-                            <th>% Meta Atingida</th>
-                            <th>Desempenho</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="3" style="text-align:center;color:#475569">Sem dados</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Linha 3 - Tabela CSV preenchida -->
-        <div class="grid" style="margin-top:18px">
-            <div class="card full tabela-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <div style="font-weight:700">Dados (amostra)</div>
-                    <div class="mini">Filtro: Data | Área | Encarregado</div>
-                </div>
-                <div id="tabelaDadosWrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Semana</th><th>OS</th><th>Matrícula</th><th>Encarregado</th>
-                                <th>Área</th><th>Mont.Presente</th><th>HH Total</th><th>ML Montados</th>
-                                <th>STD Montado</th><th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaDados">
-                            <tr><td colspan="10" style="text-align:center; color: var(--gray);">Importe o CSV para visualizar</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <!-- Linha 1 - Cards principais -->
+    <div class="grid grid-line1">
+      <div class="card kpi" id="hhTotal">
+        <div class="label">HH Total</div>
+        <div class="value">0</div>
+      </div>
+      <div class="card kpi" id="mlMontado">
+        <div class="label">ML Montado</div>
+        <div class="value">0</div>
+      </div>
+      <div class="card kpi" id="montadoresPresentes">
+        <div class="label">Montadores Presentes</div>
+        <div class="value">0</div>
+      </div>
+      <div class="card kpi" id="stdSemanal">
+        <div class="label">STD Semanal</div>
+        <div class="value">0</div>
+      </div>
+      <div class="card kpi" id="metaAtingida">
+        <div class="label">% Meta Atingida</div>
+        <div class="value">0%</div>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <!-- Linha 2 - Gráfico Tendência e Ranking -->
+    <div class="grid grid-line2">
+      <div class="card tend-chart">
+        <h2>Tendência Semanal</h2>
+        <div id="filter-container">
+          <input type="date" id="startDate">
+          <input type="date" id="endDate">
+          <input type="file" id="csvFile">
+          <button id="exportPdf">Exportar PDF</button>
+        </div>
+        <canvas id="tendenciaChart"></canvas>
+      </div>
+      <div class="card ranking-card">
+        <h2>Ranking de Produtividade</h2>
+        <ul id="rankingList"></ul>
+      </div>
+    </div>
+
+    <!-- Linha 3 - Tabela de Amostra CSV -->
+    <div class="card full" id="amostraCard">
+      <h2>Prévia do CSV</h2>
+      <div id="tabelaDadosWrapper">
+        <table id="tabelaDados">
+          <thead>
+            <tr>
+              <th>Semanas</th>
+              <th>OS</th>
+              <th>Matricula</th>
+              <th>Encarregado</th>
+              <th>Área</th>
+              <th>Atividade</th>
+              <th>Data</th>
+              <th>Mont.Presente</th>
+              <th>Mont.Falta</th>
+              <th>Dias</th>
+              <th>HH P.Dia</th>
+              <th>HH Total</th>
+              <th>ML Montados</th>
+              <th>ML Desmontados</th>
+              <th>ML Previsto</th>
+              <th>Meta P/Mont</th>
+              <th>STD Montado</th>
+              <th>STD PADRÃO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dados do CSV serão inseridos aqui via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
