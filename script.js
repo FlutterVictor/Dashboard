@@ -37,7 +37,7 @@ function atualizarDashboard(dados){
     if(!dados || dados.length===0){
         document.getElementById('hhTotal').textContent='0';
         document.getElementById('mlMontados').textContent='0 m';
-        document.getElementById('montPresente').textContent='0 m/dia';
+        document.getElementById('montPresente').textContent='0 m/mont';
         document.getElementById('stdSemanal').textContent='0,00';
         document.getElementById('metaAtingida').textContent='0%';
         document.getElementById('rankingTable').querySelector('tbody').innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
@@ -47,17 +47,19 @@ function atualizarDashboard(dados){
     }
 
     // Soma e média
-    let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
+    let somaHH=0, somaML=0, somaMLPrevisto=0, montadoresSet=new Set();
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
     dados.forEach(row=>{
         const hh=parseNumber(row['HH Total']);
         const ml=parseNumber(row['ML Montados']);
-        const mont=parseNumber(row['ML por Montador']);
         const mlPrev=parseNumber(row['ML PREVISTO']);
+        const mont=parseNumber(row['Mont.Presente']);
 
-        somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
+        somaHH+=hh;
+        somaML+=ml;
+        somaMLPrevisto+=mlPrev;
 
         if(row['Data']){
             const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
@@ -70,29 +72,34 @@ function atualizarDashboard(dados){
             ranking[nome].ml+=ml;
             ranking[nome].mlPrev+=mlPrev;
             ranking[nome].hh+=hh;
+            montadoresSet.add(nome);
         }
     });
 
-    // Atualiza Cards
-    document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
-    document.getElementById('mlMontados').textContent = somaML.toFixed(0)+' m';
+    // HH Total
+    document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
 
-    // ML por Montador
-    let mlPorMontador = somaMont>0 ? somaML / somaMont : 0;
-    if(mlPorMontador > 45) mlPorMontador = 45;
-    document.getElementById('montPresente').textContent = mlPorMontador.toFixed(1)+' m/dia';
+    // ML Montados
+    document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
 
-    const std = somaML>0 ? somaHH/somaML : 0;
-    document.getElementById('stdSemanal').textContent = std.toFixed(2);
+    // Montadores presentes -> ML por montador, limitado a 45 por dia
+    const numMontadores = montadoresSet.size || 1;
+    const mlPorMontador = Math.min(45, somaML / numMontadores);
+    document.getElementById('montPresente').textContent=mlPorMontador.toFixed(1)+' m/mont';
 
-    const meta = somaMLPrevisto>0 ? somaML/somaMLPrevisto*100 : 0;
-    document.getElementById('metaAtingida').textContent = meta.toFixed(0)+'%';
+    // STD Semanal
+    const std=somaML>0?somaHH/somaML:0;
+    document.getElementById('stdSemanal').textContent=std.toFixed(2);
+
+    // Meta atingida
+    const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
+    document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
 
     // Ranking Top 5
     const rankingArr=Object.entries(ranking).map(([nome,val])=>{
-        const pctMeta = val.mlPrev>0 ? val.ml/val.mlPrev*100 : 0;
-        const stdReal = val.ml>0 ? val.hh/val.ml : 0;
-        const indicador = stdReal <= 0.22 ? '↑' : '↓';
+        const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
+        const stdReal=val.ml>0?val.hh/val.ml:0;
+        const indicador=stdReal<=0.22 ? '↑' : '↓';
         return {nome,pctMeta,indicador};
     }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
 
@@ -131,7 +138,7 @@ function atualizarGraficoLinha(mlPorDia){
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
     while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
 
-    const width=100, height=35, marginBottom=8;
+    const width=100, height=35, marginBottom=10;
     const maxML=Math.max(...mlPorDia,1);
     const pontos=mlPorDia.map((v,i)=>{
         const x=i*(width/6);
@@ -139,7 +146,6 @@ function atualizarGraficoLinha(mlPorDia){
         return [x,y];
     });
 
-    // Linha
     const pointsStr=pontos.map(p=>p.join(',')).join(' ');
     const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
@@ -148,41 +154,40 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
-    // Valores acima dos pontos
+    // Dias da semana
+    const dias=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
     pontos.forEach((p,i)=>{
+        // valor ML
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
         text.setAttribute('x',p[0]);
         text.setAttribute('y',p[1]-2);
-        text.setAttribute('font-size','1.8');
+        text.setAttribute('font-size','2.5');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
         text.textContent=mlPorDia[i].toFixed(0);
         svg.appendChild(text);
-    });
 
-    // Dias da semana abaixo da linha
-    const diasSemana = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    diasSemana.forEach((d,i)=>{
-        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
-        text.setAttribute('x',pontos[i][0]);
-        text.setAttribute('y',height);
-        text.setAttribute('font-size','2');
-        text.setAttribute('fill','#0b2340');
-        text.setAttribute('text-anchor','middle');
-        text.textContent=d;
-        svg.appendChild(text);
+        // dia da semana
+        const dayLabel=document.createElementNS("http://www.w3.org/2000/svg","text");
+        dayLabel.setAttribute('x',p[0]);
+        dayLabel.setAttribute('y',height+3);
+        dayLabel.setAttribute('font-size','3');
+        dayLabel.setAttribute('fill','#0b2340');
+        dayLabel.setAttribute('text-anchor','middle');
+        dayLabel.textContent=dias[i];
+        svg.appendChild(dayLabel);
     });
 }
 
-// Importação CSV
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file=e.target.files[0];
     if(!file) return;
     Papa.parse(file,{header:true,skipEmptyLines:true,
         complete: results=>{
             dadosCSV=results.data;
-            aplicarFiltro();
+            aplicarFiltro(); // Atualiza dashboard imediatamente
         },
         error: err=>alert('Erro ao ler o arquivo: '+err)
     });
@@ -197,7 +202,6 @@ function aplicarFiltro(){
 
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
-// Exportar PDF
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
