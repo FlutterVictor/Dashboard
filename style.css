@@ -38,13 +38,31 @@ header h1{margin:0;font-size:22px}
 #tabelaDadosWrapper {
     max-height: 200px;
     overflow-y: auto;
-    overflow-x: auto; /* permite rolagem horizontal se necessário */
-    width: 100%;      /* garante que ocupe toda a largura do card */
+    overflow-x: auto; /* rolagem horizontal se necessário */
+    width: 100%;
+    padding: 0; /* remove espaçamento interno do wrapper */
 }
 
 #tabelaDadosWrapper table {
-    width: 100%;      /* tabela preenche todo o wrapper */
-    table-layout: fixed; /* mantém colunas proporcionais */
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse; /* garante que não haja espaçamento extra entre células */
+}
+
+#tabelaDadosWrapper th,
+#tabelaDadosWrapper td {
+    padding: 6px; /* ajuste de padding */
+    text-align: left;
+    white-space: nowrap; /* evita quebra de texto dentro da célula */
+}
+
+#tabelaDadosWrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+#tabelaDadosWrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
 }
 
 #filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
