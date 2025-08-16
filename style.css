@@ -35,17 +35,16 @@ header h1{margin:0;font-size:22px}
 .wide{grid-column:span 1}
 .full{grid-column:span 1}
 
-#tabelaDadosWrapper {
-    max-height: 200px;
-    overflow-y: auto;
-    overflow-x: auto; /* permite rolagem horizontal se necessário */
-    width: 100%;      /* garante que ocupe toda a largura do card */
-}
-
-#tabelaDadosWrapper table {
-    width: 100%;      /* tabela preenche todo o wrapper */
-    table-layout: fixed; /* mantém colunas proporcionais */
-}
-
+#tabelaDadosWrapper{max-height: 200px;overflow-y:auto;}
 #filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
-#btnApplyFilter,#btnExportPDF{background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
+
+#btnApplyFilter,
+#btnExportPDF,
+#btnAbrirOutroDashboard {
+    background:#0b63d6;
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
