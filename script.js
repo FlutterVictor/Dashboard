@@ -46,8 +46,7 @@ function atualizarDashboard(dados){
         return;
     }
 
-    // Soma e média
-    let somaHH=0,somaML=0,somaMont=0,somaMLPrevisto=0;
+    let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
@@ -65,7 +64,7 @@ function atualizarDashboard(dados){
         }
 
         const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
-        if(nome){
+        if(nome && ml>0){ // Apenas quem produziu
             if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
             ranking[nome].ml+=ml;
             ranking[nome].mlPrev+=mlPrev;
@@ -86,18 +85,21 @@ function atualizarDashboard(dados){
     const rankingArr=Object.entries(ranking).map(([nome,val])=>{
         const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
         const stdReal=val.ml>0?val.hh/val.ml:0;
-        const indicador=stdReal<=0.22 ? '↑' : '↓';
+        const indicador=stdReal <= 0.22 ? '↑' : '↓';
         return {nome,pctMeta,indicador};
     }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
 
     const tbodyRanking=document.getElementById('rankingTable').querySelector('tbody');
     tbodyRanking.innerHTML='';
-    rankingArr.forEach(r=>{
-        const row=document.createElement('tr');
-        row.innerHTML=`<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
-        tbodyRanking.appendChild(row);
-    });
-    if(rankingArr.length===0) tbodyRanking.innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
+    if(rankingArr.length===0){
+        tbodyRanking.innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
+    } else {
+        rankingArr.forEach(r=>{
+            const row=document.createElement('tr');
+            row.innerHTML=`<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
+            tbodyRanking.appendChild(row);
+        });
+    }
 
     // Tabela de dados (amostra)
     const tbodyDados=document.getElementById('tabelaDados');
@@ -141,6 +143,7 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
+    // Rótulos de dados
     pontos.forEach((p,i)=>{
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
@@ -154,27 +157,31 @@ function atualizarGraficoLinha(mlPorDia){
     });
 }
 
+// Importar CSV
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file=e.target.files[0];
     if(!file) return;
-    Papa.parse(file,{header:true,skipEmptyLines:true,
+    Papa.parse(file,{
+        header:true,
+        skipEmptyLines:true,
         complete: results=>{
             dadosCSV=results.data;
-            aplicarFiltro();
+            atualizarDashboard(dadosCSV); // Atualiza imediatamente após importar
         },
         error: err=>alert('Erro ao ler o arquivo: '+err)
     });
 });
 
+// Filtro
 function aplicarFiltro(){
     const dataInicio=document.getElementById('dataInicio').value;
     const dataFim=document.getElementById('dataFim').value;
     const dadosFiltrados=filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
     atualizarDashboard(dadosFiltrados);
 }
-
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
+// Exportar PDF
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
