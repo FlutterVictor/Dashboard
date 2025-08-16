@@ -1,5 +1,20 @@
 let dadosCSV = [];
 
+// Função para carregar CSV automaticamente
+function carregarCSVPadrao(){
+    fetch('STD_Geral.csv') // <- nome atualizado
+        .then(response => response.text())
+        .then(csvText => {
+            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            dadosCSV = resultados.data;
+            aplicarFiltro(); // Atualiza o Dashboard com todos os dados
+        })
+        .catch(err => alert('Erro ao carregar CSV: ' + err));
+}
+
+// Chama ao iniciar a página
+window.addEventListener('load', carregarCSVPadrao);
+
 function parseNumber(str){
     if(!str) return 0;
     str = str.toString().trim().replace(',', '.');
