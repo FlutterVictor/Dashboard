@@ -3,8 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Mockup - Dashboard STD Andaime</title>
-    <!-- Link para CSS externo -->
+    <title>Dashboard STD Andaime</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,6 +20,7 @@
             </div>
         </header>
 
+        <!-- Filtros -->
         <div id="filter-container">
             <label>Data Início: <input type="date" id="dataInicio" /></label>
             <label>Data Fim: <input type="date" id="dataFim" /></label>
@@ -28,58 +28,74 @@
             <button id="btnExportPDF">Exportar PDF</button>
         </div>
 
-        <div class="grid" style="margin-top:18px">
+        <!-- Grid de Cards -->
+        <div class="grid">
+            <!-- Cards principais -->
             <div class="card kpi">
                 <div class="label">HH Total (h)</div>
                 <div class="value" id="hhTotal">0</div>
-                <div class="small">Cálculo: soma da coluna HH Total</div>
             </div>
             <div class="card kpi">
                 <div class="label">ML Montados</div>
                 <div class="value" id="mlMontados">0 m</div>
-                <div class="small">Meta por montador: 0,22</div>
             </div>
             <div class="card kpi">
                 <div class="label">Montadores Presentes (média/dia)</div>
                 <div class="value" id="montPresente">0</div>
-                <div class="small">Faltaram: -</div>
             </div>
             <div class="card kpi">
-                <div class="label">STD Semanal (HH Total / ML Montados)</div>
+                <div class="label">STD Semanal</div>
                 <div class="value" id="stdSemanal">0,00</div>
-                <div class="small">STD montagem = HH Total ÷ ML Montados</div>
             </div>
 
+            <!-- Card Atingimento de Metas -->
+            <div class="card kpi">
+                <div class="label">Atingimento de Metas</div>
+                <div class="value" id="metaAtingida">0%</div>
+            </div>
+
+            <!-- Card de Ranking de Produtividade -->
             <div class="card wide">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <div style="font-weight:700">Tendência semanal — ML montados / dia</div>
-                    <div class="mini" id="semanaLabel">Período completo</div>
-                </div>
+                <div style="font-weight:700;margin-bottom:6px">Ranking de Produtividade — Top 5</div>
+                <table id="rankingTable">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>% Metas</th>
+                            <th>Desempenho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="3" style="text-align:center; color: var(--gray);">Sem dados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Card Gráfico de Linhas -->
+            <div class="card wide">
+                <div style="font-weight:700;margin-bottom:6px">Tendência semanal — ML montados / dia</div>
                 <div class="chart-box">
-                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none" style="overflow: visible;">
-                        <g font-size="3" fill="#0b2340" font-weight="600">
-                            <text x="0" y="33" text-anchor="start">Seg</text>
-                            <text x="16.66" y="33" text-anchor="middle">Ter</text>
-                            <text x="33.32" y="33" text-anchor="middle">Qua</text>
-                            <text x="49.98" y="33" text-anchor="middle">Qui</text>
-                            <text x="66.64" y="33" text-anchor="middle">Sex</text>
-                            <text x="83.3" y="33" text-anchor="middle">Sáb</text>
-                            <text x="99.96" y="33" text-anchor="end">Dom</text>
-                        </g>
-                    </svg>
+                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
                 </div>
             </div>
 
+            <!-- Card Amostras CSV -->
             <div class="card full">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <div style="font-weight:700">Dados (amostra)</div>
-                    <div class="mini">Filtro: Data | Área | Encarregado</div>
-                </div>
+                <div style="font-weight:700;margin-bottom:6px">Dados (prévia CSV)</div>
                 <div id="tabelaDadosWrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>Semana</th><th>OS</th><th>Matrícula</th><th>Encarregado</th><th>Área</th><th>Mont.Presente</th><th>HH Total</th><th>ML Montados</th><th>STD Montado</th><th>Data</th>
+                                <th>Semana</th>
+                                <th>OS</th>
+                                <th>Matrícula</th>
+                                <th>Encarregado</th>
+                                <th>Área</th>
+                                <th>Mont.Presente</th>
+                                <th>HH Total</th>
+                                <th>ML Montados</th>
+                                <th>STD Montado</th>
+                                <th>Data</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaDados">
@@ -88,19 +104,20 @@
                     </table>
                 </div>
             </div>
-        </div>
 
-        <div style="margin-top:16px;">
-            <input type="file" id="fileInput" accept=".csv" />
+            <!-- Upload CSV -->
+            <div class="card full">
+                <input type="file" id="fileInput" accept=".csv" />
+            </div>
         </div>
     </div>
 
-    <!-- Bibliotecas externas -->
+    <!-- Bibliotecas -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-    <!-- JS externo -->
+    <!-- Script principal -->
     <script src="script.js"></script>
 </body>
 </html>
