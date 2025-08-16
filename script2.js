@@ -6,10 +6,11 @@ const setores = [
     {nome:'Prédio GAD', lat:-19.485730911089373, lng:-42.527222305029305}
 ];
 
-// Inicializa mapa
+// Inicializa mapa com tile de satélite
 const map = L.map('map').setView([-19.485, -42.528], 17);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'&copy; OpenStreetMap contributors'
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, NASA, USGS',
+    maxZoom: 20
 }).addTo(map);
 
 // Marcadores dos setores
@@ -51,7 +52,6 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
 
 // Atualiza os cards
 function atualizarCards(dados){
-    // Produtividade Média (STD = HH/ML)
     let totalHH=0, totalML=0;
     dados.forEach(row=>{
         totalHH += parseFloat(row['HH Total'])||0;
@@ -59,9 +59,13 @@ function atualizarCards(dados){
     });
     const std = totalML>0 ? (totalHH/totalML).toFixed(2) : '0.00';
     document.getElementById('valorProdutividadeMedia').textContent = std;
-
-    // Top Setores (para teste, apenas os nomes fixos)
     document.getElementById('valorTopSetores').textContent = setores.map(s=>s.nome).join(', ');
+
+    // Atualiza popups com produtividade média de teste
+    markers.forEach((marker,i)=>{
+        const popupText = `${setores[i].nome}<br>Produtividade: ${std}`;
+        marker.setPopupContent(popupText);
+    });
 }
 
 // Aplica filtro e atualiza dashboard
