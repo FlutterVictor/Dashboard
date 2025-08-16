@@ -144,12 +144,13 @@ function atualizarGraficoLinha(mlPorDia){
     svg.appendChild(polyline);
 
     // Rótulos de dados
+    const diasSemana = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
     pontos.forEach((p,i)=>{
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
         text.setAttribute('x',p[0]);
         text.setAttribute('y',p[1]-3);
-        text.setAttribute('font-size','3');
+        text.setAttribute('font-size','1.8');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
         text.textContent=mlPorDia[i].toFixed(0);
