@@ -1,218 +1,230 @@
 let dadosCSV = [];
 
-function parseNumber(str){
-    if(!str) return 0;
+function parseNumber(str) {
+    if (!str) return 0;
     str = str.toString().trim().replace(',', '.');
     let num = parseFloat(str);
     return isNaN(num) ? 0 : num;
 }
 
-function parseDateBR(str){
-    if(!str) return null;
+function parseDateBR(str) {
+    if (!str) return null;
     const parts = str.split('/');
-    if(parts.length !== 3) return null;
-    const [d,m,y] = parts;
-    return new Date(+y, m-1, +d);
+    if (parts.length !== 3) return null;
+    const [d, m, y] = parts;
+    return new Date(+y, m - 1, +d);
 }
 
-function diaSemanaIndex(diaJS){
-    return diaJS === 0 ? 6 : diaJS-1;
+function diaSemanaIndex(diaJS) {
+    return diaJS === 0 ? 6 : diaJS - 1;
 }
 
-function filtrarDadosPorData(dados, dataInicio, dataFim){
-    if(!dataInicio && !dataFim) return dados;
+const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+
+function filtrarDadosPorData(dados, dataInicio, dataFim) {
+    if (!dataInicio && !dataFim) return dados;
     let dtInicio = dataInicio ? new Date(dataInicio) : null;
     let dtFim = dataFim ? new Date(dataFim) : null;
     return dados.filter(row => {
-        if(!row['Data']) return false;
+        if (!row['Data']) return false;
         let dataRow = parseDateBR(row['Data']);
-        if(!dataRow) return false;
-        if(dtInicio && dataRow < dtInicio) return false;
-        if(dtFim && dataRow > dtFim) return false;
+        if (!dataRow) return false;
+        if (dtInicio && dataRow < dtInicio) return false;
+        if (dtFim && dataRow > dtFim) return false;
         return true;
     });
 }
 
-function atualizarDashboard(dados){
-    if(!dados || dados.length===0){
-        document.getElementById('hhTotal').textContent='0';
-        document.getElementById('mlMontados').textContent='0 m';
-        document.getElementById('montPresente').textContent='0 m/mont';
-        document.getElementById('stdSemanal').textContent='0,00';
-        document.getElementById('metaAtingida').textContent='0%';
-        document.getElementById('rankingTable').querySelector('tbody').innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
-        document.getElementById('tabelaDados').innerHTML='<tr><td colspan="10" style="text-align:center;color:gray;">Sem dados</td></tr>';
+function atualizarDashboard(dados) {
+    if (!dados || dados.length === 0) {
+        document.getElementById('hhTotal').textContent = '0';
+        document.getElementById('mlMontados').textContent = '0 m';
+        document.getElementById('mlPorMontador').textContent = '0';
+        document.getElementById('stdSemanal').textContent = '0,00';
+        document.getElementById('metaAtingida').textContent = '0%';
+        document.getElementById('rankingTable').querySelector('tbody').innerHTML =
+            '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
+        document.getElementById('tabelaDados').innerHTML =
+            '<tr><td colspan="10" style="text-align:center;color:gray;">Sem dados</td></tr>';
         atualizarGraficoLinha(Array(7).fill(0));
         return;
     }
 
     // Soma e média
-    let somaHH=0, somaML=0, somaMLPrevisto=0, montadoresSet=new Set();
-    let mlPorDia=Array(7).fill(0);
-    let ranking={};
+    let somaHH = 0, somaML = 0, somaMont = 0, somaMLPrevisto = 0;
+    let mlPorDia = Array(7).fill(0);
+    let ranking = {};
+    let datasUnicas = new Set();
 
-    dados.forEach(row=>{
-        const hh=parseNumber(row['HH Total']);
-        const ml=parseNumber(row['ML Montados']);
-        const mlPrev=parseNumber(row['ML PREVISTO']);
-        const mont=parseNumber(row['Mont.Presente']);
+    dados.forEach(row => {
+        const hh = parseNumber(row['HH Total']);
+        const ml = parseNumber(row['ML Montados']);
+        const mont = parseNumber(row['Mont.Presente']);
+        const mlPrev = parseNumber(row['ML PREVISTO']);
 
-        somaHH+=hh;
-        somaML+=ml;
-        somaMLPrevisto+=mlPrev;
+        somaHH += hh;
+        somaML += ml;
+        somaMont += mont;
+        somaMLPrevisto += mlPrev;
 
-        if(row['Data']){
-            const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
-            mlPorDia[ds]+=ml;
+        if (row['Data']) {
+            const ds = diaSemanaIndex(parseDateBR(row['Data']).getDay());
+            mlPorDia[ds] += ml;
+            datasUnicas.add(row['Data']);
         }
 
-        const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
-        if(nome){
-            if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
-            ranking[nome].ml+=ml;
-            ranking[nome].mlPrev+=mlPrev;
-            ranking[nome].hh+=hh;
-            montadoresSet.add(nome);
+        const nome = row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
+        if (nome) {
+            if (!ranking[nome]) ranking[nome] = { ml: 0, mlPrev: 0, hh: 0 };
+            ranking[nome].ml += ml;
+            ranking[nome].mlPrev += mlPrev;
+            ranking[nome].hh += hh;
         }
     });
 
-    // HH Total
-    document.getElementById('hhTotal').textContent=somaHH.toFixed(1);
+    document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
+    document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
 
-    // ML Montados
-    document.getElementById('mlMontados').textContent=somaML.toFixed(0)+' m';
+    // ML por Montador com limite
+    let mlPorMontador = 0;
+    if (datasUnicas.size <= 1) {
+        // Filtro com 1 dia → limite de 60 ML por montador
+        mlPorMontador = Math.min((somaML / somaMont), 60);
+    } else {
+        // Mais de 1 dia ou sem filtro → média normal
+        mlPorMontador = somaMont > 0 ? somaML / somaMont : 0;
+    }
+    document.getElementById('mlPorMontador').textContent = mlPorMontador.toFixed(1);
 
-    // Montadores presentes -> ML por montador, limitado a 45 por dia
-    const numMontadores = montadoresSet.size || 1;
-    const mlPorMontador = Math.min(45, somaML / numMontadores);
-    document.getElementById('montPresente').textContent=mlPorMontador.toFixed(1)+' m/mont';
+    const std = somaML > 0 ? somaHH / somaML : 0;
+    document.getElementById('stdSemanal').textContent = std.toFixed(2);
 
-    // STD Semanal
-    const std=somaML>0?somaHH/somaML:0;
-    document.getElementById('stdSemanal').textContent=std.toFixed(2);
-
-    // Meta atingida
-    const meta=(somaMLPrevisto>0?somaML/somaMLPrevisto*100:0);
-    document.getElementById('metaAtingida').textContent=meta.toFixed(0)+'%';
+    const meta = (somaMLPrevisto > 0 ? somaML / somaMLPrevisto * 100 : 0);
+    document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
     // Ranking Top 5
-    const rankingArr=Object.entries(ranking).map(([nome,val])=>{
-        const pctMeta=val.mlPrev>0?val.ml/val.mlPrev*100:0;
-        const stdReal=val.ml>0?val.hh/val.ml:0;
-        const indicador=stdReal<=0.22 ? '↑' : '↓';
-        return {nome,pctMeta,indicador};
-    }).sort((a,b)=>b.pctMeta-a.pctMeta).slice(0,5);
+    const rankingArr = Object.entries(ranking).map(([nome, val]) => {
+        const pctMeta = val.mlPrev > 0 ? val.ml / val.mlPrev * 100 : 0;
+        const stdReal = val.ml > 0 ? val.hh / val.ml : 0;
+        const indicador = stdReal <= 0.22 ? '↑' : '↓';
+        return { nome, pctMeta, indicador };
+    }).sort((a, b) => b.pctMeta - a.pctMeta).slice(0, 5);
 
-    const tbodyRanking=document.getElementById('rankingTable').querySelector('tbody');
-    tbodyRanking.innerHTML='';
-    rankingArr.forEach(r=>{
-        const row=document.createElement('tr');
-        row.innerHTML=`<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
+    const tbodyRanking = document.getElementById('rankingTable').querySelector('tbody');
+    tbodyRanking.innerHTML = '';
+    rankingArr.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador === '↑' ? 'ind-up' : 'ind-down'}">${r.indicador}</td>`;
         tbodyRanking.appendChild(row);
     });
-    if(rankingArr.length===0) tbodyRanking.innerHTML='<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
+    if (rankingArr.length === 0)
+        tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
 
     // Tabela de dados (amostra)
-    const tbodyDados=document.getElementById('tabelaDados');
-    tbodyDados.innerHTML='';
-    dados.slice(0,5).forEach(row=>{
-        tbodyDados.innerHTML+=`<tr>
-            <td>${row['Semanas']||''}</td>
-            <td>${row['OS']||''}</td>
-            <td>${row['Matricula']||''}</td>
-            <td>${row['Encarregado Responsavel']||''}</td>
-            <td>${row['ÁREA']||''}</td>
-            <td>${row['Mont.Presente']||''}</td>
+    const tbodyDados = document.getElementById('tabelaDados');
+    tbodyDados.innerHTML = '';
+    dados.slice(0, 5).forEach(row => {
+        tbodyDados.innerHTML += `<tr>
+            <td>${row['Semanas'] || ''}</td>
+            <td>${row['OS'] || ''}</td>
+            <td>${row['Matricula'] || ''}</td>
+            <td>${row['Encarregado Responsavel'] || ''}</td>
+            <td>${row['ÁREA'] || ''}</td>
+            <td>${row['Mont.Presente'] || ''}</td>
             <td>${parseNumber(row['HH Total']).toFixed(1)}</td>
             <td>${parseNumber(row['ML Montados']).toFixed(0)}</td>
             <td>${parseNumber(row['STD Montado']).toFixed(2)}</td>
-            <td>${row['Data']||''}</td>
+            <td>${row['Data'] || ''}</td>
         </tr>`;
     });
 
     atualizarGraficoLinha(mlPorDia);
 }
 
-function atualizarGraficoLinha(mlPorDia){
-    const svg=document.getElementById('graficoLinha');
-    while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
-    while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
+function atualizarGraficoLinha(mlPorDia) {
+    const svg = document.getElementById('graficoLinha');
+    while (svg.querySelector('polyline')) svg.querySelector('polyline').remove();
+    while (svg.querySelectorAll('.data-label').length)
+        svg.querySelectorAll('.data-label').forEach(el => el.remove());
+    while (svg.querySelectorAll('.dia-label').length)
+        svg.querySelectorAll('.dia-label').forEach(el => el.remove());
 
-    const width=100, height=35, marginBottom=10;
-    const maxML=Math.max(...mlPorDia,1);
-    const pontos=mlPorDia.map((v,i)=>{
-        const x=i*(width/6);
-        const y=height-marginBottom-(v/maxML*(height-marginBottom*2));
-        return [x,y];
+    const width = 100, height = 35, marginBottom = 8;
+    const maxML = Math.max(...mlPorDia, 1);
+    const pontos = mlPorDia.map((v, i) => {
+        const x = i * (width / 6);
+        const y = height - marginBottom - (v / maxML * (height - marginBottom * 2));
+        return [x, y];
     });
 
-    const pointsStr=pontos.map(p=>p.join(',')).join(' ');
-    const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
-    polyline.setAttribute("fill","none");
-    polyline.setAttribute("stroke","#0b63d6");
-    polyline.setAttribute("stroke-width","1.6");
-    polyline.setAttribute("points",pointsStr);
+    const pointsStr = pontos.map(p => p.join(',')).join(' ');
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    polyline.setAttribute("fill", "none");
+    polyline.setAttribute("stroke", "#0b63d6");
+    polyline.setAttribute("stroke-width", "1.6");
+    polyline.setAttribute("points", pointsStr);
     svg.appendChild(polyline);
 
-    // Dias da semana
-    const dias=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-
-    pontos.forEach((p,i)=>{
-        // valor ML
-        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
+    // Rótulos de dados
+    pontos.forEach((p, i) => {
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.classList.add('data-label');
-        text.setAttribute('x',p[0]);
-        text.setAttribute('y',p[1]-2);
-        text.setAttribute('font-size','2.5');
-        text.setAttribute('fill','#0b2340');
-        text.setAttribute('text-anchor','middle');
-        text.textContent=mlPorDia[i].toFixed(0);
+        text.setAttribute('x', p[0]);
+        text.setAttribute('y', p[1] - 2);
+        text.setAttribute('font-size', '2.5'); // menor para caber
+        text.setAttribute('fill', '#0b2340');
+        text.setAttribute('text-anchor', 'middle');
+        text.textContent = mlPorDia[i].toFixed(0);
         svg.appendChild(text);
+    });
 
-        // dia da semana
-        const dayLabel=document.createElementNS("http://www.w3.org/2000/svg","text");
-        dayLabel.setAttribute('x',p[0]);
-        dayLabel.setAttribute('y',height+3);
-        dayLabel.setAttribute('font-size','3');
-        dayLabel.setAttribute('fill','#0b2340');
-        dayLabel.setAttribute('text-anchor','middle');
-        dayLabel.textContent=dias[i];
-        svg.appendChild(dayLabel);
+    // Dias da semana no eixo X
+    pontos.forEach((p, i) => {
+        const diaText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        diaText.classList.add('dia-label');
+        diaText.setAttribute('x', p[0]);
+        diaText.setAttribute('y', height + 4);
+        diaText.setAttribute('font-size', '2.5');
+        diaText.setAttribute('fill', '#0b2340');
+        diaText.setAttribute('text-anchor', 'middle');
+        diaText.textContent = diasSemana[i];
+        svg.appendChild(diaText);
     });
 }
 
-document.getElementById('fileInput').addEventListener('change', e=>{
-    const file=e.target.files[0];
-    if(!file) return;
-    Papa.parse(file,{header:true,skipEmptyLines:true,
-        complete: results=>{
-            dadosCSV=results.data;
-            aplicarFiltro(); // Atualiza dashboard imediatamente
+document.getElementById('fileInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    Papa.parse(file, {
+        header: true, skipEmptyLines: true,
+        complete: results => {
+            dadosCSV = results.data;
+            aplicarFiltro(); // Atualiza dashboard automaticamente
         },
-        error: err=>alert('Erro ao ler o arquivo: '+err)
+        error: err => alert('Erro ao ler o arquivo: ' + err)
     });
 });
 
-function aplicarFiltro(){
-    const dataInicio=document.getElementById('dataInicio').value;
-    const dataFim=document.getElementById('dataFim').value;
-    const dadosFiltrados=filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
+function aplicarFiltro() {
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+    const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
     atualizarDashboard(dadosFiltrados);
 }
 
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
-document.getElementById('btnExportPDF').addEventListener('click',()=>{
-    const dashboardWrap=document.getElementById('dashboardWrap');
-    html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
-        const imgData=canvas.toDataURL('image/png');
-        const { jsPDF }=window.jspdf;
-        const pdf=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        const pdfWidth=pdf.internal.pageSize.getWidth();
-        const pdfHeight=pdf.internal.pageSize.getHeight();
-        const imgProps=pdf.getImageProperties(imgData);
-        const imgHeight=(imgProps.height*pdfWidth)/imgProps.width;
-        pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
+document.getElementById('btnExportPDF').addEventListener('click', () => {
+    const dashboardWrap = document.getElementById('dashboardWrap');
+    html2canvas(dashboardWrap, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
         pdf.save('dashboard.pdf');
     });
 });
