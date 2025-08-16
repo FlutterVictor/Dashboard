@@ -1,0 +1,30 @@
+:root{
+    --blue:#0b63d6;
+    --dark:#0b2340;
+    --muted:#f3f6fb;
+    --card:#ffffff;
+    --gray:#6b7280;
+    font-family: Inter, system-ui, -apple-system, Roboto, 'Segoe UI', Arial;
+}
+
+*{box-sizing:border-box;}
+body{margin:0;background:var(--muted);color:var(--dark);}
+.wrap{max-width:1400px;margin:28px auto;padding:20px}
+
+header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:4px;}
+header h1{margin:0;font-size:22px;}
+.subtitle{font-size:14px;opacity:.9;}
+
+#filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
+#btnApplyFilter,#btnBack{background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
+
+.grid{display:grid;gap:16px;margin-top:18px}
+.linha1{grid-template-columns:2fr 1fr 1fr 1fr;}
+
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(7,22,48,0.06);}
+.card-title{font-weight:700;margin-bottom:8px;text-align:center;}
+.mapa{grid-column:span 1;}
+.info{padding:20px;text-align:center;font-size:16px;}
+#prodMedia{font-size:24px;font-weight:700;margin-top:6px;}
+#topSetores{padding-left:20px;text-align:left;}
+#fotosRecentes img{max-width:100%;margin-top:4px;border-radius:6px;}
