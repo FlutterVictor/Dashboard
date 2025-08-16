@@ -11,15 +11,7 @@
 body{margin:0;background:var(--muted);color:var(--dark);}
 .wrap{max-width:1400px;margin:28px auto;padding:20px}
 
-header{
-    background:linear-gradient(90deg,var(--blue),#1370e8);
-    color:white;
-    padding:18px;
-    border-radius:12px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-}
+header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:4px;}
 header h1{margin:0;font-size:22px}
 .subtitle{font-size:14px;opacity:.9}
 
@@ -28,15 +20,7 @@ header h1{margin:0;font-size:22px}
 .linha2{grid-template-columns:2fr 1fr;}
 .linha3{grid-template-columns:1fr;}
 
-.card{
-    background:var(--card);
-    border-radius:10px;
-    padding:14px;
-    box-shadow:0 6px 18px rgba(7,22,48,0.06);
-    display:flex;
-    flex-direction:column;
-}
-
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(7,22,48,0.06);}
 .card-title{font-weight:700;margin-bottom:8px;}
 .kpi{padding:20px;text-align:center}
 .kpi .label{font-size:14px;color:var(--gray)}
@@ -51,40 +35,24 @@ header h1{margin:0;font-size:22px}
 .wide{grid-column:span 1}
 .full{grid-column:span 1}
 
-/* Ajuste do card de Amostras */
-#tabelaDadosWrapper {
-    flex: 1;                 /* ocupa todo o espaço vertical do card */
-    overflow-y: auto;        /* scroll se necessário */
-    display: flex;
-    flex-direction: column;
+#tabelaDadosWrapper{
+    max-height: 200px;
+    overflow-y:auto;
 }
 
 #tabelaDadosWrapper table {
-    width: 100%;
-    height: 100%;            /* preenche todo o wrapper */
-    table-layout: fixed;
+    width: 100%;               /* tabela preenche toda a largura do card */
     border-collapse: collapse;
 }
 
-#tabelaDadosWrapper th, #tabelaDadosWrapper td {
-    word-wrap: break-word;
+#tabelaDadosWrapper th,
+#tabelaDadosWrapper td {
     padding: 6px;
     text-align: left;
     border-bottom: 1px solid #f0f2f5;
     font-size: 13px;
+    white-space: nowrap;       /* impede quebra de texto e mantém colunas alinhadas */
 }
 
-#filter-container{
-    margin-top: 12px; 
-    display:flex; 
-    gap:10px; 
-    align-items:center;
-}
-#btnApplyFilter,#btnExportPDF{
-    background:#0b63d6;
-    color:#fff;
-    border:none;
-    padding:6px 12px;
-    border-radius:6px;
-    cursor:pointer;
-}
+#filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
+#btnApplyFilter,#btnExportPDF{background:#0b63d6;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
