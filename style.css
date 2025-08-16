@@ -6,53 +6,21 @@
     --gray:#6b7280;
     font-family: Inter, system-ui, -apple-system, Roboto, 'Segoe UI', Arial;
 }
-
 *{box-sizing:border-box}
 body{margin:0;background:var(--muted);color:var(--dark);}
-.wrap{max-width:1200px;margin:28px auto;padding:20px}
-
-/* Header */
-header{
-    background:linear-gradient(90deg,var(--blue),#1370e8);
-    color:white;
-    padding:18px;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between
-}
-header h1{margin:0;font-size:20px}
+.wrap{max-width:1400px;margin:28px auto;padding:20px}
+header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:22px}
 .subtitle{font-size:13px;opacity:.9}
-
-/* Grid e Cards */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(12,1fr);
-    gap:16px;
-    margin-top:18px
-}
-.card{
-    background:var(--card);
-    border-radius:10px;
-    padding:14px;
-    box-shadow:0 6px 18px rgba(7,22,48,0.06)
-}
-
-/* Linha 1: Cards principais */
-.kpi{grid-column:span 3;padding:12px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(7,22,48,0.06)}
+.kpi{grid-column:span 2;padding:14px; min-width:150px;}
 .kpi .label{font-size:13px;color:var(--gray)}
 .kpi .value{font-size:22px;font-weight:700;margin-top:6px}
 .kpi .small{font-size:12px;color:#0b63d6;margin-top:6px}
-
-/* Ajuste novos cards */
-.wide{grid-column:span 8} /* Tendência Semanal maior */
-.ranking-card{grid-column:span 4} /* Ranking ocupa 4 colunas */
+.wide{grid-column:span 8}
 .full{grid-column:span 12}
-
-/* Chart box */
 .chart-box{height:220px;display:flex;align-items:center;justify-content:center;padding:10px 0;}
-
-/* Tabela */
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:8px;text-align:left;border-bottom:1px solid #f0f2f5}
 th{font-size:12px;color:var(--gray)}
@@ -60,26 +28,6 @@ th{font-size:12px;color:var(--gray)}
 .mini{font-size:12px;color:#475569}
 .trend-up{color:green;font-weight:700}
 .trend-down{color:crimson;font-weight:700}
-
-/* Ranking lista */
-.ranking-list{list-style:none;margin:0;padding:0;font-size:13px}
-.ranking-list li{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:8px;
-    padding:6px 0;
-    border-bottom:1px solid #f0f2f5;
-    align-items:center;
-}
-
-/* Responsividade */
-@media(max-width:900px){.kpi{grid-column:span 6}.wide{grid-column:span 12}.ranking-card{grid-column:span 12}}
-@media(max-width:560px){header{flex-direction:column;gap:8px} .kpi{grid-column:span 12}}
-
-/* Barra de rolagem para tabela amostra */
-#tabelaDadosWrapper {max-height: 190px;overflow-y: auto;}
-
-/* Estilos do filtro de data */
 #filter-container {
     margin-top: 12px;
     display: flex;
@@ -90,3 +38,12 @@ th{font-size:12px;color:var(--gray)}
     border-radius: 10px;
     box-shadow: 0 6px 18px rgba(7,22,48,0.06);
 }
+#rankingProdutividade { display:flex; flex-direction:column; gap:6px; font-size:13px; }
+.ranking-row { display:grid; grid-template-columns: 2fr 1fr 1fr; gap:8px; padding:6px; align-items:center; border-bottom:1px solid #f0f2f5; }
+.ranking-indicator.up { color: green; font-weight:700; }
+.ranking-indicator.down { color: crimson; font-weight:700; }
+
+@media(max-width:1200px){.kpi{grid-column:span 3}.wide{grid-column:span 12}}
+@media(max-width:900px){.kpi{grid-column:span 6}.wide{grid-column:span 12}}
+@media(max-width:560px){header{flex-direction:column;gap:8px} .kpi{grid-column:span 12}}
+#tabelaDadosWrapper { max-height: 200px; overflow-y: auto; }
