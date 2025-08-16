@@ -27,9 +27,8 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     let dtInicio = dataInicio ? new Date(dataInicio) : null;
     let dtFim = dataFim ? new Date(dataFim) : null;
     return dados.filter(row => {
-        if(!row['Data']) return false;
-        let dataRow = parseDateBR(row['Data']);
-        if(!dataRow) return false;
+        const dataRow = parseDateBR(row['Data']);
+        if(!dataRow) return false; // ignora linhas sem data válida
         if(dtInicio && dataRow < dtInicio) return false;
         if(dtFim && dataRow > dtFim) return false;
         return true;
@@ -56,23 +55,23 @@ function atualizarDashboard(dados){
     let ranking={};
 
     dados.forEach(row=>{
-        const hh=parseNumber(row['HH Total']);
-        const ml=parseNumber(row['ML Montados']);
-        const mont=parseNumber(row['Mont.Presente']);
-        const mlPrev=parseNumber(row['ML PREVISTO']);
+        // Ignora linhas sem Data válida
+        const data = parseDateBR(row['Data']);
+        if(!data) return;
+
+        const hh = parseNumber(row['HH Total']);
+        const ml = parseNumber(row['ML Montados']);
+        const mont = parseNumber(row['Mont.Presente']);
+        const mlPrev = parseNumber(row['ML PREVISTO']);
 
         somaHH += hh;
         somaML += ml;
         somaMont += mont;
         somaMLPrevisto += mlPrev;
 
-        // --- Tratamento de datas ---
-        const data = parseDateBR(row['Data']);
-        if(data){
-            mlPorDia[diaSemanaIndex(data.getDay())] += ml;
-        }
+        mlPorDia[diaSemanaIndex(data.getDay())] += ml;
 
-        const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
+        const nome = row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
         if(nome){
             if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
             ranking[nome].ml += ml;
@@ -111,6 +110,8 @@ function atualizarDashboard(dados){
     const tbodyDados=document.getElementById('tabelaDados');
     tbodyDados.innerHTML='';
     dados.slice(0,5).forEach(row=>{
+        const dataRow = parseDateBR(row['Data']);
+        if(!dataRow) return; // pula linhas inválidas
         tbodyDados.innerHTML+=`<tr>
             <td>${row['Semanas']||''}</td>
             <td>${row['OS']||''}</td>
@@ -170,7 +171,8 @@ function carregarCSVPadrao(){
         .then(response => response.text())
         .then(csvText => {
             const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-            dadosCSV = resultados.data;
+            // Filtra apenas linhas com Data válida
+            dadosCSV = resultados.data.filter(row => parseDateBR(row['Data']) !== null);
             aplicarFiltro();
         })
         .catch(err => alert('Erro ao carregar CSV: ' + err));
