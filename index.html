@@ -20,12 +20,21 @@
             </div>
         </header>
 
+        <!-- FILTROS / ARQUIVO / EXPORT PDF -->
+        <div id="filter-container">
+            <label>Data Início: <input type="date" id="dataInicio" /></label>
+            <label>Data Fim: <input type="date" id="dataFim" /></label>
+            <button id="btnApplyFilter">Aplicar filtro</button>
+            <button id="btnExportPDF">Exportar PDF</button>
+            <input type="file" id="fileInput" accept=".csv" />
+        </div>
+
         <!-- Linha 1: 5 Cards principais -->
         <div class="grid grid-line1">
             <div class="card kpi">
                 <div class="label">HH Total (h)</div>
                 <div class="value" id="hhTotal">0</div>
-                <div class="small">Cálculo: soma da coluna HH Total</div>
+                <div class="small">Soma da coluna HH Total</div>
             </div>
 
             <div class="card kpi">
@@ -35,15 +44,15 @@
             </div>
 
             <div class="card kpi">
-                <div class="label">Montadores Presentes (média/dia)</div>
+                <div class="label">Montadores Presentes</div>
                 <div class="value" id="montPresente">0</div>
                 <div class="small">Faltaram: -</div>
             </div>
 
             <div class="card kpi">
-                <div class="label">STD Semanal (HH Total / ML Montados)</div>
+                <div class="label">STD Semanal</div>
                 <div class="value" id="stdSemanal">0,00</div>
-                <div class="small">STD montagem = HH Total ÷ ML Montados</div>
+                <div class="small">HH Total ÷ ML Montados</div>
             </div>
 
             <div class="card kpi">
@@ -57,18 +66,8 @@
         <div class="grid grid-line2">
             <div class="card tend-chart">
                 <div style="font-weight:700; margin-bottom:8px;">Tendência semanal — ML montados / dia</div>
-
-                <!-- Filtros dentro do card -->
-                <div id="filter-container">
-                    <label>Data Início: <input type="date" id="dataInicio" /></label>
-                    <label>Data Fim: <input type="date" id="dataFim" /></label>
-                    <button id="btnApplyFilter">Aplicar filtro</button>
-                    <button id="btnExportPDF">Exportar PDF</button>
-                    <input type="file" id="fileInput" accept=".csv" />
-                </div>
-
                 <div class="chart-box">
-                    <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
+                    <svg id="graficoLinha" width="100%" height="220" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
                 </div>
             </div>
 
