@@ -39,21 +39,22 @@ header h1{margin:0;font-size:22px}
     max-height: 200px;
     overflow-y: auto;
     overflow-x: auto; /* rolagem horizontal se necessário */
-    width: 100%;
-    padding: 0; /* remove espaçamento interno do wrapper */
+    width: 100%;      /* garante que ocupe toda a largura do card */
+    padding: 0;
 }
 
 #tabelaDadosWrapper table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse; /* garante que não haja espaçamento extra entre células */
+    width: 100%;      /* tabela preenche todo o wrapper */
+    min-width: 100%;  /* garante largura mínima igual ao card */
+    table-layout: auto; /* colunas se ajustam ao conteúdo */
+    border-collapse: collapse;
 }
 
 #tabelaDadosWrapper th,
 #tabelaDadosWrapper td {
-    padding: 6px; /* ajuste de padding */
+    padding: 6px 8px;
     text-align: left;
-    white-space: nowrap; /* evita quebra de texto dentro da célula */
+    white-space: nowrap; /* evita quebra de linha dentro da célula */
 }
 
 #tabelaDadosWrapper::-webkit-scrollbar {
