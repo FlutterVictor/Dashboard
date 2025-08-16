@@ -133,6 +133,7 @@ function atualizarGraficoLinha(mlPorDia){
         return [x,y];
     });
 
+    // Polyline do gráfico
     const pointsStr=pontos.map(p=>p.join(',')).join(' ');
     const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
@@ -141,16 +142,30 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
+    const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
     pontos.forEach((p,i)=>{
-        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
-        text.classList.add('data-label');
-        text.setAttribute('x',p[0]);
-        text.setAttribute('y',p[1]-3);
-        text.setAttribute('font-size','3');
-        text.setAttribute('fill','#0b2340');
-        text.setAttribute('text-anchor','middle');
-        text.textContent=mlPorDia[i].toFixed(0);
-        svg.appendChild(text);
+        // Valor do ponto
+        const textValue=document.createElementNS("http://www.w3.org/2000/svg","text");
+        textValue.classList.add('data-label');
+        textValue.setAttribute('x',p[0]);
+        textValue.setAttribute('y',p[1]-3);
+        textValue.setAttribute('font-size','3');
+        textValue.setAttribute('fill','#0b2340');
+        textValue.setAttribute('text-anchor','middle');
+        textValue.textContent=mlPorDia[i].toFixed(0);
+        svg.appendChild(textValue);
+
+        // Dia da semana
+        const textDia=document.createElementNS("http://www.w3.org/2000/svg","text");
+        textDia.classList.add('data-label');
+        textDia.setAttribute('x',p[0]);
+        textDia.setAttribute('y',height); // base do SVG
+        textDia.setAttribute('font-size','3');
+        textDia.setAttribute('fill','#0b2340');
+        textDia.setAttribute('text-anchor','middle');
+        textDia.textContent=diasSemana[i];
+        svg.appendChild(textDia);
     });
 }
 
@@ -188,4 +203,9 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
         pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
         pdf.save('dashboard.pdf');
     });
+});
+
+// Novo botão para abrir outro dashboard
+document.getElementById('btnAbrirOutroDashboard').addEventListener('click', () => {
+    window.open('outro-dashboard.html', '_blank');
 });
