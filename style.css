@@ -35,35 +35,82 @@ header h1{margin:0;font-size:22px}
 .wide{grid-column:span 1}
 .full{grid-column:span 1}
 
+/* Wrapper da tabela */
 #tabelaDadosWrapper {
     max-height: 200px;
     overflow-y: auto;
-    overflow-x: auto; /* rolagem horizontal se necessário */
-    width: 100%;      /* garante que ocupe toda a largura do card */
-    padding: 0;
+    overflow-x: auto;  /* permite rolagem horizontal se necessário */
+    width: 100%;       /* ocupa toda a largura do card */
 }
 
+/* Tabela */
 #tabelaDadosWrapper table {
-    width: 100%;      /* tabela preenche todo o wrapper */
-    min-width: 100%;  /* garante largura mínima igual ao card */
-    table-layout: auto; /* colunas se ajustam ao conteúdo */
+    width: 100%;       /* tabela preenche todo o wrapper */
+    table-layout: fixed; /* mantém colunas proporcionais */
     border-collapse: collapse;
 }
 
-#tabelaDadosWrapper th,
-#tabelaDadosWrapper td {
-    padding: 6px 8px;
+/* Cabeçalho */
+#tabelaDadosWrapper th {
+    background-color: #f3f6fb;
+    font-weight: 600;
+    padding: 6px;
+    font-size: 12px;
     text-align: left;
-    white-space: nowrap; /* evita quebra de linha dentro da célula */
+    border-bottom: 1px solid #ddd;
 }
 
-#tabelaDadosWrapper::-webkit-scrollbar {
-    height: 6px;
+/* Linhas da tabela */
+#tabelaDadosWrapper td {
+    padding: 6px;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-#tabelaDadosWrapper::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.2);
-    border-radius: 3px;
+/* Largura das colunas específicas */
+#tabelaDadosWrapper th:nth-child(2),
+#tabelaDadosWrapper td:nth-child(2),
+#tabelaDadosWrapper th:nth-child(3),
+#tabelaDadosWrapper td:nth-child(3) {
+    width: 70px; /* OS e Matrícula menores */
+}
+
+#tabelaDadosWrapper th:nth-child(4),
+#tabelaDadosWrapper td:nth-child(4) {
+    width: 150px; /* Encarregado Responsável mantém tamanho */
+}
+
+#tabelaDadosWrapper th:nth-child(5),
+#tabelaDadosWrapper td:nth-child(5) {
+    width: 80px; /* Área menor */
+}
+
+#tabelaDadosWrapper th:nth-child(6),
+#tabelaDadosWrapper td:nth-child(6) {
+    width: 60px; /* Mont.Presente menor */
+}
+
+#tabelaDadosWrapper th:nth-child(7),
+#tabelaDadosWrapper td:nth-child(7) {
+    width: 60px; /* HH Total */
+}
+
+#tabelaDadosWrapper th:nth-child(8),
+#tabelaDadosWrapper td:nth-child(8) {
+    width: 70px; /* ML Montados */
+}
+
+#tabelaDadosWrapper th:nth-child(9),
+#tabelaDadosWrapper td:nth-child(9) {
+    width: 70px; /* STD Montado */
+}
+
+#tabelaDadosWrapper th:nth-child(10),
+#tabelaDadosWrapper td:nth-child(10) {
+    width: 80px; /* Data */
 }
 
 #filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
