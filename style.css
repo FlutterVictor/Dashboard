@@ -10,32 +10,16 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--muted);color:var(--dark);}
 .wrap{max-width:1200px;margin:28px auto;padding:20px}
-
-header{
-    background:linear-gradient(90deg,var(--blue),#1370e8);
-    color:white;
-    padding:18px;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    flex-wrap: wrap;
-}
+header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
 header h1{margin:0;font-size:20px}
 .subtitle{font-size:13px;opacity:.9}
 
-/* Grid linhas */
+/* Linha 1: 5 cards */
 .grid{display:grid;gap:16px;margin-top:18px}
 .grid-line1{grid-template-columns:repeat(5,1fr)}
 .grid-line2{grid-template-columns:7fr 5fr}
 
-/* Cards */
-.card{
-    background:var(--card);
-    border-radius:10px;
-    padding:14px;
-    box-shadow:0 6px 18px rgba(7,22,48,0.06);
-}
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(7,22,48,0.06)}
 .kpi{padding:12px}
 .kpi .label{font-size:13px;color:var(--gray)}
 .kpi .value{font-size:22px;font-weight:700;margin-top:6px}
@@ -47,51 +31,25 @@ header h1{margin:0;font-size:20px}
 .full{grid-column:span 12}
 .chart-box{height:220px;display:flex;align-items:center;justify-content:center;padding:10px 0;}
 
-/* Tabela CSV */
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #f0f2f5}
+th,td{padding:8px;text-align:left;border-bottom:1px solid #f0f2f5}
 th{font-size:12px;color:var(--gray)}
 
-/* Tags e indicadores */
 .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef6ff;color:var(--blue);font-weight:600;font-size:12px}
 .mini{font-size:12px;color:#475569}
 .trend-up{color:green;font-weight:700}
 .trend-down{color:crimson;font-weight:700}
 
-/* Wrapper da tabela */
+/* Tabela amostra */
 #tabelaDadosWrapper {max-height: 300px; overflow-y: auto;}
-#tabelaDadosWrapper table {width: 100%; table-layout: auto;}
-#tabelaDadosWrapper th, #tabelaDadosWrapper td {
-    white-space: normal;
-    overflow-wrap: break-word;
-}
+#tabelaDadosWrapper table {width: 100%; table-layout: fixed;}
+#tabelaDadosWrapper th, #tabelaDadosWrapper td {white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-/* Filtro CSV */
-#filter-container {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: var(--card);
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 6px 18px rgba(7,22,48,0.06);
-}
-#filter-container input[type="date"], #filter-container input[type="file"] {
-    padding:4px 6px;
-    border-radius:6px;
-    border:1px solid #c0c0c0;
-}
-#filter-container button {
-    background:var(--blue);
-    color:#fff;
-    border:none;
-    padding:6px 12px;
-    border-radius:6px;
-    cursor:pointer;
-}
+/* Filtro dentro do card de Tendência */
+#filter-container {margin-top: 12px; display: flex; gap: 10px; align-items: center; background: var(--card); padding: 10px; border-radius: 10px; box-shadow: 0 6px 18px rgba(7,22,48,0.06);}
+#filter-container input[type="date"], #filter-container input[type="file"] {padding:4px 6px; border-radius:6px; border:1px solid #c0c0c0;}
+#filter-container button {background:var(--blue);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;}
 
-/* Responsivo */
 @media(max-width:1200px){.grid-line1{grid-template-columns:repeat(5,1fr)}}
 @media(max-width:900px){.grid-line1{grid-template-columns:repeat(2,1fr)} .grid-line2{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){header{flex-direction:column;gap:8px} .grid-line1{grid-template-columns:1fr}}
