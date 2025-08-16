@@ -117,6 +117,15 @@ header h1{margin:0;font-size:22px}
 
 #btnApplyFilter,
 #btnExportPDF,
+#btnDashboard2{
+    background:#0b63d6;
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
 #btnAbrirOutroDashboard {
     background:#0b63d6;
     color:#fff;
