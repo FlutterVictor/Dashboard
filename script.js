@@ -18,7 +18,7 @@ function parseDateBR(str){
 }
 
 function diaSemanaIndex(diaJS){
-    return diaJS === 0 ? 6 : diaJS-1; // 0 = domingo -> 6
+    return diaJS === 0 ? 6 : diaJS-1;
 }
 
 // --- Filtragem de dados ---
@@ -28,7 +28,7 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     let dtFim = dataFim ? new Date(dataFim) : null;
     return dados.filter(row => {
         const dataRow = parseDateBR(row['Data']);
-        if(!dataRow) return false; // ignora linhas sem data válida
+        if(!dataRow) return false;
         if(dtInicio && dataRow < dtInicio) return false;
         if(dtFim && dataRow > dtFim) return false;
         return true;
@@ -49,13 +49,11 @@ function atualizarDashboard(dados){
         return;
     }
 
-    // Soma e média
     let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
     dados.forEach(row=>{
-        // Ignora linhas sem Data válida
         const data = parseDateBR(row['Data']);
         if(!data) return;
 
@@ -111,7 +109,7 @@ function atualizarDashboard(dados){
     tbodyDados.innerHTML='';
     dados.slice(0,5).forEach(row=>{
         const dataRow = parseDateBR(row['Data']);
-        if(!dataRow) return; // pula linhas inválidas
+        if(!dataRow) return;
         tbodyDados.innerHTML+=`<tr>
             <td>${row['Semanas']||''}</td>
             <td>${row['OS']||''}</td>
@@ -132,35 +130,51 @@ function atualizarDashboard(dados){
 // --- Gráfico de linhas ---
 function atualizarGraficoLinha(mlPorDia){
     const diasSemana = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    const svg=document.getElementById('graficoLinha');
-    while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
-    while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
+    const svg = document.getElementById('graficoLinha');
 
-    const width=100,height=35,marginBottom=8;
-    const maxML=Math.max(...mlPorDia,1);
-    const pontos=mlPorDia.map((v,i)=>{
-        const x=i*(width/6);
-        const y=height-marginBottom-(v/maxML*(height-marginBottom*2));
+    while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
+    svg.querySelectorAll('.data-label, .data-dia').forEach(el => el.remove());
+
+    const width = 100, height = 35, marginBottom = 12;
+    const maxML = Math.max(...mlPorDia,1);
+    const pontos = mlPorDia.map((v,i)=>{
+        const x = i*(width/6);
+        const y = height-marginBottom-(v/maxML*(height-marginBottom*2));
         return [x,y];
     });
 
-    const pointsStr=pontos.map(p=>p.join(',')).join(' ');
-    const polyline=document.createElementNS("http://www.w3.org/2000/svg","polyline");
+    // Linha do gráfico
+    const pointsStr = pontos.map(p=>p.join(',')).join(' ');
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
     polyline.setAttribute("stroke","#0b63d6");
-    polyline.setAttribute("stroke-width","1.6");
+    polyline.setAttribute("stroke-width","1.2");
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
+    // Valores sobre a linha
     pontos.forEach((p,i)=>{
-        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
+        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
-        text.setAttribute('x',p[0]);
-        text.setAttribute('y',p[1]-3);
+        text.setAttribute('x', p[0]);
+        text.setAttribute('y', p[1]-2);
+        text.setAttribute('font-size','2.5');
+        text.setAttribute('fill','#0b2340');
+        text.setAttribute('text-anchor','middle');
+        text.textContent = mlPorDia[i].toFixed(0);
+        svg.appendChild(text);
+    });
+
+    // Dias da semana embaixo
+    pontos.forEach((p,i)=>{
+        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+        text.classList.add('data-dia');
+        text.setAttribute('x', p[0]);
+        text.setAttribute('y', height);
         text.setAttribute('font-size','3');
         text.setAttribute('fill','#0b2340');
         text.setAttribute('text-anchor','middle');
-        text.textContent = `${mlPorDia[i].toFixed(0)}\n${diasSemana[i]}`;
+        text.textContent = diasSemana[i];
         svg.appendChild(text);
     });
 }
@@ -171,26 +185,35 @@ function carregarCSVPadrao(){
         .then(response => response.text())
         .then(csvText => {
             const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-            // Filtra apenas linhas com Data válida
             dadosCSV = resultados.data.filter(row => parseDateBR(row['Data']) !== null);
             aplicarFiltro();
         })
         .catch(err => alert('Erro ao carregar CSV: ' + err));
 }
 
-window.addEventListener('load', carregarCSVPadrao);
-
 // --- Filtro ---
 function aplicarFiltro(){
-    const dataInicio=document.getElementById('dataInicio').value;
-    const dataFim=document.getElementById('dataFim').value;
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
     const dadosFiltrados = filtrarDadosPorData(dadosCSV,dataInicio,dataFim);
     atualizarDashboard(dadosFiltrados);
 }
 
+// --- Eventos ---
+document.getElementById('fileInput').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    Papa.parse(file,{header:true,skipEmptyLines:true,
+        complete: results=>{
+            dadosCSV = results.data.filter(row => parseDateBR(row['Data']) !== null);
+            aplicarFiltro();
+        },
+        error: err=>alert('Erro ao ler o arquivo: '+err)
+    });
+});
+
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
-// --- Exportar PDF ---
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
@@ -206,7 +229,17 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-// --- Abrir outro Dashboard ---
-document.getElementById('btnAbrirOutroDashboard').addEventListener('click',()=>{
-    window.open('outro-dashboard.html', '_blank');
-});
+// --- Botão extra (abre outro dashboard) ---
+const btnNovoDashboard = document.createElement('button');
+btnNovoDashboard.textContent = 'Abrir Dashboard 2';
+btnNovoDashboard.style.background = '#0b63d6';
+btnNovoDashboard.style.color = '#fff';
+btnNovoDashboard.style.border = 'none';
+btnNovoDashboard.style.padding = '6px 12px';
+btnNovoDashboard.style.borderRadius = '6px';
+btnNovoDashboard.style.cursor = 'pointer';
+btnNovoDashboard.addEventListener('click', ()=> window.open('dashboard2.html','_blank'));
+document.getElementById('filter-container').appendChild(btnNovoDashboard);
+
+// --- Chama CSV ao carregar ---
+window.addEventListener('load', carregarCSVPadrao);
