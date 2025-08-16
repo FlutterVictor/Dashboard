@@ -1,53 +1,46 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dashboard 2 – Mapa de Produtividade</title>
-    <link rel="stylesheet" href="style2.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-sA+4tOa3aZhOn2+M3w1Y4Ey4oM6Qqk6s+6mWbChX3rE=" crossorigin=""/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard 2 - Mapa de Produtividade</title>
+<link rel="stylesheet" href="style2.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-    <div class="wrap" id="dashboardWrap">
-        <header>
-            <h1>Mapa de Produtividade — Andaime</h1>
-            <div class="subtitle">Visualização geográfica da produtividade por setor</div>
-        </header>
+<div class="wrap" id="dashboardWrap">
+    <header>
+        <h1>Mapa de Produtividade</h1>
+        <div class="subtitle">Visualização da produtividade por setor</div>
+    </header>
 
-        <div id="filter-container">
-            <label>Data Início: <input type="date" id="dataInicio" /></label>
-            <label>Data Fim: <input type="date" id="dataFim" /></label>
-            <button id="btnApplyFilter">Aplicar filtro</button>
-            <button id="btnBack">Voltar para STD</button>
-        </div>
+    <div id="filter-container">
+        <label>Data Início: <input type="date" id="dataInicio" /></label>
+        <label>Data Fim: <input type="date" id="dataFim" /></label>
+        <button id="btnApplyFilter">Aplicar filtro</button>
+        <button id="btnVoltar">Voltar para STD</button>
+    </div>
 
-        <div class="grid linha1">
-            <div class="card mapa">
-                <div id="map" style="height:500px; width:100%; border-radius:10px;"></div>
-            </div>
-            <div class="card info">
-                <div class="card-title">Produtividade Média</div>
-                <div id="prodMedia">0%</div>
-            </div>
-            <div class="card info">
-                <div class="card-title">Top Setores</div>
-                <ul id="topSetores">
-                    <li>Sem dados</li>
-                </ul>
-            </div>
-            <div class="card info">
-                <div class="card-title">Fotos Recentes</div>
-                <div id="fotosRecentes">
-                    <span>Sem dados</span>
-                </div>
-            </div>
+    <div class="grid linha1">
+        <div class="card wide" id="mapCard">
+            <div id="map" style="height:400px;"></div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-o9N1j8M7QJqvGk4I5G27zU7g7k4iNJv7/EzK5DJ0LYo=" crossorigin=""></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="script2.js"></script>
+    <div class="grid linha2">
+        <div class="card kpi" id="cardProdutividadeMedia">
+            <div class="label">Produtividade Média</div>
+            <div class="value" id="valorProdutividadeMedia">0</div>
+        </div>
+        <div class="card kpi" id="cardTopSetores">
+            <div class="label">Top Setores</div>
+            <div class="value" id="valorTopSetores">-</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="script2.js"></script>
 </body>
 </html>
