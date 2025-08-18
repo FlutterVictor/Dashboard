@@ -18,7 +18,8 @@
         <label>Data Início: <input type="date" id="dataInicio" /></label>
         <label>Data Fim: <input type="date" id="dataFim" /></label>
         <button id="btnApplyFilter">Aplicar filtro</button>
-        <button id="btnVoltar">Voltar para STD</button>
+        <!-- Botão atualizado -->
+        <button id="btnVoltarMenu">Voltar para o Menu</button>
     </div>
 
     <div class="grid linha1">
@@ -42,5 +43,12 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="script2.js"></script>
+
+<script>
+// Adicionando funcionalidade para voltar ao Menu
+document.getElementById('btnVoltarMenu').addEventListener('click', () => {
+    window.location.href = "index.html"; // Redireciona para o Menu
+});
+</script>
 </body>
 </html>
