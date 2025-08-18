@@ -1,0 +1,49 @@
+:root{
+    --blue:#0b63d6;
+    --dark:#0b2340;
+    --muted:#f3f6fb;
+    --card:#ffffff;
+    --gray:#6b7280;
+    font-family: Inter, system-ui, -apple-system, Roboto, 'Segoe UI', Arial;
+}
+
+*{box-sizing:border-box;}
+body{margin:0; background:var(--muted); color:var(--dark);}
+.wrap{max-width:1400px; margin:28px auto; padding:20px;}
+
+header{
+    background:linear-gradient(90deg,var(--blue),#1370e8);
+    color:white; padding:18px; border-radius:12px;
+    display:flex; flex-direction:column; gap:8px;
+}
+
+header h1{margin:0;font-size:22px;}
+
+.dashboard-buttons{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+
+.dashboard-buttons input,
+.dashboard-buttons button,
+.dashboard-buttons a{
+    padding:6px 12px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+    text-decoration:none;
+    color:white;
+    background:var(--blue);
+}
+
+.grid{display:grid; gap:16px; margin-top:16px; grid-template-columns:1fr 1fr;}
+
+.card.kpi{
+    background:var(--card);
+    border-radius:10px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 6px 18px rgba(7,22,48,0.06);
+}
+
+.card.kpi .label{font-size:14px; color:var(--gray);}
+.card.kpi .value{font-size:24px; font-weight:700; margin-top:6px;}
