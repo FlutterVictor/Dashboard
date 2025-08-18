@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Produtividade - Pintura</title>
+  <link rel="stylesheet" href="stylep.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Mapa de Produtividade - Pintura</h1>
+      <div class="dashboard-buttons">
+        <a href="index.html" class="btn-voltar">Voltar para o Menu</a>
+        <input type="date" id="dataInicio">
+        <input type="date" id="dataFim">
+        <button id="btnFiltrar">Filtrar</button>
+      </div>
+    </header>
+
+    <div id="map" style="height:500px; margin-top:16px;"></div>
+
+    <div class="grid">
+      <div class="card kpi">
+        <div class="label">Produtividade Média</div>
+        <div class="value" id="valorProdutividadeMedia">0</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Top Setores</div>
+        <div class="value" id="valorTopSetores">-</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="scriptp.js"></script>
+</body>
+</html>
