@@ -102,7 +102,9 @@ function aplicarFiltro(){
 
 // Eventos
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
-document.getElementById('btnVoltar').addEventListener('click', ()=>window.location.href='dashboard.html');
+
+// **Corrigido**: botão voltar para o Menu
+document.getElementById('btnVoltarMenu').addEventListener('click', ()=>window.location.href='index.html');
 
 // Inicializa
 window.addEventListener('load', carregarCSVPadrao);
