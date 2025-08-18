@@ -6,10 +6,19 @@
   <title>Dashboard Pintura</title>
   <link rel="stylesheet" href="pintura.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <header>
     <h1>Dashboard Pintura</h1>
+    <div class="header-buttons">
+      <input type="date" id="dataInicio">
+      <input type="date" id="dataFim">
+      <button id="filtrar">Filtrar</button>
+      <button id="exportarPDF">Exportar PDF</button>
+      <a href="index.html" class="btn-voltar">Voltar ao Menu</a>
+      <a href="mapa_pintura.html" class="btn-mapa">Mapa de Produtividade</a>
+    </div>
   </header>
 
   <main class="dashboard-container">
@@ -61,5 +70,6 @@
   </footer>
 
   <script src="scriptpintura.js"></script>
+  <script src="scriptpintura_filtros.js"></script>
 </body>
 </html>
