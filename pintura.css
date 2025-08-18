@@ -1,97 +1,123 @@
-/* Corpo e cores base */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f3f6fb;
-  color: #0b2340;
+:root{
+    --blue:#0b63d6;
+    --dark:#0b2340;
+    --muted:#f3f6fb;
+    --card:#ffffff;
+    --gray:#6b7280;
+    font-family: Inter, system-ui, -apple-system, Roboto, 'Segoe UI', Arial;
 }
 
-/* Cabeçalho estilo STD */
-.dashboard-header {
-  background-color: #0b63d6;
-  color: white;
-  text-align: center;
-  padding: 20px 0;
-  border-bottom: 3px solid #0b2340;
+*{box-sizing:border-box;}
+body{margin:0; background:var(--muted); color:var(--dark);}
+.wrap{max-width:1400px; margin:28px auto; padding:20px}
+
+/* Header */
+header{
+    background:linear-gradient(90deg,var(--blue),#1370e8);
+    color:white;
+    padding:18px;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+header h1{margin:0; font-size:22px;}
+.subtitle{font-size:14px; opacity:.9;}
+
+/* Filtros e botões */
+#filter-container{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+#filter-container button{
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
 }
 
-.dashboard-header h1 {
-  margin: 0;
-  font-size: 1.8em;
+/* Grid */
+.grid{display:grid; gap:16px; margin-top:18px;}
+.grid.linha1{grid-template-columns:repeat(3,1fr);} /* Ajuste conforme número de cards */
+.grid.linha2{grid-template-columns:repeat(4,1fr);}
+.grid.linha3{grid-template-columns:1fr;}
+
+/* Cards */
+.card{
+    background:var(--card);
+    border-radius:10px;
+    padding:14px;
+    box-shadow:0 6px 18px rgba(7,22,48,0.06);
+}
+.card-title{font-weight:700; margin-bottom:8px;}
+.card.wide{height:400px;} /* Card maior, ex: gráficos */
+
+/* KPI Cards */
+.card.kpi{
+    padding:20px;
+    text-align:center;
+}
+.card.kpi .label{
+    font-size:14px;
+    color:var(--gray);
+}
+.card.kpi .value{
+    font-size:24px;
+    font-weight:700;
+    margin-top:6px;
 }
 
-.dashboard-buttons {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
+/* Wrapper da tabela */
+#tabelaDadosWrapper {
+    max-height:200px;
+    overflow-y:auto;
+    overflow-x:auto;
+    width:100%;
 }
 
-.dashboard-buttons input,
-.dashboard-buttons button,
-.dashboard-buttons a {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  text-decoration: none;
+/* Tabela interna */
+#tabelaDadosWrapper table{
+    width:100%;
+    table-layout:fixed;
+    border-collapse:collapse;
+}
+#tabelaDadosWrapper th{
+    background-color:#f3f6fb;
+    font-weight:600;
+    padding:6px;
+    font-size:12px;
+    text-align:left;
+    border-bottom:1px solid #ddd;
+}
+#tabelaDadosWrapper td{
+    padding:6px;
+    font-size:12px;
+    border-bottom:1px solid #eee;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
-.dashboard-buttons input[type="date"] {
-  background-color: white;
-  color: #0b2340;
-}
+/* Largura das colunas específicas (exemplo) */
+#tabelaDadosWrapper th:nth-child(2),
+#tabelaDadosWrapper td:nth-child(2),
+#tabelaDadosWrapper th:nth-child(3),
+#tabelaDadosWrapper td:nth-child(3){width:70px;}
+#tabelaDadosWrapper th:nth-child(4),
+#tabelaDadosWrapper td:nth-child(4){width:150px;}
+#tabelaDadosWrapper th:nth-child(5),
+#tabelaDadosWrapper td:nth-child(5){width:80px;}
 
-.dashboard-buttons button,
-.dashboard-buttons a {
-  background-color: #0b2340;
-  color: white;
-}
-
-.dashboard-buttons button:hover,
-.dashboard-buttons a:hover {
-  background-color: #0b63d6;
-}
-
-.dashboard-buttons .btn-voltar {
-  margin-left: 2cm;
-}
-
-/* Layout dos cards */
-.dashboard-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  min-height: 300px;
-}
-
-.card h3 {
-  margin-top: 0;
-  color: #0b63d6;
-  margin-bottom: 15px;
-}
-
-.card canvas {
-  width: 100% !important;
-  height: 250px !important;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 15px;
-  margin-top: 30px;
-  font-size: 0.9em;
-  color: #666;
+/* Botões extras do Dashboard Pintura */
+#btnExportPDF, #btnVoltarMenu, #btnDashboardMapa{
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
 }
