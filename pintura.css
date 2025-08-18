@@ -1,3 +1,4 @@
+/* Corpo e cores base */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -6,46 +7,62 @@ body {
   color: #0b2340;
 }
 
-header {
+/* Cabeçalho igual ao STD */
+.dashboard-header {
   background-color: #0b63d6;
   color: white;
   text-align: center;
-  padding: 20px;
+  padding: 20px 0;
+  border-bottom: 3px solid #0b2340;
 }
 
-.header-buttons {
-  margin-top: 10px;
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+/* Botões e filtros */
+.dashboard-buttons {
+  margin-top: 15px;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-.header-buttons input,
-.header-buttons button,
-.header-buttons .btn-voltar,
-.header-buttons .btn-mapa {
+.dashboard-buttons input,
+.dashboard-buttons button,
+.dashboard-buttons a {
   padding: 8px 12px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
   font-weight: bold;
-}
-
-.header-buttons button,
-.header-buttons .btn-voltar,
-.header-buttons .btn-mapa {
-  background-color: #0b63d6;
-  color: white;
   text-decoration: none;
 }
 
-.header-buttons button:hover,
-.header-buttons .btn-voltar:hover,
-.header-buttons .btn-mapa:hover {
-  background-color: #0b2340;
+.dashboard-buttons input[type="date"] {
+  background-color: white;
+  color: #0b2340;
 }
 
+.dashboard-buttons button,
+.dashboard-buttons a {
+  background-color: #0b2340;
+  color: white;
+}
+
+.dashboard-buttons button:hover,
+.dashboard-buttons a:hover {
+  background-color: #0b63d6;
+}
+
+/* Botão Voltar afastado 2cm do lado direito */
+.dashboard-buttons .btn-voltar {
+  margin-left: 2cm;
+}
+
+/* Layout dos cards */
 .dashboard-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -66,6 +83,7 @@ header {
   margin-bottom: 15px;
 }
 
+/* Footer */
 footer {
   text-align: center;
   padding: 15px;
