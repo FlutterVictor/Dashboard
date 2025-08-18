@@ -51,11 +51,7 @@ function diaSemanaIndex(diaJS){
 ========================= */
 function filtrarDadosPorData(dados, dataInicio, dataFim){
     if(!dataInicio && !dataFim) {
-        // ainda assim, devolve apenas linhas com Data válida
-        return dados.filter(r => {
-            const dt = parseDateBR(r['Data']);
-            return !!dt;
-        });
+        return dados.filter(r => !!parseDateBR(r['Data']));
     }
     const dtInicio = dataInicio ? new Date(dataInicio) : null;
     const dtFim    = dataFim    ? new Date(dataFim)    : null;
@@ -101,7 +97,6 @@ function atualizarDashboard(dados){
 
             somaHH += hh; somaML += ml; somaMont += mont; somaMLPrevisto += mlPrev;
 
-            // Gráfico por dia da semana — só se a data for válida
             const dt = parseDateBR(row['Data']);
             if (dt) {
                 const ds = diaSemanaIndex(dt.getDay());
@@ -119,7 +114,6 @@ function atualizarDashboard(dados){
             }
         } catch(e){
             linhasIgnoradas++;
-            // mantemos silencioso para o usuário final
             console.warn('Linha ignorada por erro:', row, e);
         }
     });
@@ -133,7 +127,7 @@ function atualizarDashboard(dados){
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
-    // Ranking Top 5
+    // Ranking
     const rankingArr = Object.entries(ranking).map(([nome,val])=>{
         const pctMeta = val.mlPrev > 0 ? (val.ml / val.mlPrev) * 100 : 0;
         const stdReal = val.ml > 0 ? (val.hh / val.ml) : 0;
@@ -152,7 +146,7 @@ function atualizarDashboard(dados){
         tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
     }
 
-    // Tabela (amostra)
+    // Tabela de amostra
     const tbodyDados = document.getElementById('tabelaDados');
     tbodyDados.innerHTML = '';
     dados.slice(0,5).forEach(row=>{
@@ -178,11 +172,10 @@ function atualizarDashboard(dados){
 }
 
 /* =========================
-   Gráfico de linha (com dias)
+   Gráfico de linha
 ========================= */
 function atualizarGraficoLinha(mlPorDia){
     const svg = document.getElementById('graficoLinha');
-    // limpa
     svg.querySelectorAll('polyline, .data-label, .day-label').forEach(el=>el.remove());
 
     const width = 100, height = 35, marginBottom = 8;
@@ -194,7 +187,6 @@ function atualizarGraficoLinha(mlPorDia){
         return [x,y];
     });
 
-    // linha
     const polyline = document.createElementNS("http://www.w3.org/2000/svg","polyline");
     polyline.setAttribute("fill","none");
     polyline.setAttribute("stroke","#0b63d6");
@@ -202,26 +194,24 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points", pontos.map(p=>p.join(',')).join(' '));
     svg.appendChild(polyline);
 
-    // valores (menores)
     pontos.forEach((p,i)=>{
         const t = document.createElementNS("http://www.w3.org/2000/svg","text");
         t.classList.add('data-label');
         t.setAttribute('x', p[0]);
         t.setAttribute('y', p[1] - 2);
-        t.setAttribute('font-size', '2.7'); // menor para não poluir
+        t.setAttribute('font-size', '2.7');
         t.setAttribute('fill', '#0b2340');
         t.setAttribute('text-anchor', 'middle');
         t.textContent = mlPorDia[i].toFixed(0);
         svg.appendChild(t);
     });
 
-    // dias da semana (na base do gráfico)
     const dias = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
     pontos.forEach((p,i)=>{
         const t = document.createElementNS("http://www.w3.org/2000/svg","text");
         t.classList.add('day-label');
         t.setAttribute('x', p[0]);
-        t.setAttribute('y', height - 1); // dentro do viewBox
+        t.setAttribute('y', height - 1);
         t.setAttribute('font-size', '3');
         t.setAttribute('fill', '#0b2340');
         t.setAttribute('text-anchor', 'middle');
@@ -240,7 +230,6 @@ document.getElementById('fileInput').addEventListener('change', e=>{
     Papa.parse(file,{
         header:true, skipEmptyLines:true,
         complete: results=>{
-            // só mantém linhas que tenham Data válida
             dadosCSV = results.data.filter(r => !!parseDateBR(r['Data']));
             aplicarFiltro();
         },
@@ -290,16 +279,17 @@ if (btnDash2){
 ========================= */
 function carregarCSVPadrao(){
     fetch('STD_Geral.csv')
-        .then(r => r.text())
+        .then(r => {
+            if (!r.ok) throw new Error("CSV padrão não encontrado.");
+            return r.text();
+        })
         .then(csvText => {
             const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true });
-            // filtra apenas linhas com Data válida
             dadosCSV = parsed.data.filter(r => !!parseDateBR(r['Data']));
             aplicarFiltro();
         })
         .catch(err => {
-            console.error(err);
-            alert('Erro ao carregar o CSV (requisição/parse).');
+            console.warn("Aviso:", err.message);
         });
 }
 
