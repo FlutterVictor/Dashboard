@@ -9,9 +9,7 @@ new Chart(ctxEfetivo, {
             backgroundColor: ['#0b63d6', '#f44336']
         }]
     },
-    options: {
-        responsive: true
-    }
+    options: { responsive: true }
 });
 
 // HH Trabalhado por OS
@@ -26,12 +24,7 @@ new Chart(ctxHH, {
             backgroundColor: '#0b63d6'
         }]
     },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
 });
 
 // Litros Utilizados no Mês
