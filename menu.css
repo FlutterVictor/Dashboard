@@ -16,7 +16,7 @@ body::before {
   width: 100%;
   height: 100%;
   background: url('Logo.png') center center no-repeat;
-  background-size: 700px; /* ajuste o tamanho conforme precisar */
+  background-size: 900px; /* ajuste o tamanho conforme precisar */
   opacity: 0.1; /* transparência do logo */
   z-index: -1; /* garante que o conteúdo fique acima */
 }
