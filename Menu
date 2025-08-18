@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Principal</title>
+  <link rel="stylesheet" href="menu.css">
+</head>
+<body>
+  <header>
+    <h1>Menu Principal</h1>
+  </header>
+
+  <main class="menu-container">
+    <!-- Seção Andaime -->
+    <section class="menu-section">
+      <h2>Andaime</h2>
+      <div class="buttons">
+        <a href="Index.html" class="btn">Dashboard STD</a>
+        <a href="Mapa.html" class="btn">Mapa de Produtividade</a>
+        <a href="Index3.html" class="btn">Improdutividade</a>
+      </div>
+    </section>
+
+    <!-- Seção Pintura -->
+    <section class="menu-section">
+      <h2>Pintura</h2>
+      <div class="buttons">
+        <a href="DashboardPintura.html" class="btn">Dashboard Pintura</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 - Sistema de Dashboards</p>
+  </footer>
+</body>
+</html>
