@@ -1,34 +1,42 @@
-// Variáveis globais
-let dadosCSV = [];
+// Dados fictícios (mockup)
+const dadosMockup = {
+    efetivo: { presente: 45, falta: 5 },
+    hhPorOS: [
+        { os: 'OS001', hh: 120 },
+        { os: 'OS002', hh: 95 },
+        { os: 'OS003', hh: 150 }
+    ],
+    litrosMes: [
+        { mes: 'Jan', litros: 300 },
+        { mes: 'Fev', litros: 280 },
+        { mes: 'Mar', litros: 350 }
+    ],
+    litrosPorOS: [
+        { os: 'OS001', litros: 120 },
+        { os: 'OS002', litros: 100 },
+        { os: 'OS003', litros: 150 }
+    ],
+    tintas: [
+        { cor: 'Vermelho', qtd: 10 },
+        { cor: 'Azul', qtd: 15 },
+        { cor: 'Verde', qtd: 8 },
+        { cor: 'Amarelo', qtd: 5 }
+    ],
+    m2Mes: [
+        { mes: 'Jan', m2: 500 },
+        { mes: 'Fev', m2: 480 },
+        { mes: 'Mar', m2: 520 }
+    ],
+    m2PorOS: [
+        { os: 'OS001', m2: 200 },
+        { os: 'OS002', m2: 180 },
+        { os: 'OS003', m2: 220 }
+    ]
+};
+
 let charts = {};
 
-// Função para carregar CSV usando PapaParse
-function carregarCSV() {
-    fetch('pintura.csv')
-        .then(resp => resp.text())
-        .then(texto => {
-            const resultados = Papa.parse(texto, { header: true, skipEmptyLines: true });
-            dadosCSV = resultados.data.filter(r => r['Data']); // ignora linhas sem Data
-            atualizarDashboard();
-        })
-        .catch(err => alert('Erro ao carregar CSV: ' + err));
-}
-
-// Filtra dados por datas
-function filtrarPorData(dados, dataInicio, dataFim){
-    const dtInicio = dataInicio ? new Date(dataInicio) : null;
-    const dtFim = dataFim ? new Date(dataFim) : null;
-    return dados.filter(r => {
-        if(!r['Data']) return false;
-        const [d,m,y] = r['Data'].split('/');
-        const dataRow = new Date(+y, m-1, +d);
-        if(dtInicio && dataRow < dtInicio) return false;
-        if(dtFim && dataRow > dtFim) return false;
-        return true;
-    });
-}
-
-// Função para gerar gráficos Chart.js
+// Função para criar gráficos Chart.js
 function criarGrafico(id, tipo, labels, dados, cores){
     if(charts[id]) charts[id].destroy(); // destrói gráfico antigo
     const ctx = document.getElementById(id).getContext('2d');
@@ -39,7 +47,7 @@ function criarGrafico(id, tipo, labels, dados, cores){
             datasets: [{
                 label: '',
                 data: dados,
-                backgroundColor: cores,
+                backgroundColor: coloresAleatorias(dados.length, cores),
                 borderColor: 'rgba(0,0,0,0.1)',
                 borderWidth:1
             }]
@@ -54,77 +62,69 @@ function criarGrafico(id, tipo, labels, dados, cores){
     });
 }
 
-// Atualiza todos os gráficos
-function atualizarDashboard(){
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
-    const dadosFiltrados = filtrarPorData(dadosCSV, dataInicio, dataFim);
-
-    // === Efetivo Presente/Falta ===
-    const presentes = dadosFiltrados.reduce((sum,r)=>sum + (parseFloat(r['Presente'])||0),0);
-    const faltas = dadosFiltrados.reduce((sum,r)=>sum + (parseFloat(r['Falta'])||0),0);
-    criarGrafico('efetivoChart','doughnut',['Presente','Falta'],[presentes,faltas],['#0b63d6','#f87171']);
-
-    // === HH Trabalhado por OS ===
-    const osLabels = [...new Set(dadosFiltrados.map(r=>r['OS']))];
-    const hhData = osLabels.map(os=>{
-        return dadosFiltrados
-            .filter(r=>r['OS']===os)
-            .reduce((sum,r)=>sum + (parseFloat(r['HH'])||0),0);
-    });
-    criarGrafico('hhChart','bar',osLabels,hhData,'#0b63d6');
-
-    // === Litros Utilizados no Mês ===
-    const meses = [...new Set(dadosFiltrados.map(r=>r['Mes']))];
-    const litrosMes = meses.map(mes=>{
-        return dadosFiltrados
-            .filter(r=>r['Mes']===mes)
-            .reduce((sum,r)=>sum + (parseFloat(r['Litros'])||0),0);
-    });
-    criarGrafico('litrosMesChart','bar',meses,litrosMes,'#0b63d6');
-
-    // === Total de Litros por OS ===
-    const litrosOS = osLabels.map(os=>{
-        return dadosFiltrados
-            .filter(r=>r['OS']===os)
-            .reduce((sum,r)=>sum + (parseFloat(r['Litros'])||0),0);
-    });
-    criarGrafico('litrosOSChart','bar',osLabels,litrosOS,'#f59e0b');
-
-    // === Cores e Tipos de Tintas ===
-    const tintas = [...new Set(dadosFiltrados.map(r=>r['Cor']))];
-    const qtdTintas = tintas.map(cor=>{
-        return dadosFiltrados.filter(r=>r['Cor']===cor).length;
-    });
-    criarGrafico('tintasChart','doughnut',tintas,qtdTintas,['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']);
-
-    // === M² Pintados por Mês ===
-    const m2Mes = meses.map(mes=>{
-        return dadosFiltrados
-            .filter(r=>r['Mes']===mes)
-            .reduce((sum,r)=>sum + (parseFloat(r['M2'])||0),0);
-    });
-    criarGrafico('m2MesChart','bar',meses,m2Mes,'#6366f1');
-
-    // === M² Pintados por OS ===
-    const m2OS = osLabels.map(os=>{
-        return dadosFiltrados
-            .filter(r=>r['OS']===os)
-            .reduce((sum,r)=>sum + (parseFloat(r['M2'])||0),0);
-    });
-    criarGrafico('m2OSChart','bar',osLabels,m2OS,'#f97316');
+// Gera cores repetindo ou usando cores padrão
+function coloresAleatorias(qtd, cores){
+    const result = [];
+    for(let i=0;i<qtd;i++){
+        result.push(cores[i % cores.length]);
+    }
+    return result;
 }
 
-// Exportar PDF
+// Atualiza todos os gráficos com mockup
+function atualizarDashboardMockup(){
+    // Efetivo Presente/Falta
+    criarGrafico('efetivoChart','doughnut',['Presente','Falta'],
+        [dadosMockup.efetivo.presente, dadosMockup.efetivo.falta],
+        ['#0b63d6','#f87171']);
+
+    // HH Trabalhado por OS
+    criarGrafico('hhChart','bar',
+        dadosMockup.hhPorOS.map(d=>d.os),
+        dadosMockup.hhPorOS.map(d=>d.hh),
+        ['#0b63d6']);
+
+    // Litros Utilizados no Mês
+    criarGrafico('litrosMesChart','bar',
+        dadosMockup.litrosMes.map(d=>d.mes),
+        dadosMockup.litrosMes.map(d=>d.litros),
+        ['#0b63d6']);
+
+    // Total de Litros por OS
+    criarGrafico('litrosOSChart','bar',
+        dadosMockup.litrosPorOS.map(d=>d.os),
+        dadosMockup.litrosPorOS.map(d=>d.litros),
+        ['#f59e0b']);
+
+    // Cores e Tipos de Tintas
+    criarGrafico('tintasChart','doughnut',
+        dadosMockup.tintas.map(d=>d.cor),
+        dadosMockup.tintas.map(d=>d.qtd),
+        ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']);
+
+    // M² Pintados por Mês
+    criarGrafico('m2MesChart','bar',
+        dadosMockup.m2Mes.map(d=>d.mes),
+        dadosMockup.m2Mes.map(d=>d.m2),
+        ['#6366f1']);
+
+    // M² Pintados por OS
+    criarGrafico('m2OSChart','bar',
+        dadosMockup.m2PorOS.map(d=>d.os),
+        dadosMockup.m2PorOS.map(d=>d.m2),
+        ['#f97316']);
+}
+
+// Exportar PDF simples
 document.getElementById('exportarPDF').addEventListener('click',()=>{
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
-    pdf.text("Dashboard Pintura", 10, 10);
-    pdf.save("dashboard_pintura.pdf");
+    pdf.text("Dashboard Pintura - Mockup", 10, 10);
+    pdf.save("dashboard_pintura_mockup.pdf");
 });
 
-// Filtrar por datas
-document.getElementById('filtrar').addEventListener('click', atualizarDashboard);
+// Botão Filtrar (aqui não faz nada, só visual)
+document.getElementById('filtrar').addEventListener('click', atualizarDashboardMockup);
 
-// Inicializa
-window.addEventListener('load', carregarCSV);
+// Inicializa com mockup
+window.addEventListener('load', atualizarDashboardMockup);
