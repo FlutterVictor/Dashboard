@@ -7,7 +7,7 @@ body {
   color: #0b2340;
 }
 
-/* Cabeçalho igual ao STD */
+/* Cabeçalho estilo STD */
 .dashboard-header {
   background-color: #0b63d6;
   color: white;
@@ -21,7 +21,6 @@ body {
   font-size: 1.8em;
 }
 
-/* Botões e filtros */
 .dashboard-buttons {
   margin-top: 15px;
   display: flex;
@@ -57,7 +56,6 @@ body {
   background-color: #0b63d6;
 }
 
-/* Botão Voltar afastado 2cm do lado direito */
 .dashboard-buttons .btn-voltar {
   margin-left: 2cm;
 }
@@ -75,12 +73,18 @@ body {
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-height: 300px;
 }
 
 .card h3 {
   margin-top: 0;
   color: #0b63d6;
   margin-bottom: 15px;
+}
+
+.card canvas {
+  width: 100% !important;
+  height: 250px !important;
 }
 
 /* Footer */
