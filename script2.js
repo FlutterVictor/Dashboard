@@ -23,22 +23,24 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 // Função para gerar cor aleatória de produtividade
 function corProdutividade(){
     const rnd = Math.random();
-    if(rnd < 0.33) return 'red';       // improdutivo
-    if(rnd < 0.66) return 'yellow';    // média
-    return 'green';                     // produtivo
+    if(rnd < 0.33) return 'red';    // improdutivo
+    if(rnd < 0.66) return 'orange'; // média
+    return 'green';                  // produtivo
 }
 
-// Cria ícones coloridos
+// Cria ícones confiáveis do Leaflet
 function criarIcone(cor){
     return L.icon({
-        iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|${cor}`,
-        iconSize: [21, 34],
-        iconAnchor: [10, 34],
-        popupAnchor: [0, -28]
+        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${cor}.png`,
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
     });
 }
 
-// Adiciona marcadores com cores aleatórias
+// Adiciona marcadores com cores confiáveis
 let markers = [];
 setores.forEach(s=>{
     const cor = corProdutividade();
@@ -54,7 +56,8 @@ function carregarCSVPadrao(){
         .then(resp => resp.text())
         .then(texto => {
             const resultados = Papa.parse(texto, { header:true, skipEmptyLines:true });
-            dadosCSV = resultados.data.filter(r=>r['Data']); // ignora linhas incompletas
+            // ignora linhas sem Data
+            dadosCSV = resultados.data.filter(r => r['Data']); 
             aplicarFiltro();
         })
         .catch(err => alert('Erro ao carregar CSV: '+err));
@@ -77,7 +80,7 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     });
 }
 
-// Atualiza cards (simples simulação)
+// Atualiza cards (simulação)
 function atualizarCards(dados){
     let totalHH=0, totalML=0;
     dados.forEach(r=>{
