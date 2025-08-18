@@ -16,16 +16,13 @@ header{
     color:white; padding:18px; border-radius:12px;
     display:flex; flex-direction:column; gap:8px;
 }
-
 header h1{margin:0;font-size:22px;}
 
 .dashboard-buttons{
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
 }
 
-.dashboard-buttons input,
-.dashboard-buttons button,
-.dashboard-buttons a{
+.dashboard-buttons input, .dashboard-buttons button, .dashboard-buttons a{
     padding:6px 12px;
     border-radius:6px;
     border:none;
@@ -33,17 +30,29 @@ header h1{margin:0;font-size:22px;}
     text-decoration:none;
     color:white;
     background:var(--blue);
+    font-weight:bold;
 }
 
-.grid{display:grid; gap:16px; margin-top:16px; grid-template-columns:1fr 1fr;}
-
-.card.kpi{
-    background:var(--card);
-    border-radius:10px;
-    padding:20px;
-    text-align:center;
-    box-shadow:0 6px 18px rgba(7,22,48,0.06);
+.dashboard-buttons a.btn-voltar{
+    background:#0b2340;
 }
 
+.dashboard-buttons input{
+    color:#000;
+    background:#fff;
+    border:1px solid #ccc;
+}
+
+.grid{
+    display:grid; gap:16px; margin-top:18px;
+    grid-template-columns: 1fr 1fr; /* dois cards lado a lado */
+}
+
+.card{
+    background:var(--card); border-radius:10px;
+    padding:14px; box-shadow:0 6px 18px rgba(7,22,48,0.06);
+}
+
+.card.kpi{padding:20px; text-align:center;}
 .card.kpi .label{font-size:14px; color:var(--gray);}
 .card.kpi .value{font-size:24px; font-weight:700; margin-top:6px;}
