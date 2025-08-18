@@ -1,18 +1,6 @@
 let dadosCSV = [];
 
-// Função para carregar CSV automaticamente
-function carregarCSVPadrao(){
-    fetch('STD_Geral.csv')
-        .then(response => response.text())
-        .then(csvText => {
-            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-            dadosCSV = resultados.data.filter(r=>r['Data']); // ignora linhas incompletas
-            aplicarFiltro(); // Atualiza o Dashboard com todos os dados
-        })
-        .catch(err => alert('Erro ao carregar CSV: ' + err));
-}
-
-// Funções auxiliares
+// Função para converter números
 function parseNumber(str){
     if(!str) return 0;
     str = str.toString().trim().replace(',', '.');
@@ -20,6 +8,7 @@ function parseNumber(str){
     return isNaN(num) ? 0 : num;
 }
 
+// Função para converter datas BR
 function parseDateBR(str){
     if(!str) return null;
     const parts = str.split('/');
@@ -32,7 +21,7 @@ function diaSemanaIndex(diaJS){
     return diaJS === 0 ? 6 : diaJS-1;
 }
 
-// Filtro por data
+// Filtra dados por data
 function filtrarDadosPorData(dados, dataInicio, dataFim){
     if(!dataInicio && !dataFim) return dados;
     let dtInicio = dataInicio ? new Date(dataInicio) : null;
@@ -47,7 +36,7 @@ function filtrarDadosPorData(dados, dataInicio, dataFim){
     });
 }
 
-// Atualiza Dashboard
+// Atualiza dashboard
 function atualizarDashboard(dados){
     if(!dados || dados.length===0){
         document.getElementById('hhTotal').textContent='0';
@@ -61,29 +50,33 @@ function atualizarDashboard(dados){
         return;
     }
 
-    let somaHH=0,somaML=0,somaMont=0,somaMLPrevisto=0;
+    let somaHH=0, somaML=0, somaMont=0, somaMLPrevisto=0;
     let mlPorDia=Array(7).fill(0);
     let ranking={};
 
     dados.forEach(row=>{
-        const hh=parseNumber(row['HH Total']);
-        const ml=parseNumber(row['ML Montados']);
-        const mont=parseNumber(row['Mont.Presente']);
-        const mlPrev=parseNumber(row['ML PREVISTO']);
+        try{
+            const hh=parseNumber(row['HH Total']);
+            const ml=parseNumber(row['ML Montados']);
+            const mont=parseNumber(row['Mont.Presente']);
+            const mlPrev=parseNumber(row['ML PREVISTO']);
 
-        somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
+            somaHH+=hh; somaML+=ml; somaMont+=mont; somaMLPrevisto+=mlPrev;
 
-        if(row['Data']){
-            const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
-            mlPorDia[ds]+=ml;
-        }
+            if(row['Data']){
+                const ds=diaSemanaIndex(parseDateBR(row['Data']).getDay());
+                mlPorDia[ds]+=ml;
+            }
 
-        const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
-        if(nome){
-            if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
-            ranking[nome].ml+=ml;
-            ranking[nome].mlPrev+=mlPrev;
-            ranking[nome].hh+=hh;
+            const nome=row['Encarregado Responsavel'] ? row['Encarregado Responsavel'].trim() : '';
+            if(nome){
+                if(!ranking[nome]) ranking[nome]={ml:0,mlPrev:0,hh:0};
+                ranking[nome].ml+=ml;
+                ranking[nome].mlPrev+=mlPrev;
+                ranking[nome].hh+=hh;
+            }
+        } catch(e){
+            console.warn('Linha ignorada por erro:', row, e);
         }
     });
 
@@ -134,13 +127,13 @@ function atualizarDashboard(dados){
     atualizarGraficoLinha(mlPorDia);
 }
 
-// Atualiza gráfico de linhas
+// Atualiza gráfico de linha
 function atualizarGraficoLinha(mlPorDia){
     const svg=document.getElementById('graficoLinha');
     while(svg.querySelector('polyline')) svg.querySelector('polyline').remove();
     while(svg.querySelectorAll('.data-label').length) svg.querySelectorAll('.data-label').forEach(el=>el.remove());
 
-    const width=100,height=35,marginBottom=8;
+    const width=100, height=35, marginBottom=8;
     const maxML=Math.max(...mlPorDia,1);
     const pontos=mlPorDia.map((v,i)=>{
         const x=i*(width/6);
@@ -156,7 +149,6 @@ function atualizarGraficoLinha(mlPorDia){
     polyline.setAttribute("points",pointsStr);
     svg.appendChild(polyline);
 
-    // Rótulos de valores
     pontos.forEach((p,i)=>{
         const text=document.createElementNS("http://www.w3.org/2000/svg","text");
         text.classList.add('data-label');
@@ -168,35 +160,24 @@ function atualizarGraficoLinha(mlPorDia){
         text.textContent=mlPorDia[i].toFixed(0);
         svg.appendChild(text);
     });
-
-    // Rótulos de dias da semana
-    const diasSemana=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-    pontos.forEach((p,i)=>{
-        const text=document.createElementNS("http://www.w3.org/2000/svg","text");
-        text.classList.add('data-label');
-        text.setAttribute('x',p[0]);
-        text.setAttribute('y',height+5); // abaixo da linha
-        text.setAttribute('font-size','3');
-        text.setAttribute('fill','#0b2340');
-        text.setAttribute('text-anchor','middle');
-        text.textContent=diasSemana[i];
-        svg.appendChild(text);
-    });
 }
 
-// Eventos
+// Carregar CSV via input
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file=e.target.files[0];
     if(!file) return;
-    Papa.parse(file,{header:true,skipEmptyLines:true,
+    Papa.parse(file,{
+        header:true,
+        skipEmptyLines:true,
         complete: results=>{
-            dadosCSV=results.data.filter(r=>r['Data']);
+            dadosCSV=results.data;
             aplicarFiltro();
         },
         error: err=>alert('Erro ao ler o arquivo: '+err)
     });
 });
 
+// Filtro por datas
 function aplicarFiltro(){
     const dataInicio=document.getElementById('dataInicio').value;
     const dataFim=document.getElementById('dataFim').value;
@@ -206,6 +187,7 @@ function aplicarFiltro(){
 
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
+// Exportar PDF
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
@@ -221,5 +203,22 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-// Chama o CSV ao carregar página
+// Botão para abrir Dashboard 2 (Mapa de Produtividade)
+document.getElementById('btnDashboard2').addEventListener('click', () => {
+    window.location.href = 'mapa.html';
+});
+
+// Função para carregar CSV padrão ao iniciar
+function carregarCSVPadrao(){
+    fetch('STD_Geral.csv')
+        .then(response => response.text())
+        .then(csvText => {
+            const resultados = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            dadosCSV = resultados.data;
+            aplicarFiltro(); // Atualiza o Dashboard com todos os dados
+        })
+        .catch(err => alert('Erro ao carregar CSV: ' + err));
+}
+
+// Chama ao iniciar a página
 window.addEventListener('load', carregarCSVPadrao);
