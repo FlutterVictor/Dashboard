@@ -1,4 +1,4 @@
-:root{
+:root {
     --blue:#0b63d6;
     --dark:#0b2340;
     --muted:#f3f6fb;
@@ -39,14 +39,14 @@ header h1{margin:0;font-size:22px}
 #tabelaDadosWrapper {
     max-height: 200px;
     overflow-y: auto;
-    overflow-x: auto;  /* permite rolagem horizontal se necessário */
-    width: 100%;       /* ocupa toda a largura do card */
+    overflow-x: auto;
+    width: 100%;
 }
 
 /* Tabela */
 #tabelaDadosWrapper table {
-    width: 100%;       /* tabela preenche todo o wrapper */
-    table-layout: fixed; /* mantém colunas proporcionais */
+    width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
 }
 
@@ -70,62 +70,53 @@ header h1{margin:0;font-size:22px}
     white-space: nowrap;
 }
 
-/* Largura das colunas específicas */
+/* Larguras das colunas */
 #tabelaDadosWrapper th:nth-child(2),
 #tabelaDadosWrapper td:nth-child(2),
 #tabelaDadosWrapper th:nth-child(3),
 #tabelaDadosWrapper td:nth-child(3) {
-    width: 70px; /* OS e Matrícula menores */
+    width: 70px;
 }
-
 #tabelaDadosWrapper th:nth-child(4),
 #tabelaDadosWrapper td:nth-child(4) {
-    width: 150px; /* Encarregado Responsável mantém tamanho */
+    width: 150px;
 }
-
 #tabelaDadosWrapper th:nth-child(5),
 #tabelaDadosWrapper td:nth-child(5) {
-    width: 80px; /* Área menor */
+    width: 80px;
 }
-
 #tabelaDadosWrapper th:nth-child(6),
 #tabelaDadosWrapper td:nth-child(6) {
-    width: 60px; /* Mont.Presente menor */
+    width: 60px;
 }
-
 #tabelaDadosWrapper th:nth-child(7),
 #tabelaDadosWrapper td:nth-child(7) {
-    width: 60px; /* HH Total */
+    width: 60px;
 }
-
 #tabelaDadosWrapper th:nth-child(8),
 #tabelaDadosWrapper td:nth-child(8) {
-    width: 70px; /* ML Montados */
+    width: 70px;
 }
-
 #tabelaDadosWrapper th:nth-child(9),
 #tabelaDadosWrapper td:nth-child(9) {
-    width: 70px; /* STD Montado */
+    width: 70px;
 }
-
 #tabelaDadosWrapper th:nth-child(10),
 #tabelaDadosWrapper td:nth-child(10) {
-    width: 80px; /* Data */
+    width: 80px;
 }
 
-#filter-container{margin-top: 12px; display:flex; gap:10px; align-items:center;}
+#filter-container {
+    margin-top: 12px; 
+    display:flex; 
+    gap:10px; 
+    align-items:center; 
+    flex-wrap: wrap;
+}
 
 #btnApplyFilter,
 #btnExportPDF,
-#btnDashboard2{
-    background:#0b63d6;
-    color:#fff;
-    border:none;
-    padding:6px 12px;
-    border-radius:6px;
-    cursor:pointer;
-}
-
+#btnDashboard2,
 #btnAbrirOutroDashboard {
     background:#0b63d6;
     color:#fff;
@@ -133,4 +124,44 @@ header h1{margin:0;font-size:22px}
     padding:6px 12px;
     border-radius:6px;
     cursor:pointer;
+}
+
+/* ============================= */
+/* 📱 Responsividade para Mobile */
+/* ============================= */
+@media (max-width: 900px) {
+    .linha1 {
+        grid-template-columns: repeat(2,1fr);
+    }
+    .linha2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 18px;
+    }
+    .subtitle {
+        font-size: 12px;
+    }
+    .linha1 {
+        grid-template-columns: 1fr;
+    }
+    .linha2 {
+        grid-template-columns: 1fr;
+    }
+    #filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #filter-container label {
+        width: 100%;
+    }
+    #filter-container button {
+        width: 100%;
+    }
+    .kpi .value {
+        font-size: 20px;
+    }
 }
