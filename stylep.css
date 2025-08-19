@@ -17,11 +17,11 @@ header{
     display:flex; flex-direction:column; gap:8px;
 }
 header h1{margin:0;font-size:22px;}
+.subtitle{font-size:14px; opacity:.9;}
 
 .dashboard-buttons{
     display:flex; flex-wrap:wrap; gap:10px; align-items:center;
 }
-
 .dashboard-buttons input, .dashboard-buttons button, .dashboard-buttons a{
     padding:6px 12px;
     border-radius:6px;
@@ -32,27 +32,65 @@ header h1{margin:0;font-size:22px;}
     background:var(--blue);
     font-weight:bold;
 }
-
 .dashboard-buttons a.btn-voltar{
     background:#0b2340;
 }
-
 .dashboard-buttons input{
     color:#000;
     background:#fff;
     border:1px solid #ccc;
 }
 
+/* Grid geral */
 .grid{
     display:grid; gap:16px; margin-top:18px;
-    grid-template-columns: 1fr 1fr; /* dois cards lado a lado */
+    grid-template-columns: 1fr 1fr; /* dois cards lado a lado por padrão */
 }
 
+/* Cards */
 .card{
     background:var(--card); border-radius:10px;
     padding:14px; box-shadow:0 6px 18px rgba(7,22,48,0.06);
 }
-
 .card.kpi{padding:20px; text-align:center;}
 .card.kpi .label{font-size:14px; color:var(--gray);}
 .card.kpi .value{font-size:24px; font-weight:700; margin-top:6px;}
+
+/* Wrapper da tabela para rolagem horizontal */
+#tabelaDadosWrapper{
+    max-height:250px;
+    overflow-x:auto;
+    overflow-y:auto;
+    width:100%;
+}
+#tabelaDadosWrapper table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+#tabelaDadosWrapper th, #tabelaDadosWrapper td{
+    padding:6px;
+    font-size:12px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+/* ===========================
+   Responsividade Mobile
+=========================== */
+@media (max-width:1200px){
+    .grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:900px){
+    .grid{grid-template-columns:1fr;}
+}
+@media (max-width:600px){
+    header h1{font-size:18px;}
+    .subtitle{font-size:12px;}
+    .dashboard-buttons{flex-direction:column; align-items:stretch;}
+    .dashboard-buttons input, .dashboard-buttons button, .dashboard-buttons a{width:100%;}
+    .card.kpi .value{font-size:20px;}
+}
