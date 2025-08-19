@@ -13,74 +13,82 @@ body{margin:0; background:var(--muted); color:var(--dark);}
 
 header{
     background:linear-gradient(90deg,var(--blue),#1370e8);
-    color:white;
-    padding:18px;
-    border-radius:12px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
+    color:white; padding:18px; border-radius:12px;
+    display:flex; flex-direction:column; gap:8px;
 }
-header h1{margin:0;font-size:22px}
-.subtitle{font-size:14px; opacity:.9}
+header h1{margin:0;font-size:22px;}
+.subtitle{font-size:14px; opacity:.9;}
 
-#filter-container{
-    margin-top:12px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
+.dashboard-buttons{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
 }
-#filter-container button{
-    background:var(--blue);
-    color:#fff;
-    border:none;
+.dashboard-buttons input, .dashboard-buttons button, .dashboard-buttons a{
     padding:6px 12px;
     border-radius:6px;
+    border:none;
     cursor:pointer;
+    text-decoration:none;
+    color:white;
+    background:var(--blue);
+    font-weight:bold;
+}
+.dashboard-buttons a.btn-voltar{
+    background:#0b2340;
+}
+.dashboard-buttons input{
+    color:#000;
+    background:#fff;
+    border:1px solid #ccc;
 }
 
-.grid{display:grid; gap:16px; margin-top:18px;}
-.grid.linha1 { grid-template-columns: 1fr; }
-.grid.linha2 { grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px; }
-
+/* Grid geral do Mapa de Produtividade */
+.grid{
+    display:grid; gap:16px; margin-top:18px;
+    grid-template-columns: 1fr 1fr; /* padrão desktop */
+}
 .card{
-    background:var(--card);
-    border-radius:10px;
-    padding:14px;
-    box-shadow:0 6px 18px rgba(7,22,48,0.06);
+    background:var(--card); border-radius:10px;
+    padding:14px; box-shadow:0 6px 18px rgba(7,22,48,0.06);
 }
-.card-title{font-weight:700; margin-bottom:8px;}
-.card.wide { height:400px; }
-
 .card.kpi{padding:20px; text-align:center;}
 .card.kpi .label{font-size:14px; color:var(--gray);}
 .card.kpi .value{font-size:24px; font-weight:700; margin-top:6px;}
 
-/* ============================= */
-/* 📱 Responsividade Mobile      */
-/* ============================= */
-@media (max-width: 900px) {
-    .grid.linha2 {
-        grid-template-columns: 1fr; /* tablet: empilha gráficos */
-    }
+/* Wrapper de tabela */
+#tabelaDadosWrapper{
+    max-height:250px;
+    overflow-x:auto;
+    overflow-y:auto;
+    width:100%;
+}
+#tabelaDadosWrapper table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+#tabelaDadosWrapper th, #tabelaDadosWrapper td{
+    padding:6px;
+    font-size:12px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
-@media (max-width: 600px) {
-    header h1 {
-        font-size: 18px;
-    }
-    .subtitle {
-        font-size: 12px;
-    }
-    #filter-container {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    #filter-container label,
-    #filter-container button {
-        width: 100%;
-    }
-    .card.kpi .value {
-        font-size: 20px;
-    }
+/* ===========================
+   Responsividade Mobile
+=========================== */
+@media (max-width:1200px){
+    .grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:900px){
+    .grid{grid-template-columns:1fr;}
+}
+@media (max-width:600px){
+    header h1{font-size:18px;}
+    .subtitle{font-size:12px;}
+    .dashboard-buttons{flex-direction:column; align-items:stretch;}
+    .dashboard-buttons input, .dashboard-buttons button, .dashboard-buttons a{width:100%;}
+    .card.kpi .value{font-size:20px;}
 }
