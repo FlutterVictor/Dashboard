@@ -1,5 +1,5 @@
 /* =========================
-   MOCK INICIAL + ESTADO
+   ESTADO INICIAL
 ========================= */
 const state = {
   supervisor: "Carlos Silva",
@@ -14,16 +14,13 @@ const state = {
   hhReal: 98,
   mlPrev: 250,
   mlReal: 230,
-  resumo: "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
-  atividades: [
-    {atividade:"Montagem andaime","ini":"18:00","fim":"20:15","interfer":"0:00","obs":""}
-  ],
+  resumo: "",
+  atividades: [],
   fotos: []
 };
 
 let dbNoturno = {}; // banco de dados JSON
 
-// Constantes de regra
 const STD_ALVO = 0.22;
 const HORAS_POR_MONTADOR = 8.8;
 
@@ -66,38 +63,43 @@ const els = {
   btnSalvar: document.getElementById('btnSalvar'),
   btnCarregar: document.getElementById('btnCarregar'),
   btnExportPDF: document.getElementById('btnExportPDF'),
-  btnVoltarMenu: document.getElementById('btnVoltarMenu'),
   btnEditar: document.getElementById('btnEditar'),
+  btnVoltarMenu: document.getElementById('btnVoltarMenu'),
 
   gauge: document.getElementById('gauge'),
   barChart: document.getElementById('barChart'),
 };
 
 /* =========================
-   HELPERS
+   FUNÇÕES AUXILIARES
 ========================= */
-function toFixed(n,d=2){ const x=Number(n); return isFinite(x)?x.toFixed(d).replace('.',','):'0,00'; }
-function parseNum(v){ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
-function hmToHours(hm){ if(!hm) return 0; const [h,m]=hm.split(':').map(n=>parseInt(n||'0',10)); return (h||0)+(m||0)/60; }
-function diffHM(ini,fim){ const [h1,m1]=ini.split(':').map(n=>parseInt(n,10)); const [h2,m2]=fim.split(':').map(n=>parseInt(n,10)); let t1=h1*60+m1; let t2=h2*60+m2; if(t2<t1)t2+=24*60; const d=Math.max(0,t2-t1); return `${Math.floor(d/60)}:${String(d%60).padStart(2,'0')}`; }
+function toFixed(n, d=2){ const x = Number(n); return isFinite(x)? x.toFixed(d).replace('.',',') : '0,00'; }
+function parseNum(v){ const n = parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
+function hmToHours(hm){ if(!hm) return 0; const [h,m] = hm.split(':').map(n=>parseInt(n||'0',10)); return (h||0) + (m||0)/60; }
+function diffHM(ini, fim){
+  const [h1,m1] = ini.split(':').map(n=>parseInt(n,10));
+  const [h2,m2] = fim.split(':').map(n=>parseInt(n,10));
+  let t1=h1*60+m1, t2=h2*60+m2; if(t2<t1) t2+=24*60;
+  const d=Math.max(0,t2-t1); const H=Math.floor(d/60), M=d%60;
+  return `${H}:${String(M).padStart(2,'0')}`;
+}
 
 /* =========================
-   ATUALIZAÇÃO DE UI
+   ATUALIZAÇÃO UI
 ========================= */
 function atualizarCards(){
   els.kpiSupervisor.textContent = state.supervisor;
   els.kpiEncarregado.textContent = state.encarregado;
   els.kpiMontadores.textContent = state.montadores;
   els.kpiFaltas.textContent = state.faltas;
-
   const totalInterfH = state.atividades.reduce((acc,a)=> acc+hmToHours(a.interfer),0);
   els.kpiInterf.textContent = toFixed(totalInterfH,1);
 }
 
 function atualizarCalculos(){
   const hhPrev = state.montadores*HORAS_POR_MONTADOR;
-  const stdPrev = state.mlPrev>0 ? (hhPrev/state.mlPrev) : 0;
-  const stdReal = state.mlReal>0 ? (state.hhReal/state.mlReal) : 0;
+  const stdPrev = state.mlPrev>0? hhPrev/state.mlPrev : 0;
+  const stdReal = state.mlReal>0? state.hhReal/state.mlReal : 0;
 
   els.outHHPrev.textContent = toFixed(hhPrev,1);
   els.outSTDPrev.textContent = toFixed(stdPrev,2);
@@ -135,202 +137,151 @@ function renderTabela(){
       <td><input type="text" value="${a.interfer}" placeholder="H:MM"></td>
       <td><input type="text" value="${a.obs||''}" placeholder="Observações"></td>
     `;
-    const [cb,inpAtv,inpIni,inpFim,inpInterf,inpObs] = tr.querySelectorAll('input');
-    inpAtv.addEventListener('input',e=>{ state.atividades[idx].atividade=e.target.value; });
-    inpIni.addEventListener('change',e=>{
-      state.atividades[idx].ini=e.target.value;
-      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
-    });
-    inpFim.addEventListener('change',e=>{
-      state.atividades[idx].fim=e.target.value;
-      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
-    });
-    inpInterf.addEventListener('input',e=>{ state.atividades[idx].interfer=e.target.value; atualizarCards(); });
-    inpObs.addEventListener('input',e=>{ state.atividades[idx].obs=e.target.value; });
+    const [cb, inpAtv, inpIni, inpFim, inpInterf, inpObs]=tr.querySelectorAll('input');
+    inpAtv.addEventListener('input', e=>{ state.atividades[idx].atividade = e.target.value; });
+    inpIni.addEventListener('change', e=>{ state.atividades[idx].ini=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards(); });
+    inpFim.addEventListener('change', e=>{ state.atividades[idx].fim=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards(); });
+    inpInterf.addEventListener('input', e=>{ state.atividades[idx].interfer=e.target.value; atualizarCards(); });
+    inpObs.addEventListener('input', e=>{ state.atividades[idx].obs=e.target.value; });
     els.tabelaBody.appendChild(tr);
   });
 }
 
 /* =========================
-   UPLOAD DE FOTOS
+   PREVIEW DE FOTOS
 ========================= */
 els.uploadFotos.addEventListener('change', e=>{
   const files = Array.from(e.target.files);
-  files.forEach(f=>{
+  files.forEach(file=>{
     const reader = new FileReader();
     reader.onload = ev=>{
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.classList.add('thumb');
+      els.previewFotos.appendChild(img);
       state.fotos.push(ev.target.result);
-      renderFotos();
     };
-    reader.readAsDataURL(f);
+    reader.readAsDataURL(file);
   });
 });
-
-function renderFotos(){
-  els.previewFotos.innerHTML='';
-  state.fotos.forEach((f,idx)=>{
-    const img = document.createElement('img');
-    img.src=f;
-    img.style.width='80px';
-    img.style.margin='4px';
-    els.previewFotos.appendChild(img);
-  });
-}
 
 /* =========================
    BOTÕES
 ========================= */
-els.btnAddLinha.addEventListener('click',()=>{
+els.btnAddLinha.addEventListener('click', ()=>{
   state.atividades.push({atividade:'',ini:'',fim:'',interfer:'',obs:''});
   renderTabela();
 });
-els.btnRemoverSel.addEventListener('click',()=>{
-  const sel = Array.from(els.tabelaBody.querySelectorAll('input[type=checkbox]:checked')).map(cb=>parseInt(cb.dataset.idx,10));
-  state.atividades = state.atividades.filter((_,i)=>!sel.includes(i));
-  renderTabela(); atualizarCards();
+
+els.btnRemoverSel.addEventListener('click', ()=>{
+  const checkboxes = els.tabelaBody.querySelectorAll('input[type="checkbox"]:checked');
+  const idxs = Array.from(checkboxes).map(cb=>parseInt(cb.dataset.idx,10)).sort((a,b)=>b-a);
+  idxs.forEach(i=>state.atividades.splice(i,1));
+  renderTabela();
+  atualizarCards();
 });
 
-els.btnSalvar.addEventListener('click',()=>{
-  const key=`${state.data}_${state.turno}`;
-  state.supervisor=els.inpSupervisor.value;
-  state.encarregado=els.inpEncarregado.value;
-  state.local=els.inpLocal.value;
-  state.disciplina=els.inpDisciplina.value;
-  state.montadores=parseNum(els.inpMontadores.value);
-  state.faltas=parseNum(els.inpFaltas.value);
-  state.ART=els.inpART.value;
-  state.hhReal=parseNum(els.inpHHReal.value);
-  state.mlPrev=parseNum(els.inpMLPrev.value);
-  state.mlReal=parseNum(els.inpMLReal.value);
-  state.resumo=els.resumoTurno.value;
-  dbNoturno[key]=JSON.parse(JSON.stringify(state));
-  alert('Dados salvos!');
+els.btnSalvar.addEventListener('click', ()=>{
+  const key = `${state.data}_${state.turno}`;
+  dbNoturno[key] = {...state};
+  localStorage.setItem('dbNoturno', JSON.stringify(dbNoturno));
+  alert('Dados salvos localmente!');
 });
 
-els.btnCarregar.addEventListener('click',()=>{
-  const key=`${state.data}_${state.turno}`;
+els.btnCarregar.addEventListener('click', ()=>{
+  dbNoturno = JSON.parse(localStorage.getItem('dbNoturno')||'{}');
+  const key = `${state.data}_${state.turno}`;
   if(dbNoturno[key]){
-    Object.assign(state,JSON.parse(JSON.stringify(dbNoturno[key])));
-    preencherFormulario(); renderTabela(); atualizarCards(); atualizarCalculos();
-    alert('Dados carregados!');
-  } else alert('Nenhum registro encontrado.');
+    Object.assign(state, dbNoturno[key]);
+    preencherFormulario();
+    renderTabela();
+    atualizarCards();
+    atualizarCalculos();
+  } else alert('Nenhum registro encontrado!');
 });
 
-// Botão Editar
+els.btnExportPDF.addEventListener('click', ()=>{
+  html2canvas(document.getElementById('dashboardWrap')).then(canvas=>{
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('p','mm','a4');
+    const pdfWidth = 210;
+    const pdfHeight = canvas.height * pdfWidth / canvas.width;
+    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
+    pdf.save(`Noturno_${state.data}.pdf`);
+  });
+});
+
 els.btnEditar.addEventListener('click', ()=>{
   const key = `${state.data}_${state.turno}`;
   if(dbNoturno[key]){
     localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
-    window.open('noturno_edit.html', '_blank');
+    window.open('noturno_edit.html','_blank');
   } else {
     alert('Nenhum registro salvo para editar!');
   }
 });
 
-// Voltar Menu
-els.btnVoltarMenu.addEventListener('click',()=>window.location.href='index.html');
+els.btnVoltarMenu.addEventListener('click', ()=>{ window.location.href='index.html'; });
 
 /* =========================
-   GRÁFICOS (SVG)
+   GRÁFICOS
 ========================= */
 function desenharGauge(){
-  const svg = els.gauge;
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const svg=els.gauge; while(svg.firstChild) svg.removeChild(svg.firstChild);
   const w=200,h=120,cx=100,cy=110,r=90;
-  const p = state.mlPrev>0 ? Math.max(0,Math.min(1,state.mlReal/state.mlPrev)) : 0;
+  const p = state.mlPrev>0? Math.max(0, Math.min(1,state.mlReal/state.mlPrev)) : 0;
   const arcPath = describeArc(cx,cy,r,180,0);
-  svg.appendChild(path(arcPath,'#e5e7eb',14));
-  const color = p>=1?'#14b8a6':(p>=0.8?'#f59e0b':'#ef4444');
-  svg.appendChild(path(describeArc(cx,cy,r,180,180*(1-p)),color,14));
+  const bg = path(arcPath,'#e5e7eb',14); svg.appendChild(bg);
+  const color = p>=1 ? '#14b8a6' : (p>=0.8 ? '#f59e0b' : '#ef4444');
+  const progPath = describeArc(cx,cy,r,180,180*(1-p));
+  const fg = path(progPath,color,14); svg.appendChild(fg);
 }
+
 function desenharBarChart(){
-  const svg = els.barChart;
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
-  const max = Math.max(state.mlPrev,state.mlReal);
-  const w=100,h=60;
-  const barras = [
-    {val:state.mlPrev,color:'#0b63d6'},
-    {val:state.mlReal,color:'#14b8a6'}
-  ];
-  barras.forEach((b,i)=>{
-    const bw=30;
-    const x=i*(bw+10)+5;
-    const y=h-(b.val/max)*h;
-    const rect = document.createElementNS("http://www.w3.org/2000/svg",'rect');
-    rect.setAttribute('x',x); rect.setAttribute('y',y); rect.setAttribute('width',bw); rect.setAttribute('height',(b.val/max)*h);
-    rect.setAttribute('fill',b.color);
+  const svg=els.barChart; while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const labels=['HH Prev','ML Prev','ML Real','HH Real'];
+  const valores=[state.montadores*HORAS_POR_MONTADOR,state.mlPrev,state.mlReal,state.hhReal];
+  const max=Math.max(...valores)*1.1;
+  valores.forEach((v,i)=>{
+    const x = i*20+10;
+    const y = 60 - (v/max*50);
+    const h = v/max*50;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',y); rect.setAttribute('width',12); rect.setAttribute('height',h);
+    rect.setAttribute('fill',i<2?'#0b63d6':'#6b7280');
     svg.appendChild(rect);
   });
 }
 
-// Funções auxiliares para SVG Gauge
-function path(d,c,w){const p=document.createElementNS("http://www.w3.org/2000/svg",'path');p.setAttribute('d',d);p.setAttribute('stroke',c);p.setAttribute('stroke-width',w);p.setAttribute('fill','none');return p;}
-function polarToCartesian(cx,cy,r,angle){const a=(angle-90)*Math.PI/180;return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}
-function describeArc(cx,cy,r,startAngle,endAngle){const s=polarToCartesian(cx,cy,r,endAngle);const e=polarToCartesian(cx,cy,r,startAngle);const largeArcFlag = endAngle-startAngle<=180?0:1; return `M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${e.x} ${e.y}`;}
-
 /* =========================
-   EXPORTAR PDF
+   FUNÇÕES AUXILIARES SVG
 ========================= */
-els.btnExportPDF.addEventListener('click',exportPDF);
-
-async function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','mm','a4');
-
-  // Página 1: Capa
-  doc.setFontSize(18);
-  doc.text('Relatório de Produtividade - Turno Noturno',105,20,{align:'center'});
-  doc.setFontSize(12);
-  doc.text(`Data: ${state.data}`,20,40);
-  doc.text(`Turno: ${state.turno}`,20,48);
-  doc.text(`Supervisor: ${state.supervisor}`,20,56);
-  doc.text(`Encarregado: ${state.encarregado}`,20,64);
-  doc.text(`Local: ${state.local}`,20,72);
-  doc.text(`Disciplina: ${state.disciplina}`,20,80);
-  doc.text(`Montadores: ${state.montadores}`,20,88);
-  doc.text(`Faltas: ${state.faltas}`,20,96);
-  doc.text(`ART: ${state.ART}`,20,104);
-  doc.text('Resumo do Turno:',20,112);
-  doc.setFontSize(10);
-  doc.text(doc.splitTextToSize(state.resumo||'---',170),20,120);
-
-  // Página 2: Tabela de atividades
-  doc.addPage();
-  doc.setFontSize(12);
-  doc.text('Atividades do Turno',105,20,{align:'center'});
-  const tableData = state.atividades.map(a=>[a.atividade,a.ini,a.fim,a.interfer,a.obs||'-']);
-  doc.autoTable({
-    startY:30,
-    head:[['Atividade','Início','Fim','Interferência','Observações']],
-    body: tableData,
-    styles:{fontSize:10},
-    headStyles:{fillColor:[11,35,64]}
-  });
-
-  // Página 3: Gráficos + Fotos
-  doc.addPage();
-  doc.setFontSize(12);
-  doc.text('Gráficos e Fotos',105,20,{align:'center'});
-  const gaugeCanvas = await html2canvas(els.gauge);
-  doc.addImage(gaugeCanvas.toDataURL('image/png'),'PNG',20,30,80,50);
-  const barCanvas = await html2canvas(els.barChart);
-  doc.addImage(barCanvas.toDataURL('image/png'),'PNG',20,90,120,50);
-  let yOffset = 150;
-  for(let f of state.fotos){
-    doc.addImage(f,'PNG',20,yOffset,40,40);
-    yOffset+=45;
-    if(yOffset>250){doc.addPage(); yOffset=20;}
-  }
-
-  doc.save(`Relatorio_Noturno_${state.data}.pdf`);
+function polarToCartesian(cx,cy,r,angle){
+  const a=angle*Math.PI/180;
+  return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)};
+}
+function describeArc(cx,cy,r,startAngle,endAngle){
+  const start=polarToCartesian(cx,cy,r,endAngle);
+  const end=polarToCartesian(cx,cy,r,startAngle);
+  const largeArcFlag = endAngle - startAngle <=180? 0:1;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
+function path(d,color,width){
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',d); p.setAttribute('stroke',color); p.setAttribute('stroke-width',width);
+  p.setAttribute('fill','none');
+  return p;
 }
 
 /* =========================
-   INIT
+   INICIALIZAÇÃO
 ========================= */
-preencherFormulario();
-renderTabela();
-atualizarCards();
-atualizarCalculos();
+function init(){
+  dbNoturno = JSON.parse(localStorage.getItem('dbNoturno')||'{}');
+  preencherFormulario();
+  renderTabela();
+  atualizarCards();
+  atualizarCalculos();
+}
+
+init();
