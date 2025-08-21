@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard STD - Noturno</title>
+  <link rel="stylesheet" href="noturno.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Dashboard STD - Noturno</h1>
+    <div class="controls">
+      <button class="btn" onclick="toggleIndicadores()">Indicadores</button>
+      <button class="btn" onclick="toggleRelatorios()">Relatórios</button>
+      <button class="btn voltar" onclick="voltar()">Voltar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section id="indicadores" class="box">
+      <h2>Indicadores</h2>
+      <p>Área para gráficos, metas e resultados.</p>
+    </section>
+
+    <section id="relatorios" class="box hidden">
+      <h2>Relatórios</h2>
+      <p>Área para relatórios interativos.</p>
+    </section>
+  </main>
+
+  <script src="noturno.js"></script>
+</body>
+</html>
