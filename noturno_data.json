@@ -1,69 +1,34 @@
 {
-  "noturno": {
-    "2025-08-21": {
-      "supervisor": "Carlos Silva",
-      "encarregado": "João Pereira",
-      "local": "ÁREA 31 - Pipe Rack",
-      "disciplina": "Andaime",
-      "montadores": 12,
-      "faltas": 1,
-      "ART": "ART-2025-00123",
-      "hhReal": 98,
-      "mlPrev": 250,
-      "mlReal": 230,
-      "resumo": "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
-      "atividades": [
-        {
-          "atividade": "Montagem módulo PR-31",
-          "ini": "18:20",
-          "fim": "20:10",
-          "interfer": "0:30",
-          "obs": "Acesso restrito"
-        },
-        {
-          "atividade": "Apoio técnico - liberação",
-          "ini": "20:20",
-          "fim": "21:00",
-          "interfer": "0:10",
-          "obs": "Aguardando PT"
-        },
-        {
-          "atividade": "Desmontagem plataforma N3",
-          "ini": "21:10",
-          "fim": "23:40",
-          "interfer": "0:20",
-          "obs": "Material"
-        }
-      ],
-      "fotos": [
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-      ]
-    },
-    "2025-08-22": {
-      "supervisor": "Carlos Silva",
-      "encarregado": "João Pereira",
-      "local": "ÁREA 32 - Pipe Rack",
-      "disciplina": "Andaime",
-      "montadores": 10,
-      "faltas": 0,
-      "ART": "ART-2025-00124",
-      "hhReal": 85,
-      "mlPrev": 220,
-      "mlReal": 200,
-      "resumo": "Turno ocorreu conforme planejamento. Área 32 liberada às 21:00.",
-      "atividades": [
-        {
-          "atividade": "Montagem módulo PR-32",
-          "ini": "18:30",
-          "fim": "20:00",
-          "interfer": "0:15",
-          "obs": "Sem problemas"
-        }
-      ],
-      "fotos": [
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-      ]
-    }
+  "2025-08-21_Noturno": {
+    "supervisor": "Carlos Silva",
+    "encarregado": "João Pereira",
+    "local": "ÁREA 31 - Pipe Rack",
+    "disciplina": "Andaime",
+    "montadores": 12,
+    "faltas": 1,
+    "ART": "ART-2025-00123",
+    "data": "2025-08-21",
+    "turno": "Noturno",
+    "hhReal": 98,
+    "mlPrev": 250,
+    "mlReal": 230,
+    "resumo": "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
+    "atividades": [
+      {
+        "atividade": "Montagem de andaime",
+        "ini": "18:00",
+        "fim": "19:30",
+        "interfer": "1:30",
+        "obs": "Sem intercorrências"
+      },
+      {
+        "atividade": "Verificação de segurança",
+        "ini": "19:30",
+        "fim": "20:15",
+        "interfer": "0:45",
+        "obs": "Pequena interferência de material"
+      }
+    ],
+    "fotos": []
   }
 }
