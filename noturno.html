@@ -5,24 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Noturno</title>
   <link rel="stylesheet" href="noturno.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
     <h1>Dashboard Noturno</h1>
     <nav>
-      <button class="btn">Indicador 1</button>
-      <button class="btn">Indicador 2</button>
-      <button class="btn">Indicador 3</button>
-      <button class="btn voltar">Voltar</button>
+      <button id="voltar">Voltar</button>
+      <button id="atualizar">Atualizar</button>
     </nav>
   </header>
 
   <main>
-    <section class="conteudo">
-      <h2>Mapa Noturno</h2>
-      <p>Aqui você pode visualizar os dados relacionados ao turno da noite.</p>
+    <section class="cards">
+      <div class="card">
+        <h2>Produção</h2>
+        <p>325 m³</p>
+      </div>
+      <div class="card">
+        <h2>Equipe</h2>
+        <p>12 colaboradores</p>
+      </div>
+      <div class="card">
+        <h2>Horas Trabalhadas</h2>
+        <p>94h</p>
+      </div>
+      <div class="card">
+        <h2>Eficiência</h2>
+        <p>87%</p>
+      </div>
+    </section>
+
+    <section class="graficos">
+      <div class="grafico-container">
+        <h3>Produção por Turno</h3>
+        <canvas id="graficoTurno"></canvas>
+      </div>
+      <div class="grafico-container">
+        <h3>Eficiência por Equipe</h3>
+        <canvas id="graficoEquipe"></canvas>
+      </div>
     </section>
   </main>
+
+  <footer>
+    <p>Dashboard Noturno - Mockup | STD Layout</p>
+  </footer>
 
   <script src="noturno.js"></script>
 </body>
