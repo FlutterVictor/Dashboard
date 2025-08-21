@@ -1,0 +1,22 @@
+[
+  {
+    "Supervisor": "Carlos Silva",
+    "Encarregado": "João Pereira",
+    "Local": "Área 1",
+    "Montadores": 12,
+    "Faltas": 1,
+    "ART": "12345",
+    "HH Real": 98,
+    "ML Previsto": 250,
+    "ML Montado": 230,
+    "Disciplina atendida": "Solda",
+    "Resumo": "Turno tranquilo, pequenas interferências no início.",
+    "Fotos": ["data:image/png;base64,iVBORw0KGgoAAAANS...", "data:image/png;base64,iVBORw0KGgoAAAANS..."],
+    "Data": "2025-08-21",
+    "Turno": "18:00-05:00",
+    "Atividade": "Montagem",
+    "Hora inicio interferencia": 20,
+    "Hora fim interferencia": 22,
+    "Observação": "Falta de material"
+  }
+]
