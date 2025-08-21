@@ -1,94 +1,52 @@
-:root {
-  --blue: #0b63d6;
-  --dark: #0b2340;
-  --muted: #f3f6fb;
-  --card: #ffffff;
-  --gray: #6b7280;
-  font-family: Inter, system-ui, Arial;
+.dashboard {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f5f7fa;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: var(--muted);
-  color: var(--dark);
-}
-
-header {
-  background: var(--blue);
-  color: white;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 4px solid var(--dark);
-}
-
-header h1 {
-  font-size: 1.8rem;
-}
-
-header nav button {
-  margin-left: 1rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #e5e7eb;
-  color: var(--dark);
-}
-
-main {
-  padding: 2rem;
+h1 {
+  text-align: center;
+  color: #0b63d6;
+  margin-bottom: 20px;
 }
 
 .cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
 }
 
 .card {
-  background: var(--card);
+  background: #ffffff;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 15px;
   text-align: center;
+  width: 200px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.card h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  color: var(--blue);
-}
-
-.card p {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.graficos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-.grafico-container {
-  background: var(--card);
-  padding: 1rem;
+.chart {
+  margin: 20px auto;
+  width: 80%;
+  background: #ffffff;
+  padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-footer {
-  background: var(--blue);
-  color: white;
-  padding: 0.8rem;
-  text-align: center;
-  margin-top: 2rem;
+.photos {
+  margin: 20px auto;
+  width: 80%;
+}
+
+.photo-grid {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-grid img {
+  width: 30%;
+  border-radius: 10px;
+  object-fit: cover;
 }
