@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Noturno Edit — Preenchimento de Turno</title>
+  <title>Relatório de Produtividade — Noturno Edit</title>
   <link rel="stylesheet" href="noturno_edit.css">
 </head>
 <body>
   <div class="wrap" id="dashboardWrap">
     <header>
-      <h1>Noturno Edit — Preenchimento de Turno</h1>
+      <h1>Relatório de Produtividade — Noturno Edit</h1>
       <div class="subtitle">Turno das 18:00 às 05:00 • STD Padrão = 0,22</div>
     </header>
 
@@ -22,8 +22,6 @@
         </select>
       </label>
       <button id="btnSalvar">Salvar</button>
-      <button id="btnCarregar">Carregar</button>
-      <button id="btnVoltarMenu">Voltar ao Menu</button>
     </div>
 
     <!-- Linha 1: Cards principais -->
@@ -50,25 +48,26 @@
       </div>
     </div>
 
-    <!-- Linha 2: Formulário do turno -->
+    <!-- Linha 2: Formulário compacto -->
     <div class="grid linha2">
       <div class="card full">
         <div class="card-title">Informações do Turno</div>
         <div class="form-grid">
-          <label>Supervisor <input type="text" id="inpSupervisor"></label>
-          <label>Encarregado <input type="text" id="inpEncarregado"></label>
           <label>Local <input type="text" id="inpLocal"></label>
           <label>Disciplina atendida <input type="text" id="inpDisciplina"></label>
           <label>Montadores Previsto <input type="number" id="inpMontadoresPrev" min="0"></label>
           <label>Montadores Real <input type="number" id="inpMontadoresReal" min="0"></label>
           <label>Faltas <input type="number" id="inpFaltas" min="0"></label>
           <label>ART <input type="text" id="inpART"></label>
-          <label>ML Previsto <input type="number" id="inpMLPrev" disabled></label>
-          <label>ML Real <input type="number" id="inpMLReal"></label>
-          <label>HH Previsto <input type="number" id="outHHPrev" disabled></label>
-          <label>HH Real <input type="number" id="inpHHReal" disabled></label>
-          <label>STD Previsto <input type="number" id="outSTDPrev" disabled></label>
-          <label>STD Real <input type="number" id="outSTDReal" disabled></label>
+          <label>ML Real <input type="number" id="inpMLReal" min="0"></label>
+        </div>
+
+        <div class="auto-calc">
+          <div>HH Previsto = Montadores × 8,8h → <b id="outHHPrev"></b> h</div>
+          <div>HH Real = Montadores × 8,8h → <b id="outHHReal"></b> h</div>
+          <div>ML Previsto = Montadores × 40 m → <b id="outMLPrev"></b></div>
+          <div>STD Previsto = HH Previsto / ML Previsto → <b id="outSTDPrev"></b></div>
+          <div>STD Real = HH Real / ML Real → <b id="outSTDReal"></b></div>
         </div>
       </div>
     </div>
@@ -78,15 +77,24 @@
       <div class="card">
         <div class="card-title">Velocímetro — Atingimento de ML (% Real / Previsto)</div>
         <svg id="gauge" width="100%" height="180" viewBox="0 0 200 120" preserveAspectRatio="none"></svg>
+        <div class="legend-std">
+          <span class="dot green"></span><span>≥ 100% </span>
+          <span class="dot yellow"></span><span>80%–99% </span>
+          <span class="dot red"></span><span>&lt; 80%</span>
+        </div>
       </div>
 
       <div class="card">
         <div class="card-title">Comparativo Previsto x Real</div>
         <svg id="barChart" width="100%" height="180" viewBox="0 0 100 60" preserveAspectRatio="none"></svg>
+        <div class="bar-legend">
+          <span class="swatch previsto"></span>Previsto
+          <span class="swatch real"></span>Real
+        </div>
       </div>
     </div>
 
-    <!-- Linha 4: Tabela de Atividades -->
+    <!-- Linha 4: Tabela de Atividades e Interferências -->
     <div class="grid linha4">
       <div class="card full">
         <div class="card-title">Atividades Executadas / Interferências</div>
@@ -106,7 +114,9 @@
                 <th>Obs.</th>
               </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+              <!-- preenchido pelo JS -->
+            </tbody>
           </table>
         </div>
       </div>
@@ -128,11 +138,10 @@
         <div id="previewFotos" class="preview-grid"></div>
       </div>
     </div>
+
   </div>
 
   <!-- Libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="noturno_edit.js"></script>
 </body>
 </html>
