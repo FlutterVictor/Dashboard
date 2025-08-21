@@ -14,8 +14,10 @@ const state = {
   hhReal: 98,
   mlPrev: 250,
   mlReal: 230,
-  resumo: "",
-  atividades: [],
+  resumo: "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
+  atividades: [
+    {atividade:"Montagem andaime","ini":"18:00","fim":"20:15","interfer":"0:00","obs":""}
+  ],
   fotos: []
 };
 
@@ -65,6 +67,7 @@ const els = {
   btnCarregar: document.getElementById('btnCarregar'),
   btnExportPDF: document.getElementById('btnExportPDF'),
   btnVoltarMenu: document.getElementById('btnVoltarMenu'),
+  btnEditar: document.getElementById('btnEditar'),
 
   gauge: document.getElementById('gauge'),
   barChart: document.getElementById('barChart'),
@@ -73,43 +76,28 @@ const els = {
 /* =========================
    HELPERS
 ========================= */
-function toFixed(n, d=2){
-  const x = Number(n);
-  return isFinite(x) ? x.toFixed(d).replace('.',',') : '0,00';
-}
-function parseNum(v){ const n = parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
-function hmToHours(hm){
-  if(!hm) return 0;
-  const [h,m] = hm.split(':').map(n=>parseInt(n||'0',10));
-  return (h||0) + (m||0)/60;
-}
-function diffHM(ini, fim){
-  const [h1,m1] = ini.split(':').map(n=>parseInt(n,10));
-  const [h2,m2] = fim.split(':').map(n=>parseInt(n,10));
-  let t1 = h1*60 + m1;
-  let t2 = h2*60 + m2;
-  if(t2 < t1) t2 += 24*60;
-  const d = Math.max(0, t2 - t1);
-  const H = Math.floor(d/60), M = d%60;
-  return `${H}:${String(M).padStart(2,'0')}`;
-}
+function toFixed(n,d=2){ const x=Number(n); return isFinite(x)?x.toFixed(d).replace('.',','):'0,00'; }
+function parseNum(v){ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
+function hmToHours(hm){ if(!hm) return 0; const [h,m]=hm.split(':').map(n=>parseInt(n||'0',10)); return (h||0)+(m||0)/60; }
+function diffHM(ini,fim){ const [h1,m1]=ini.split(':').map(n=>parseInt(n,10)); const [h2,m2]=fim.split(':').map(n=>parseInt(n,10)); let t1=h1*60+m1; let t2=h2*60+m2; if(t2<t1)t2+=24*60; const d=Math.max(0,t2-t1); return `${Math.floor(d/60)}:${String(d%60).padStart(2,'0')}`; }
 
 /* =========================
-   UI
+   ATUALIZAÇÃO DE UI
 ========================= */
 function atualizarCards(){
   els.kpiSupervisor.textContent = state.supervisor;
   els.kpiEncarregado.textContent = state.encarregado;
   els.kpiMontadores.textContent = state.montadores;
   els.kpiFaltas.textContent = state.faltas;
-  const totalInterfH = state.atividades.reduce((acc,a)=> acc + hmToHours(a.interfer),0);
+
+  const totalInterfH = state.atividades.reduce((acc,a)=> acc+hmToHours(a.interfer),0);
   els.kpiInterf.textContent = toFixed(totalInterfH,1);
 }
 
 function atualizarCalculos(){
-  const hhPrev = state.montadores * HORAS_POR_MONTADOR;
-  const stdPrev = state.mlPrev > 0 ? (hhPrev / state.mlPrev) : 0;
-  const stdReal = state.mlReal > 0 ? (state.hhReal / state.mlReal) : 0;
+  const hhPrev = state.montadores*HORAS_POR_MONTADOR;
+  const stdPrev = state.mlPrev>0 ? (hhPrev/state.mlPrev) : 0;
+  const stdReal = state.mlReal>0 ? (state.hhReal/state.mlReal) : 0;
 
   els.outHHPrev.textContent = toFixed(hhPrev,1);
   els.outSTDPrev.textContent = toFixed(stdPrev,2);
@@ -136,10 +124,10 @@ function preencherFormulario(){
 }
 
 function renderTabela(){
-  els.tabelaBody.innerHTML = '';
-  state.atividades.forEach((a, idx)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+  els.tabelaBody.innerHTML='';
+  state.atividades.forEach((a,idx)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
       <td><input type="checkbox" data-idx="${idx}"></td>
       <td><input type="text" value="${a.atividade}"></td>
       <td><input type="time" value="${a.ini}"></td>
@@ -147,147 +135,46 @@ function renderTabela(){
       <td><input type="text" value="${a.interfer}" placeholder="H:MM"></td>
       <td><input type="text" value="${a.obs||''}" placeholder="Observações"></td>
     `;
-    const [cb, inpAtv, inpIni, inpFim, inpInterf, inpObs] = tr.querySelectorAll('input');
-    inpAtv.addEventListener('input', e=> state.atividades[idx].atividade = e.target.value );
-    inpIni.addEventListener('change', e=>{
-      state.atividades[idx].ini = e.target.value;
-      state.atividades[idx].interfer = diffHM(state.atividades[idx].ini, state.atividades[idx].fim);
+    const [cb,inpAtv,inpIni,inpFim,inpInterf,inpObs] = tr.querySelectorAll('input');
+    inpAtv.addEventListener('input',e=>{ state.atividades[idx].atividade=e.target.value; });
+    inpIni.addEventListener('change',e=>{
+      state.atividades[idx].ini=e.target.value;
+      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
       renderTabela(); atualizarCards();
     });
-    inpFim.addEventListener('change', e=>{
-      state.atividades[idx].fim = e.target.value;
-      state.atividades[idx].interfer = diffHM(state.atividades[idx].ini, state.atividades[idx].fim);
+    inpFim.addEventListener('change',e=>{
+      state.atividades[idx].fim=e.target.value;
+      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
       renderTabela(); atualizarCards();
     });
-    inpInterf.addEventListener('input', e=>{
-      state.atividades[idx].interfer = e.target.value;
-      atualizarCards();
-    });
-    inpObs.addEventListener('input', e=> state.atividades[idx].obs = e.target.value );
+    inpInterf.addEventListener('input',e=>{ state.atividades[idx].interfer=e.target.value; atualizarCards(); });
+    inpObs.addEventListener('input',e=>{ state.atividades[idx].obs=e.target.value; });
     els.tabelaBody.appendChild(tr);
   });
 }
 
 /* =========================
-   GRÁFICOS
-========================= */
-function desenharGauge(){
-  const svg = els.gauge;
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
-
-  const w=200,h=120,cx=100,cy=110,r=90;
-  const p = state.mlPrev>0 ? Math.max(0, Math.min(1,state.mlReal/state.mlPrev)) : 0;
-  const pct = Math.round(p*100);
-
-  const arcPath = describeArc(cx,cy,r,180,0);
-  svg.appendChild(path(arcPath,'#e5e7eb',14));
-
-  const color = p>=1?'#14b8a6':(p>=0.8?'#f59e0b':'#ef4444');
-  const progPath = describeArc(cx,cy,r,180,180*(1-p));
-  svg.appendChild(path(progPath,color,14));
-
-  for(let i=0;i<=10;i++){
-    const ang = 180 - i*18;
-    const a = (ang-90)*Math.PI/180;
-    const x1=cx+(r-8)*Math.cos(a), y1=cy+(r-8)*Math.sin(a);
-    const x2=cx+r*Math.cos(a), y2=cy+r*Math.sin(a);
-    svg.appendChild(line(x1,y1,x2,y2,'#cbd5e1',1.5));
-  }
-
-  svg.appendChild(text(cx,cy-10,`${pct}%`,18,'#0b2340','middle'));
-  svg.appendChild(text(cx,cy+10,`ML ${state.mlReal} / ${state.mlPrev}`,10,'#6b7280','middle'));
-
-  function path(d,stroke,sw){
-    const p = document.createElementNS("http://www.w3.org/2000/svg","path");
-    p.setAttribute('d',d); p.setAttribute('fill','none'); p.setAttribute('stroke',stroke); p.setAttribute('stroke-linecap','round'); p.setAttribute('stroke-width',sw);
-    return p;
-  }
-  function line(x1,y1,x2,y2,stroke,sw){
-    const l=document.createElementNS("http://www.w3.org/2000/svg","line");
-    l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-    l.setAttribute('stroke',stroke); l.setAttribute('stroke-width',sw);
-    return l;
-  }
-  function text(x,y,txt,size,fill,anchor){
-    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
-    t.setAttribute('x',x); t.setAttribute('y',y); t.setAttribute('font-size',size); t.setAttribute('fill',fill); t.setAttribute('text-anchor',anchor||'start');
-    t.textContent = txt; return t;
-  }
-  function polarToCartesian(cx,cy,r,angle){
-    const a=(angle-90)*Math.PI/180; return {x: cx+r*Math.cos(a), y: cy+r*Math.sin(a)};
-  }
-  function describeArc(x,y,r,startAngle,endAngle){
-    const start=polarToCartesian(x,y,r,endAngle);
-    const end=polarToCartesian(x,y,r,startAngle);
-    const largeArcFlag=endAngle-startAngle<=180?"0":"1";
-    return ["M",start.x,start.y,"A",r,r,0,largeArcFlag,0,end.x,end.y].join(" ");
-  }
-}
-
-function desenharBarChart(){
-  const svg=els.barChart;
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
-
-  const series=[
-    {nome:'HH',prev:state.montadores*HORAS_POR_MONTADOR,real:state.hhReal},
-    {nome:'ML',prev:state.mlPrev,real:state.mlReal},
-  ];
-
-  const width=100,height=60,margin={l:10,r:4,t:6,b:14};
-  const plotW=width-margin.l-margin.r, plotH=height-margin.t-margin.b;
-  const g=createGroup(margin.l,margin.t);
-  svg.appendChild(g);
-
-  const maxVal=Math.max(...series.map(s=>Math.max(s.prev,s.real)),1);
-  const barW=(plotW/series.length)*0.8, gap=(plotW/series.length)*0.2;
-
-  series.forEach((s,i)=>{
-    const x0=i*(barW+gap);
-    const hPrev=(s.prev/maxVal)*plotH, yPrev=plotH-hPrev;
-    g.appendChild(rect(x0,yPrev,barW/2-2,hPrev,'#0b63d6'));
-
-    const hReal=(s.real/maxVal)*plotH, yReal=plotH-hReal;
-    g.appendChild(rect(x0+barW/2+2,yReal,barW/2-2,hReal,'#6b7280'));
-
-    g.appendChild(text(x0+barW/2,plotH+10,s.nome,4,'#0b2340','middle'));
-  });
-
-  const axis=document.createElementNS("http://www.w3.org/2000/svg","line");
-  axis.setAttribute('x1',0); axis.setAttribute('y1',plotH);
-  axis.setAttribute('x2',plotW); axis.setAttribute('y2',plotH);
-  axis.setAttribute('stroke','#cbd5e1'); axis.setAttribute('stroke-width','0.6');
-  g.appendChild(axis);
-
-  function createGroup(x,y){ const grp=document.createElementNS("http://www.w3.org/2000/svg","g"); grp.setAttribute('transform',`translate(${x},${y})`); return grp;}
-  function rect(x,y,w,h,fill){ const r=document.createElementNS("http://www.w3.org/2000/svg","rect"); r.setAttribute('x',x); r.setAttribute('y',y); r.setAttribute('width',w); r.setAttribute('height',h); r.setAttribute('fill',fill); return r;}
-  function text(x,y,txt,size,fill,anchor){ const t=document.createElementNS("http://www.w3.org/2000/svg","text"); t.setAttribute('x',x); t.setAttribute('y',y); t.setAttribute('font-size',size); t.setAttribute('fill',fill); t.setAttribute('text-anchor',anchor||'start'); t.textContent=txt; return t;}
-}
-
-/* =========================
-   FOTOS
+   UPLOAD DE FOTOS
 ========================= */
 els.uploadFotos.addEventListener('change', e=>{
-  const files=[...e.target.files];
-  files.forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=(ev)=>{
+  const files = Array.from(e.target.files);
+  files.forEach(f=>{
+    const reader = new FileReader();
+    reader.onload = ev=>{
       state.fotos.push(ev.target.result);
       renderFotos();
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(f);
   });
-  e.target.value="";
 });
 
 function renderFotos(){
   els.previewFotos.innerHTML='';
   state.fotos.forEach((f,idx)=>{
-    const img=document.createElement('img');
+    const img = document.createElement('img');
     img.src=f;
-    img.style.width='50px';
-    img.style.height='50px';
-    img.style.margin='2px';
-    img.title=`Foto ${idx+1}`;
+    img.style.width='80px';
+    img.style.margin='4px';
     els.previewFotos.appendChild(img);
   });
 }
@@ -295,45 +182,155 @@ function renderFotos(){
 /* =========================
    BOTÕES
 ========================= */
-els.btnAddLinha.addEventListener('click', ()=>{
-  state.atividades.push({atividade:'',ini:'00:00',fim:'00:00',interfer:'0:00',obs:''});
+els.btnAddLinha.addEventListener('click',()=>{
+  state.atividades.push({atividade:'',ini:'',fim:'',interfer:'',obs:''});
   renderTabela();
 });
-
-els.btnRemoverSel.addEventListener('click', ()=>{
-  const checkboxes=[...els.tabelaBody.querySelectorAll('input[type=checkbox]')];
-  checkboxes.forEach(cb=>{
-    if(cb.checked){
-      state.atividades.splice(cb.dataset.idx,1);
-    }
-  });
-  renderTabela();
-  atualizarCards();
+els.btnRemoverSel.addEventListener('click',()=>{
+  const sel = Array.from(els.tabelaBody.querySelectorAll('input[type=checkbox]:checked')).map(cb=>parseInt(cb.dataset.idx,10));
+  state.atividades = state.atividades.filter((_,i)=>!sel.includes(i));
+  renderTabela(); atualizarCards();
 });
 
-els.btnSalvar.addEventListener('click', ()=>{
+els.btnSalvar.addEventListener('click',()=>{
   const key=`${state.data}_${state.turno}`;
+  state.supervisor=els.inpSupervisor.value;
+  state.encarregado=els.inpEncarregado.value;
+  state.local=els.inpLocal.value;
+  state.disciplina=els.inpDisciplina.value;
+  state.montadores=parseNum(els.inpMontadores.value);
+  state.faltas=parseNum(els.inpFaltas.value);
+  state.ART=els.inpART.value;
+  state.hhReal=parseNum(els.inpHHReal.value);
+  state.mlPrev=parseNum(els.inpMLPrev.value);
+  state.mlReal=parseNum(els.inpMLReal.value);
+  state.resumo=els.resumoTurno.value;
   dbNoturno[key]=JSON.parse(JSON.stringify(state));
-  alert('Salvo no banco JSON interno!');
+  alert('Dados salvos!');
 });
 
-els.btnCarregar.addEventListener('click', ()=>{
+els.btnCarregar.addEventListener('click',()=>{
   const key=`${state.data}_${state.turno}`;
   if(dbNoturno[key]){
     Object.assign(state,JSON.parse(JSON.stringify(dbNoturno[key])));
-    preencherFormulario(); renderTabela(); atualizarCards(); atualizarCalculos(); renderFotos();
-  } else alert('Nenhum registro encontrado para a data e turno atuais.');
+    preencherFormulario(); renderTabela(); atualizarCards(); atualizarCalculos();
+    alert('Dados carregados!');
+  } else alert('Nenhum registro encontrado.');
 });
 
-els.btnExportPDF.addEventListener('click', ()=>{
-  alert('Exportação PDF ainda não implementada. Use bibliotecas como jsPDF para isso.');
+// Botão Editar
+els.btnEditar.addEventListener('click', ()=>{
+  const key = `${state.data}_${state.turno}`;
+  if(dbNoturno[key]){
+    localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
+    window.open('noturno_edit.html', '_blank');
+  } else {
+    alert('Nenhum registro salvo para editar!');
+  }
 });
+
+// Voltar Menu
+els.btnVoltarMenu.addEventListener('click',()=>window.location.href='index.html');
 
 /* =========================
-   INICIALIZAÇÃO
+   GRÁFICOS (SVG)
+========================= */
+function desenharGauge(){
+  const svg = els.gauge;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const w=200,h=120,cx=100,cy=110,r=90;
+  const p = state.mlPrev>0 ? Math.max(0,Math.min(1,state.mlReal/state.mlPrev)) : 0;
+  const arcPath = describeArc(cx,cy,r,180,0);
+  svg.appendChild(path(arcPath,'#e5e7eb',14));
+  const color = p>=1?'#14b8a6':(p>=0.8?'#f59e0b':'#ef4444');
+  svg.appendChild(path(describeArc(cx,cy,r,180,180*(1-p)),color,14));
+}
+function desenharBarChart(){
+  const svg = els.barChart;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const max = Math.max(state.mlPrev,state.mlReal);
+  const w=100,h=60;
+  const barras = [
+    {val:state.mlPrev,color:'#0b63d6'},
+    {val:state.mlReal,color:'#14b8a6'}
+  ];
+  barras.forEach((b,i)=>{
+    const bw=30;
+    const x=i*(bw+10)+5;
+    const y=h-(b.val/max)*h;
+    const rect = document.createElementNS("http://www.w3.org/2000/svg",'rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',y); rect.setAttribute('width',bw); rect.setAttribute('height',(b.val/max)*h);
+    rect.setAttribute('fill',b.color);
+    svg.appendChild(rect);
+  });
+}
+
+// Funções auxiliares para SVG Gauge
+function path(d,c,w){const p=document.createElementNS("http://www.w3.org/2000/svg",'path');p.setAttribute('d',d);p.setAttribute('stroke',c);p.setAttribute('stroke-width',w);p.setAttribute('fill','none');return p;}
+function polarToCartesian(cx,cy,r,angle){const a=(angle-90)*Math.PI/180;return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}
+function describeArc(cx,cy,r,startAngle,endAngle){const s=polarToCartesian(cx,cy,r,endAngle);const e=polarToCartesian(cx,cy,r,startAngle);const largeArcFlag = endAngle-startAngle<=180?0:1; return `M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${e.x} ${e.y}`;}
+
+/* =========================
+   EXPORTAR PDF
+========================= */
+els.btnExportPDF.addEventListener('click',exportPDF);
+
+async function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+
+  // Página 1: Capa
+  doc.setFontSize(18);
+  doc.text('Relatório de Produtividade - Turno Noturno',105,20,{align:'center'});
+  doc.setFontSize(12);
+  doc.text(`Data: ${state.data}`,20,40);
+  doc.text(`Turno: ${state.turno}`,20,48);
+  doc.text(`Supervisor: ${state.supervisor}`,20,56);
+  doc.text(`Encarregado: ${state.encarregado}`,20,64);
+  doc.text(`Local: ${state.local}`,20,72);
+  doc.text(`Disciplina: ${state.disciplina}`,20,80);
+  doc.text(`Montadores: ${state.montadores}`,20,88);
+  doc.text(`Faltas: ${state.faltas}`,20,96);
+  doc.text(`ART: ${state.ART}`,20,104);
+  doc.text('Resumo do Turno:',20,112);
+  doc.setFontSize(10);
+  doc.text(doc.splitTextToSize(state.resumo||'---',170),20,120);
+
+  // Página 2: Tabela de atividades
+  doc.addPage();
+  doc.setFontSize(12);
+  doc.text('Atividades do Turno',105,20,{align:'center'});
+  const tableData = state.atividades.map(a=>[a.atividade,a.ini,a.fim,a.interfer,a.obs||'-']);
+  doc.autoTable({
+    startY:30,
+    head:[['Atividade','Início','Fim','Interferência','Observações']],
+    body: tableData,
+    styles:{fontSize:10},
+    headStyles:{fillColor:[11,35,64]}
+  });
+
+  // Página 3: Gráficos + Fotos
+  doc.addPage();
+  doc.setFontSize(12);
+  doc.text('Gráficos e Fotos',105,20,{align:'center'});
+  const gaugeCanvas = await html2canvas(els.gauge);
+  doc.addImage(gaugeCanvas.toDataURL('image/png'),'PNG',20,30,80,50);
+  const barCanvas = await html2canvas(els.barChart);
+  doc.addImage(barCanvas.toDataURL('image/png'),'PNG',20,90,120,50);
+  let yOffset = 150;
+  for(let f of state.fotos){
+    doc.addImage(f,'PNG',20,yOffset,40,40);
+    yOffset+=45;
+    if(yOffset>250){doc.addPage(); yOffset=20;}
+  }
+
+  doc.save(`Relatorio_Noturno_${state.data}.pdf`);
+}
+
+/* =========================
+   INIT
 ========================= */
 preencherFormulario();
 renderTabela();
 atualizarCards();
 atualizarCalculos();
-renderFotos();
