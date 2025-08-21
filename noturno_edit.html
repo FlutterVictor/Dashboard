@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Turno Noturno</title>
+<link rel="stylesheet" href="noturno.css">
+</head>
+<body>
+<header>
+<h1>Formulário de Edição - Noturno</h1>
+</header>
+<main>
+<form id="formNoturno">
+  <label>Supervisor: <input type="text" name="Supervisor" required></label>
+  <label>Encarregado: <input type="text" name="Encarregado" required></label>
+  <label>Local: <input type="text" name="Local"></label>
+  <label>Montadores: <input type="number" name="Montadores"></label>
+  <label>Faltas: <input type="number" name="Faltas"></label>
+  <label>ART: <input type="text" name="ART"></label>
+  <label>HH Real: <input type="number" name="HH Real"></label>
+  <label>ML Previsto: <input type="number" name="ML Previsto"></label>
+  <label>ML Montado: <input type="number" name="ML Montado"></label>
+  <label>Disciplina atendida: <input type="text" name="Disciplina atendida"></label>
+  <label>Resumo do Turno: <textarea name="Resumo"></textarea></label>
+  <label>Fotos (Base64, separadas por vírgula): <textarea name="Fotos"></textarea></label>
+  <label>Data: <input type="date" name="Data"></label>
+  <label>Turno: <input type="text" name="Turno" value="18:00-05:00"></label>
+  <button type="submit">Salvar</button>
+</form>
+<script>
+document.getElementById('formNoturno').addEventListener('submit', e=>{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    let fotosArray = data.Fotos.split(',').map(f=>f.trim());
+    data.Fotos = fotosArray;
+    let json = JSON.stringify([data], null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'noturno_data.json';
+    a.click();
+    alert('Arquivo gerado. Faça upload no GitHub.');
+});
+</script>
+</body>
+</html>
