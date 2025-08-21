@@ -14,12 +14,9 @@ const state = {
   hhReal: 98,
   mlPrev: 250,
   mlReal: 230,
-  resumo: "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
-  atividades: [
-    {atividade:'Montagem andaime', ini:'18:00', fim:'20:15', interfer:'2:15', obs:'Falta de material'},
-    {atividade:'Ajuste tubo', ini:'20:30', fim:'21:15', interfer:'0:45', obs:''}
-  ],
-  fotos: [] // URLs ou Base64 carregados do Noturno_Edit
+  resumo: "",
+  atividades: [],
+  fotos: []
 };
 
 let dbNoturno = {}; // banco de dados JSON
@@ -37,21 +34,6 @@ const els = {
   kpiFaltas: document.getElementById('kpiFaltas'),
   kpiInterf: document.getElementById('kpiInterf'),
 
-  inpSupervisor: document.getElementById('inpSupervisor'),
-  inpEncarregado: document.getElementById('inpEncarregado'),
-  inpLocal: document.getElementById('inpLocal'),
-  inpDisciplina: document.getElementById('inpDisciplina'),
-  inpMontadores: document.getElementById('inpMontadores'),
-  inpFaltas: document.getElementById('inpFaltas'),
-  inpART: document.getElementById('inpART'),
-  inpHHReal: document.getElementById('inpHHReal'),
-  inpMLPrev: document.getElementById('inpMLPrev'),
-  inpMLReal: document.getElementById('inpMLReal'),
-
-  outHHPrev: document.getElementById('outHHPrev'),
-  outSTDPrev: document.getElementById('outSTDPrev'),
-  outSTDReal: document.getElementById('outSTDReal'),
-
   campoData: document.getElementById('campoData'),
   campoTurno: document.getElementById('campoTurno'),
 
@@ -60,10 +42,13 @@ const els = {
   resumoTurno: document.getElementById('resumoTurno'),
   previewFotos: document.getElementById('previewFotos'),
 
+  btnCarregar: document.getElementById('btnCarregar'),
+  btnExportPDF: document.getElementById('btnExportPDF'),
+  btnEditar: document.getElementById('btnEditar'),
+  btnVoltarMenu: document.getElementById('btnVoltarMenu'),
+
   gauge: document.getElementById('gauge'),
   barChart: document.getElementById('barChart'),
-
-  rankingContainer: document.getElementById('rankingInterf') // novo card de ranking
 };
 
 /* =========================
@@ -76,8 +61,7 @@ function diffHM(ini, fim){
   const [h1,m1] = ini.split(':').map(n=>parseInt(n,10));
   const [h2,m2] = fim.split(':').map(n=>parseInt(n,10));
   let t1=h1*60+m1, t2=h2*60+m2; if(t2<t1) t2+=24*60;
-  const d=Math.max(0,t2-t1); const H=Math.floor(d/60), M=d%60;
-  return `${H}:${String(M).padStart(2,'0')}`;
+  const d=Math.max(0,t2-t1); const H=Math.floor(d/60), M=d%60; return `${H}:${String(M).padStart(2,'0')}`;
 }
 
 /* =========================
@@ -90,6 +74,7 @@ function atualizarCards(){
   els.kpiFaltas.textContent = state.faltas;
   const totalInterfH = state.atividades.reduce((acc,a)=> acc+hmToHours(a.interfer),0);
   els.kpiInterf.textContent = toFixed(totalInterfH,1);
+  atualizarInfoTurno();
   atualizarRanking();
 }
 
@@ -106,29 +91,39 @@ function atualizarCalculos(){
   desenharBarChart();
 }
 
-function preencherFormulario(){
-  // Apenas exibir valores
-  els.inpSupervisor.value = state.supervisor;
-  els.inpEncarregado.value = state.encarregado;
-  els.inpLocal.value = state.local;
-  els.inpDisciplina.value = state.disciplina;
-  els.inpMontadores.value = state.montadores;
-  els.inpFaltas.value = state.faltas;
-  els.inpART.value = state.ART;
-  els.inpHHReal.value = state.hhReal;
-  els.inpMLPrev.value = state.mlPrev;
-  els.inpMLReal.value = state.mlReal;
-  els.resumoTurno.value = state.resumo;
-  els.campoData.value = state.data;
-  els.campoTurno.value = state.turno;
+function atualizarInfoTurno(){
+  document.getElementById('infoLocal').textContent = state.local;
+  document.getElementById('infoDisciplina').textContent = state.disciplina;
+  document.getElementById('infoMontadores').textContent = state.montadores;
+  document.getElementById('infoFaltas').textContent = state.faltas;
+  document.getElementById('infoART').textContent = state.ART;
+  document.getElementById('outHHReal').textContent = toFixed(state.hhReal,1);
+  document.getElementById('outMLPrev').textContent = state.mlPrev;
+  document.getElementById('outMLReal').textContent = state.mlReal;
 }
 
+function atualizarRanking(){
+  const ol = document.getElementById('rankingInterferencias');
+  ol.innerHTML='';
+  const ranking = state.atividades
+    .map(a=>({atividade:a.atividade||'Não informado', interfer:hmToHours(a.interfer)}))
+    .sort((a,b)=>b.interfer - a.interfer)
+    .slice(0,5);
+  ranking.forEach(r=>{
+    const li = document.createElement('li');
+    li.textContent = `${r.atividade} — ${toFixed(r.interfer,1)} h`;
+    ol.appendChild(li);
+  });
+}
+
+/* =========================
+   TABELA DE ATIVIDADES
+========================= */
 function renderTabela(){
   els.tabelaBody.innerHTML='';
-  state.atividades.forEach((a)=>{
+  state.atividades.forEach((a,idx)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td></td>
       <td>${a.atividade}</td>
       <td>${a.ini}</td>
       <td>${a.fim}</td>
@@ -140,34 +135,53 @@ function renderTabela(){
 }
 
 /* =========================
-   PREVIEW DE FOTOS
+   FOTOS
 ========================= */
 function renderFotos(){
   els.previewFotos.innerHTML='';
-  state.fotos.forEach(src=>{
+  state.fotos.forEach(f=>{
     const img = document.createElement('img');
-    img.src = src;
+    img.src=f;
     img.classList.add('thumb');
     els.previewFotos.appendChild(img);
   });
 }
 
 /* =========================
-   RANKING DE INTERFERÊNCIAS
+   BOTÕES
 ========================= */
-function atualizarRanking(){
-  if(!els.rankingContainer) return;
-  const ranking = state.atividades
-    .filter(a=>hmToHours(a.interfer)>0)
-    .sort((a,b)=>hmToHours(b.interfer)-hmToHours(a.interfer))
-    .slice(0,5); // Top 5
-  els.rankingContainer.innerHTML = '';
-  ranking.forEach((a,idx)=>{
-    const div = document.createElement('div');
-    div.textContent = `${idx+1}. ${a.atividade} → ${a.interfer}h`;
-    els.rankingContainer.appendChild(div);
+els.btnCarregar.addEventListener('click', ()=>{
+  dbNoturno = JSON.parse(localStorage.getItem('dbNoturno')||'{}');
+  const key = `${els.campoData.value}_${els.campoTurno.value}`;
+  if(dbNoturno[key]){
+    Object.assign(state, dbNoturno[key]);
+    renderTabela();
+    renderFotos();
+    atualizarCards();
+    atualizarCalculos();
+  } else alert('Nenhum registro encontrado!');
+});
+
+els.btnExportPDF.addEventListener('click', ()=>{
+  html2canvas(document.getElementById('dashboardWrap')).then(canvas=>{
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jspdf.jsPDF('p','mm','a4');
+    const pdfWidth = 210;
+    const pdfHeight = canvas.height * pdfWidth / canvas.width;
+    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
+    pdf.save(`Noturno_${state.data}.pdf`);
   });
-}
+});
+
+els.btnEditar.addEventListener('click', ()=>{
+  const key = `${els.campoData.value}_${els.campoTurno.value}`;
+  if(dbNoturno[key]){
+    localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
+    window.open('noturno_edit.html','_blank');
+  } else alert('Nenhum registro salvo para editar!');
+});
+
+els.btnVoltarMenu.addEventListener('click', ()=>{ window.location.href='index.html'; });
 
 /* =========================
    GRÁFICOS
@@ -193,7 +207,8 @@ function desenharBarChart(){
     const y = 60 - (v/max*50);
     const h = v/max*50;
     const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',x); rect.setAttribute('y',y); rect.setAttribute('width',12); rect.setAttribute('height',h);
+    rect.setAttribute('x',x); rect.setAttribute('y',y);
+    rect.setAttribute('width',12); rect.setAttribute('height',h);
     rect.setAttribute('fill',i<2?'#0b63d6':'#6b7280');
     svg.appendChild(rect);
   });
@@ -219,28 +234,13 @@ function path(d,color,width){
   return p;
 }
 
-// Abrir noturno_edit.html
-els.btnEditar.addEventListener('click', ()=>{
-  const key = `${state.data}_${state.turno}`;
-  if(dbNoturno[key]){
-    localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
-    window.open('noturno_edit.html','_blank');
-  } else {
-    alert('Nenhum registro salvo para editar!');
-  }
-});
-
-
 /* =========================
    INICIALIZAÇÃO
 ========================= */
 function init(){
   dbNoturno = JSON.parse(localStorage.getItem('dbNoturno')||'{}');
-  preencherFormulario();
-  renderTabela();
   atualizarCards();
   atualizarCalculos();
-  renderFotos();
 }
 
 init();
