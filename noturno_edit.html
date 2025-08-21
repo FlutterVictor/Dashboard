@@ -1,47 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editar Turno Noturno</title>
-<link rel="stylesheet" href="noturno.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Noturno — Edição</title>
+  <link rel="stylesheet" href="noturno_edit.css">
 </head>
 <body>
-<header>
-<h1>Formulário de Edição - Noturno</h1>
-</header>
-<main>
-<form id="formNoturno">
-  <label>Supervisor: <input type="text" name="Supervisor" required></label>
-  <label>Encarregado: <input type="text" name="Encarregado" required></label>
-  <label>Local: <input type="text" name="Local"></label>
-  <label>Montadores: <input type="number" name="Montadores"></label>
-  <label>Faltas: <input type="number" name="Faltas"></label>
-  <label>ART: <input type="text" name="ART"></label>
-  <label>HH Real: <input type="number" name="HH Real"></label>
-  <label>ML Previsto: <input type="number" name="ML Previsto"></label>
-  <label>ML Montado: <input type="number" name="ML Montado"></label>
-  <label>Disciplina atendida: <input type="text" name="Disciplina atendida"></label>
-  <label>Resumo do Turno: <textarea name="Resumo"></textarea></label>
-  <label>Fotos (Base64, separadas por vírgula): <textarea name="Fotos"></textarea></label>
-  <label>Data: <input type="date" name="Data"></label>
-  <label>Turno: <input type="text" name="Turno" value="18:00-05:00"></label>
-  <button type="submit">Salvar</button>
-</form>
-<script>
-document.getElementById('formNoturno').addEventListener('submit', e=>{
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    let fotosArray = data.Fotos.split(',').map(f=>f.trim());
-    data.Fotos = fotosArray;
-    let json = JSON.stringify([data], null, 2);
-    const blob = new Blob([json], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'noturno_data.json';
-    a.click();
-    alert('Arquivo gerado. Faça upload no GitHub.');
-});
-</script>
+  <div class="wrap" id="editWrap">
+    <header>
+      <h1>Noturno — Formulário de Edição</h1>
+      <div class="subtitle">Editar informações do turno e salvar</div>
+    </header>
+
+    <div id="filter-container">
+      <label>Data: <input type="date" id="campoData"></label>
+      <label>Turno:
+        <select id="campoTurno">
+          <option value="Noturno" selected>Noturno (18:00–05:00)</option>
+        </select>
+      </label>
+      <button id="btnSalvarEdit">Salvar Alterações</button>
+      <button id="btnVoltar">Voltar</button>
+    </div>
+
+    <!-- Linha 1: Formulário completo -->
+    <div class="grid linha1">
+      <div class="card full">
+        <div class="card-title">Informações do Turno</div>
+        <div class="form-grid">
+          <label>Supervisor <input type="text" id="inpSupervisor"></label>
+          <label>Encarregado <input type="text" id="inpEncarregado"></label>
+          <label>Local <input type="text" id="inpLocal"></label>
+          <label>Disciplina <input type="text" id="inpDisciplina"></label>
+          <label>Montadores <input type="number" id="inpMontadores" min="0"></label>
+          <label>Faltas <input type="number" id="inpFaltas" min="0"></label>
+          <label>ART <input type="text" id="inpART"></label>
+          <label>HH Real <input type="number" step="0.1" id="inpHHReal"></label>
+          <label>ML Previsto <input type="number" id="inpMLPrev"></label>
+          <label>ML Montado (Real) <input type="number" id="inpMLReal"></label>
+        </div>
+
+        <div class="auto-calc">
+          <div>HH Previsto = Montadores × 8,8h → <b id="outHHPrev">0</b> h</div>
+          <div>STD Previsto = HH Previsto / ML Previsto → <b id="outSTDPrev">0</b></div>
+          <div>STD Real = HH Real / ML Real → <b id="outSTDReal">0</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 2: Tabela de Atividades -->
+    <div class="grid linha2">
+      <div class="card full">
+        <div class="card-title">Atividades Executadas / Interferências</div>
+        <div class="table-actions">
+          <button id="btnAddLinha">Adicionar Linha</button>
+          <button id="btnRemoverSel">Remover Selecionadas</button>
+        </div>
+        <div id="tabelaAtivWrapper">
+          <table id="tabelaAtiv">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Atividade</th>
+                <th>Hora início</th>
+                <th>Hora final</th>
+                <th>Interferência (H)</th>
+                <th>Obs.</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Resumo e Fotos -->
+    <div class="grid linha3">
+      <div class="card full">
+        <div class="card-title">Resumo do Turno</div>
+        <textarea id="resumoTurno" rows="4" style="width:100%;"></textarea>
+      </div>
+
+      <div class="card full">
+        <div class="card-title">Evidências (Fotos)</div>
+        <input type="file" id="uploadFotos" multiple accept="image/*">
+        <div id="previewFotos" class="preview-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="noturno_edit.js"></script>
 </body>
 </html>
