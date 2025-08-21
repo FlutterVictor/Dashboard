@@ -89,7 +89,6 @@ function diffHM(ini, fim){ // retorna "H:MM" (duração positiva simples)
   const [h2,m2] = fim.split(':').map(n=>parseInt(n,10));
   let t1 = h1*60 + m1;
   let t2 = h2*60 + m2;
-  // turno cruza madrugada: se fim menor que início, soma 24h
   if(t2 < t1) t2 += 24*60;
   const d = Math.max(0, t2 - t1);
   const H = Math.floor(d/60), M = d%60;
@@ -105,9 +104,9 @@ function atualizarCards(){
   els.kpiMontadores.textContent = state.montadores;
   els.kpiFaltas.textContent = state.faltas;
 
-  // total de interferências em horas (somatório)
+  // total de interferências em horas decimais 1 casa
   const totalInterfH = state.atividades.reduce((acc, a)=> acc + hmToHours(a.interfer), 0);
-  els.kpiInterf.textContent = toFixed(totalInterfH,1);
+  els.kpiInterf.textContent = `${toFixed(totalInterfH,1)} h`;
 }
 
 function atualizarCalculos(){
@@ -137,6 +136,19 @@ function preencherFormulario(){
   els.campoData.value = state.data;
   els.campoTurno.value = state.turno;
   els.resumoTurno.value = els.resumoTurno.value || "";
+
+  // Tornando readonly no Dashboard
+  els.inpSupervisor.readOnly = true;
+  els.inpEncarregado.readOnly = true;
+  els.inpLocal.readOnly = true;
+  els.inpDisciplina.readOnly = true;
+  els.inpMontadores.readOnly = true;
+  els.inpFaltas.readOnly = true;
+  els.inpART.readOnly = true;
+  els.inpHHReal.readOnly = true;
+  els.inpMLPrev.readOnly = true;
+  els.inpMLReal.readOnly = true;
+  els.resumoTurno.readOnly = true;
 }
 
 function renderTabela(){
@@ -145,30 +157,12 @@ function renderTabela(){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input type="checkbox" data-idx="${idx}"></td>
-      <td><input type="text" value="${a.atividade}"></td>
-      <td><input type="time" value="${a.ini}"></td>
-      <td><input type="time" value="${a.fim}"></td>
-      <td><input type="text" value="${a.interfer}" placeholder="H:MM"></td>
-      <td><input type="text" value="${a.obs||''}" placeholder="Observações"></td>
+      <td><input type="text" value="${a.atividade}" readonly></td>
+      <td><input type="time" value="${a.ini}" readonly></td>
+      <td><input type="time" value="${a.fim}" readonly></td>
+      <td><input type="text" value="${a.interfer}" readonly></td>
+      <td><input type="text" value="${a.obs||''}" readonly></td>
     `;
-    // listeners de recalculo
-    const [cb, inpAtv, inpIni, inpFim, inpInterf, inpObs] = tr.querySelectorAll('input');
-    inpAtv.addEventListener('input', e=>{ state.atividades[idx].atividade = e.target.value; });
-    inpIni.addEventListener('change', e=>{
-      state.atividades[idx].ini = e.target.value;
-      state.atividades[idx].interfer = diffHM(state.atividades[idx].ini, state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
-    });
-    inpFim.addEventListener('change', e=>{
-      state.atividades[idx].fim = e.target.value;
-      state.atividades[idx].interfer = diffHM(state.atividades[idx].ini, state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
-    });
-    inpInterf.addEventListener('input', e=>{
-      state.atividades[idx].interfer = e.target.value;
-      atualizarCards();
-    });
-    inpObs.addEventListener('input', e=>{ state.atividades[idx].obs = e.target.value; });
     els.tabelaBody.appendChild(tr);
   });
 }
@@ -176,7 +170,6 @@ function renderTabela(){
 /* =========================
    GRÁFICOS (SVG PURO)
 ========================= */
-// Gauge semicircular (% atingimento ML = ML Real / ML Prev)
 function desenharGauge(){
   const svg = els.gauge;
   while(svg.firstChild) svg.removeChild(svg.firstChild);
@@ -185,20 +178,15 @@ function desenharGauge(){
   const p = (state.mlPrev>0) ? Math.max(0, Math.min(1, state.mlReal / state.mlPrev)) : 0;
   const pct = Math.round(p*100);
 
-  // Arco de fundo
   const arcPath = describeArc(cx, cy, r, 180, 0);
   const bg = path(arcPath, '#e5e7eb', 14);
   svg.appendChild(bg);
 
-  // Cor por faixa
   const color = p >= 1 ? '#14b8a6' : (p >= 0.8 ? '#f59e0b' : '#ef4444');
-
-  // Arco de progresso
   const progPath = describeArc(cx, cy, r, 180, 180*(1-p));
   const fg = path(progPath, color, 14);
   svg.appendChild(fg);
 
-  // Marcadores (ticks)
   for(let i=0;i<=10;i++){
     const ang = 180 - i*18;
     const a = (ang-90)*Math.PI/180;
@@ -208,9 +196,8 @@ function desenharGauge(){
     svg.appendChild(tick);
   }
 
-  // Texto central
-  const t1 = text(cx, cy-10, `${pct}%`, 18, '#0b2340', 'middle');
-  const t2 = text(cx, cy+10, `ML ${state.mlReal} / ${state.mlPrev}`, 10, '#6b7280', 'middle');
+  const t1 = text(cx, cy-8, `${pct}%`, 14, '#0b2340', 'middle');
+  const t2 = text(cx, cy+12, `ML ${state.mlReal} / ${state.mlPrev}`, 10, '#6b7280', 'middle');
   svg.appendChild(t1); svg.appendChild(t2);
 
   function path(d, stroke, sw){
@@ -237,7 +224,6 @@ function desenharGauge(){
     t.textContent = txt;
     return t;
   }
-  // util para arco
   function polarToCartesian(cx, cy, r, angleInDegrees){
     const angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
     return { x: cx + (r * Math.cos(angleInRadians)), y: cy + (r * Math.sin(angleInRadians)) };
@@ -250,12 +236,10 @@ function desenharGauge(){
   }
 }
 
-// Bar chart (HH e ML: Previsto x Real)
 function desenharBarChart(){
   const svg = els.barChart;
   while(svg.firstChild) svg.removeChild(svg.firstChild);
 
-  // dados
   const series = [
     { nome:'HH', prev: state.montadores*HORAS_POR_MONTADOR, real: state.hhReal },
     { nome:'ML', prev: state.mlPrev, real: state.mlReal },
@@ -267,33 +251,31 @@ function desenharBarChart(){
   const g = createGroup(margin.l, margin.t);
   svg.appendChild(g);
 
-  const maxVal = Math.max(
-    ...series.map(s=>Math.max(s.prev, s.real)), 1
-  );
+  const maxVal = Math.max(...series.map(s=>Math.max(s.prev, s.real)), 1);
   const barW = (plotW / series.length) * 0.8;
   const gap = (plotW / series.length) * 0.2;
 
   series.forEach((s, i)=>{
     const x0 = i*(barW+gap);
 
-    // Previsto (azul)
     const hPrev = (s.prev / maxVal) * plotH;
     const yPrev = plotH - hPrev;
     const rectPrev = rect(x0, yPrev, barW/2 - 2, hPrev, '#0b63d6');
     g.appendChild(rectPrev);
 
-    // Real (cinza)
     const hReal = (s.real / maxVal) * plotH;
     const yReal = plotH - hReal;
     const rectReal = rect(x0 + barW/2 + 2, yReal, barW/2 - 2, hReal, '#6b7280');
     g.appendChild(rectReal);
 
-    // Label categoria
     const tx = text(x0 + barW/2, plotH + 10, s.nome, 4, '#0b2340', 'middle');
     g.appendChild(tx);
+
+    // Valor sobre barras
+    g.appendChild(text(x0 + barW/4, yPrev - 2, toFixed(s.prev,1), 3.5, '#0b2340', 'middle'));
+    g.appendChild(text(x0 + 3*barW/4, yReal - 2, toFixed(s.real,1), 3.5, '#0b2340', 'middle'));
   });
 
-  // Eixos simples
   const axis = document.createElementNS("http://www.w3.org/2000/svg","line");
   axis.setAttribute('x1', 0); axis.setAttribute('y1', plotH);
   axis.setAttribute('x2', plotW); axis.setAttribute('y2', plotH);
@@ -322,79 +304,17 @@ function desenharBarChart(){
 }
 
 /* =========================
-   EVENTOS / BINDINGS
+   INIT
 ========================= */
-function bindInputs(){
-  els.inpSupervisor.addEventListener('input', e=>{ state.supervisor = e.target.value; atualizarCards(); });
-  els.inpEncarregado.addEventListener('input', e=>{ state.encarregado = e.target.value; atualizarCards(); });
-  els.inpLocal.addEventListener('input', e=>{ state.local = e.target.value; });
-  els.inpDisciplina.addEventListener('input', e=>{ state.disciplina = e.target.value; });
-  els.inpMontadores.addEventListener('input', e=>{ state.montadores = parseInt(e.target.value||'0',10); atualizarCards(); atualizarCalculos(); });
-  els.inpFaltas.addEventListener('input', e=>{ state.faltas = parseInt(e.target.value||'0',10); atualizarCards(); });
-  els.inpART.addEventListener('input', e=>{ state.ART = e.target.value; });
-  els.inpHHReal.addEventListener('input', e=>{ state.hhReal = parseNum(e.target.value); atualizarCalculos(); });
-  els.inpMLPrev.addEventListener('input', e=>{ state.mlPrev = parseNum(e.target.value); atualizarCalculos(); });
-  els.inpMLReal.addEventListener('input', e=>{ state.mlReal = parseNum(e.target.value); atualizarCalculos(); });
-  els.campoData.addEventListener('change', e=>{ state.data = e.target.value; });
-  els.campoTurno.addEventListener('change', e=>{ state.turno = e.target.value; });
-  els.resumoTurno.addEventListener('input', e=>{ state.resumo = e.target.value; });
-
-  els.btnAddLinha.addEventListener('click', ()=>{
-    state.atividades.push({ atividade:"", ini:"18:00", fim:"18:30", interfer:"0:00", obs:"" });
-    renderTabela(); atualizarCards();
-  });
-  els.btnRemoverSel.addEventListener('click', ()=>{
-    const checks = els.tabelaBody.querySelectorAll('input[type="checkbox"]:checked');
-    const idxs = Array.from(checks).map(c=> parseInt(c.getAttribute('data-idx'),10)).sort((a,b)=>b-a);
-    idxs.forEach(i=> state.atividades.splice(i,1));
-    renderTabela(); atualizarCards();
-  });
-
-  // Upload fotos preview
-  els.uploadFotos.addEventListener('change', e=>{
-    const files = Array.from(e.target.files||[]);
-    files.forEach(file=>{
-      const reader = new FileReader();
-      reader.onload = (ev)=>{
-        state.fotos.push(ev.target.result);
-        drawFotos();
-      };
-      reader.readAsDataURL(file);
-    });
-  });
-
-  // Salvar/Carregar (localStorage por data+turno)
-  els.btnSalvar.addEventListener('click', ()=>{
-    const key = `noturno:${state.data}:${state.turno}`;
-    localStorage.setItem(key, JSON.stringify(state));
-    alert('Relatório salvo (navegador).');
-  });
-  els.btnCarregar.addEventListener('click', ()=>{
-    const key = `noturno:${state.data}:${state.turno}`;
-    const raw = localStorage.getItem(key);
-    if(!raw) return alert('Nenhum registro salvo para esta data/turno.');
-    const obj = JSON.parse(raw);
-    Object.assign(state, obj);
-    preencherFormulario(); renderTabela(); atualizarCards(); atualizarCalculos(); drawFotos();
-  });
-
-  // Exportar PDF (igual ao STD)
-  els.btnExportPDF.addEventListener('click', ()=>{
-    const el = document.getElementById('dashboardWrap');
-    html2canvas(el, {scale:2}).then(canvas=>{
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({orientation:'landscape', unit:'pt', format:'a4'});
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-      pdf.save(`Relatorio_Noturno_${state.data}.pdf`);
-    });
-  });
-
-  els.btnVoltarMenu.addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+function init(){
+  document.getElementById('campoData').value = state.data;
+  preencherFormulario();
+  renderTabela();
+  atualizarCards();
+  atualizarCalculos();
+  drawFotos();
 }
+window.addEventListener('load', init);
 
 function drawFotos(){
   els.previewFotos.innerHTML = '';
@@ -408,22 +328,10 @@ function drawFotos(){
   state.fotos.forEach(src=>{
     const img = document.createElement('img');
     img.src = src; img.className = 'thumb';
+    img.style.width = '120px';
+    img.style.height = '90px';
+    img.style.objectFit = 'cover';
+    img.style.margin = '2px';
     els.previewFotos.appendChild(img);
   });
 }
-
-/* =========================
-   INIT
-========================= */
-function init(){
-  // data default = hoje
-  document.getElementById('campoData').value = state.data;
-
-  preencherFormulario();
-  renderTabela();
-  atualizarCards();
-  atualizarCalculos();
-  drawFotos();
-  bindInputs();
-}
-window.addEventListener('load', init);
