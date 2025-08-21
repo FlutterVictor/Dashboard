@@ -1,71 +1,40 @@
-:root {
-  --blue: #0b63d6;
-  --dark: #0b2340;
-  --muted: #f3f6fb;
-  --card: #ffffff;
-  --gray: #6b7280;
-  font-family: Inter, system-ui, -apple-system, Roboto, 'Segoe UI', Arial;
-}
+// Gráfico de Produção por Turno
+const ctxTurno = document.getElementById("graficoTurno").getContext("2d");
+new Chart(ctxTurno, {
+  type: "bar",
+  data: {
+    labels: ["Manhã", "Tarde", "Noite"],
+    datasets: [{
+      label: "Produção (m³)",
+      data: [120, 150, 325],
+      backgroundColor: ["#0b63d6", "#6b7280", "#1d4ed8"],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } }
+  }
+});
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background: var(--muted);
-  color: var(--dark);
-  font-size: 16px;
-}
-
-header {
-  background: var(--blue);
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  border-bottom: 4px solid var(--dark);
-}
-
-header h1 {
-  margin-bottom: 0.5rem;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  position: relative;
-}
-
-.btn {
-  background: #e5e7eb;
-  border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn:hover {
-  background: #d1d5db;
-}
-
-.btn.voltar {
-  position: absolute;
-  right: 2cm; /* afastamento de 2cm */
-  background: #f87171;
-  color: white;
-}
-
-main {
-  padding: 2rem;
-}
-
-.conteudo {
-  background: var(--card);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-}
+// Gráfico de Eficiência por Equipe
+const ctxEquipe = document.getElementById("graficoEquipe").getContext("2d");
+new Chart(ctxEquipe, {
+  type: "line",
+  data: {
+    labels: ["Equipe A", "Equipe B", "Equipe C"],
+    datasets: [{
+      label: "Eficiência (%)",
+      data: [85, 90, 87],
+      borderColor: "#0b63d6",
+      backgroundColor: "rgba(11, 99, 214, 0.2)",
+      tension: 0.3,
+      fill: true,
+      pointBackgroundColor: "#0b63d6"
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: "bottom" } }
+  }
+});
