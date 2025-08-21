@@ -14,9 +14,12 @@ const state = {
   hhReal: 98,
   mlPrev: 250,
   mlReal: 230,
-  resumo: "",
-  atividades: [],
-  fotos: []
+  resumo: "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
+  atividades: [
+    {atividade:'Montagem andaime', ini:'18:00', fim:'20:15', interfer:'2:15', obs:'Falta de material'},
+    {atividade:'Ajuste tubo', ini:'20:30', fim:'21:15', interfer:'0:45', obs:''}
+  ],
+  fotos: [] // URLs ou Base64 carregados do Noturno_Edit
 };
 
 let dbNoturno = {}; // banco de dados JSON
@@ -53,21 +56,14 @@ const els = {
   campoTurno: document.getElementById('campoTurno'),
 
   tabelaBody: document.querySelector('#tabelaAtiv tbody'),
-  btnAddLinha: document.getElementById('btnAddLinha'),
-  btnRemoverSel: document.getElementById('btnRemoverSel'),
 
   resumoTurno: document.getElementById('resumoTurno'),
-  uploadFotos: document.getElementById('uploadFotos'),
   previewFotos: document.getElementById('previewFotos'),
-
-  btnSalvar: document.getElementById('btnSalvar'),
-  btnCarregar: document.getElementById('btnCarregar'),
-  btnExportPDF: document.getElementById('btnExportPDF'),
-  btnEditar: document.getElementById('btnEditar'),
-  btnVoltarMenu: document.getElementById('btnVoltarMenu'),
 
   gauge: document.getElementById('gauge'),
   barChart: document.getElementById('barChart'),
+
+  rankingContainer: document.getElementById('rankingInterf') // novo card de ranking
 };
 
 /* =========================
@@ -94,6 +90,7 @@ function atualizarCards(){
   els.kpiFaltas.textContent = state.faltas;
   const totalInterfH = state.atividades.reduce((acc,a)=> acc+hmToHours(a.interfer),0);
   els.kpiInterf.textContent = toFixed(totalInterfH,1);
+  atualizarRanking();
 }
 
 function atualizarCalculos(){
@@ -110,6 +107,7 @@ function atualizarCalculos(){
 }
 
 function preencherFormulario(){
+  // Apenas exibir valores
   els.inpSupervisor.value = state.supervisor;
   els.inpEncarregado.value = state.encarregado;
   els.inpLocal.value = state.local;
@@ -120,29 +118,23 @@ function preencherFormulario(){
   els.inpHHReal.value = state.hhReal;
   els.inpMLPrev.value = state.mlPrev;
   els.inpMLReal.value = state.mlReal;
-  els.resumoTurno.value = state.resumo || "";
+  els.resumoTurno.value = state.resumo;
   els.campoData.value = state.data;
   els.campoTurno.value = state.turno;
 }
 
 function renderTabela(){
   els.tabelaBody.innerHTML='';
-  state.atividades.forEach((a,idx)=>{
+  state.atividades.forEach((a)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td><input type="checkbox" data-idx="${idx}"></td>
-      <td><input type="text" value="${a.atividade}"></td>
-      <td><input type="time" value="${a.ini}"></td>
-      <td><input type="time" value="${a.fim}"></td>
-      <td><input type="text" value="${a.interfer}" placeholder="H:MM"></td>
-      <td><input type="text" value="${a.obs||''}" placeholder="Observações"></td>
+      <td></td>
+      <td>${a.atividade}</td>
+      <td>${a.ini}</td>
+      <td>${a.fim}</td>
+      <td>${a.interfer}</td>
+      <td>${a.obs||''}</td>
     `;
-    const [cb, inpAtv, inpIni, inpFim, inpInterf, inpObs]=tr.querySelectorAll('input');
-    inpAtv.addEventListener('input', e=>{ state.atividades[idx].atividade = e.target.value; });
-    inpIni.addEventListener('change', e=>{ state.atividades[idx].ini=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards(); });
-    inpFim.addEventListener('change', e=>{ state.atividades[idx].fim=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards(); });
-    inpInterf.addEventListener('input', e=>{ state.atividades[idx].interfer=e.target.value; atualizarCards(); });
-    inpObs.addEventListener('input', e=>{ state.atividades[idx].obs=e.target.value; });
     els.tabelaBody.appendChild(tr);
   });
 }
@@ -150,78 +142,32 @@ function renderTabela(){
 /* =========================
    PREVIEW DE FOTOS
 ========================= */
-els.uploadFotos.addEventListener('change', e=>{
-  const files = Array.from(e.target.files);
-  files.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      const img = document.createElement('img');
-      img.src = ev.target.result;
-      img.classList.add('thumb');
-      els.previewFotos.appendChild(img);
-      state.fotos.push(ev.target.result);
-    };
-    reader.readAsDataURL(file);
+function renderFotos(){
+  els.previewFotos.innerHTML='';
+  state.fotos.forEach(src=>{
+    const img = document.createElement('img');
+    img.src = src;
+    img.classList.add('thumb');
+    els.previewFotos.appendChild(img);
   });
-});
+}
 
 /* =========================
-   BOTÕES
+   RANKING DE INTERFERÊNCIAS
 ========================= */
-els.btnAddLinha.addEventListener('click', ()=>{
-  state.atividades.push({atividade:'',ini:'',fim:'',interfer:'',obs:''});
-  renderTabela();
-});
-
-els.btnRemoverSel.addEventListener('click', ()=>{
-  const checkboxes = els.tabelaBody.querySelectorAll('input[type="checkbox"]:checked');
-  const idxs = Array.from(checkboxes).map(cb=>parseInt(cb.dataset.idx,10)).sort((a,b)=>b-a);
-  idxs.forEach(i=>state.atividades.splice(i,1));
-  renderTabela();
-  atualizarCards();
-});
-
-els.btnSalvar.addEventListener('click', ()=>{
-  const key = `${state.data}_${state.turno}`;
-  dbNoturno[key] = {...state};
-  localStorage.setItem('dbNoturno', JSON.stringify(dbNoturno));
-  alert('Dados salvos localmente!');
-});
-
-els.btnCarregar.addEventListener('click', ()=>{
-  dbNoturno = JSON.parse(localStorage.getItem('dbNoturno')||'{}');
-  const key = `${state.data}_${state.turno}`;
-  if(dbNoturno[key]){
-    Object.assign(state, dbNoturno[key]);
-    preencherFormulario();
-    renderTabela();
-    atualizarCards();
-    atualizarCalculos();
-  } else alert('Nenhum registro encontrado!');
-});
-
-els.btnExportPDF.addEventListener('click', ()=>{
-  html2canvas(document.getElementById('dashboardWrap')).then(canvas=>{
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jspdf.jsPDF('p','mm','a4');
-    const pdfWidth = 210;
-    const pdfHeight = canvas.height * pdfWidth / canvas.width;
-    pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
-    pdf.save(`Noturno_${state.data}.pdf`);
+function atualizarRanking(){
+  if(!els.rankingContainer) return;
+  const ranking = state.atividades
+    .filter(a=>hmToHours(a.interfer)>0)
+    .sort((a,b)=>hmToHours(b.interfer)-hmToHours(a.interfer))
+    .slice(0,5); // Top 5
+  els.rankingContainer.innerHTML = '';
+  ranking.forEach((a,idx)=>{
+    const div = document.createElement('div');
+    div.textContent = `${idx+1}. ${a.atividade} → ${a.interfer}h`;
+    els.rankingContainer.appendChild(div);
   });
-});
-
-els.btnEditar.addEventListener('click', ()=>{
-  const key = `${state.data}_${state.turno}`;
-  if(dbNoturno[key]){
-    localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
-    window.open('noturno_edit.html','_blank');
-  } else {
-    alert('Nenhum registro salvo para editar!');
-  }
-});
-
-els.btnVoltarMenu.addEventListener('click', ()=>{ window.location.href='index.html'; });
+}
 
 /* =========================
    GRÁFICOS
@@ -282,6 +228,7 @@ function init(){
   renderTabela();
   atualizarCards();
   atualizarCalculos();
+  renderFotos();
 }
 
 init();
