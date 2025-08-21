@@ -3,26 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Relatório de Produtividade — Noturno</title>
-  <link rel="stylesheet" href="noturno.css">
+  <title>Noturno Edit — Preenchimento de Turno</title>
+  <link rel="stylesheet" href="noturno_edit.css">
 </head>
 <body>
   <div class="wrap" id="dashboardWrap">
     <header>
-      <h1>Relatório de Produtividade — Noturno</h1>
+      <h1>Noturno Edit — Preenchimento de Turno</h1>
       <div class="subtitle">Turno das 18:00 às 05:00 • STD Padrão = 0,22</div>
     </header>
 
     <!-- Filtro e botões -->
     <div id="filter-container">
-      <label>Data: <input type="date" id="campoData" readonly></label>
+      <label>Data: <input type="date" id="campoData"></label>
       <label>Turno:
-        <select id="campoTurno" disabled>
+        <select id="campoTurno">
           <option value="Noturno" selected>Noturno (18:00–05:00)</option>
         </select>
       </label>
-      <button id="btnExportPDF">Exportar PDF</button>
-      <button id="btnEditar">Editar</button>
+      <button id="btnSalvar">Salvar</button>
+      <button id="btnCarregar">Carregar</button>
       <button id="btnVoltarMenu">Voltar ao Menu</button>
     </div>
 
@@ -30,47 +30,45 @@
     <div class="grid linha1">
       <div class="card kpi">
         <div class="label">Supervisor</div>
-        <div class="value" id="kpiSupervisor">Carlos Silva</div>
+        <div class="value" id="kpiSupervisor"></div>
       </div>
       <div class="card kpi">
         <div class="label">Encarregado</div>
-        <div class="value" id="kpiEncarregado">João Pereira</div>
+        <div class="value" id="kpiEncarregado"></div>
       </div>
       <div class="card kpi">
         <div class="label">Montadores</div>
-        <div class="value" id="kpiMontadores">12</div>
+        <div class="value" id="kpiMontadores"></div>
       </div>
       <div class="card kpi">
         <div class="label">Faltas</div>
-        <div class="value" id="kpiFaltas">1</div>
+        <div class="value" id="kpiFaltas"></div>
       </div>
       <div class="card kpi">
         <div class="label">Interferências</div>
-        <div class="value" id="kpiInterf">2</div>
+        <div class="value" id="kpiInterf"></div>
       </div>
     </div>
 
-    <!-- Linha 2: Formulário compacto (somente leitura) -->
+    <!-- Linha 2: Formulário do turno -->
     <div class="grid linha2">
       <div class="card full">
         <div class="card-title">Informações do Turno</div>
         <div class="form-grid">
-          <label>Supervisor <input type="text" id="inpSupervisor" value="Carlos Silva" readonly></label>
-          <label>Encarregado <input type="text" id="inpEncarregado" value="João Pereira" readonly></label>
-          <label>Local <input type="text" id="inpLocal" value="ÁREA 31 - Pipe Rack" readonly></label>
-          <label>Disciplina atendida <input type="text" id="inpDisciplina" value="Andaime" readonly></label>
-          <label>Montadores <input type="number" id="inpMontadores" value="12" min="0" readonly></label>
-          <label>Faltas <input type="number" id="inpFaltas" value="1" min="0" readonly></label>
-          <label>ART <input type="text" id="inpART" value="ART-2025-00123" readonly></label>
-          <label>HH Real <input type="number" step="0.1" id="inpHHReal" value="98" readonly></label>
-          <label>ML Previsto <input type="number" id="inpMLPrev" value="250" readonly></label>
-          <label>ML Montado (Real) <input type="number" id="inpMLReal" value="230" readonly></label>
-        </div>
-
-        <div class="auto-calc">
-          <div>HH Previsto = Montadores × 8,8h → <b id="outHHPrev">105,6</b> h</div>
-          <div>STD Previsto = HH Previsto / ML Previsto → <b id="outSTDPrev">0,42</b></div>
-          <div>STD Real = HH Real / ML Real → <b id="outSTDReal">0,43</b></div>
+          <label>Supervisor <input type="text" id="inpSupervisor"></label>
+          <label>Encarregado <input type="text" id="inpEncarregado"></label>
+          <label>Local <input type="text" id="inpLocal"></label>
+          <label>Disciplina atendida <input type="text" id="inpDisciplina"></label>
+          <label>Montadores Previsto <input type="number" id="inpMontadoresPrev" min="0"></label>
+          <label>Montadores Real <input type="number" id="inpMontadoresReal" min="0"></label>
+          <label>Faltas <input type="number" id="inpFaltas" min="0"></label>
+          <label>ART <input type="text" id="inpART"></label>
+          <label>ML Previsto <input type="number" id="inpMLPrev" disabled></label>
+          <label>ML Real <input type="number" id="inpMLReal"></label>
+          <label>HH Previsto <input type="number" id="outHHPrev" disabled></label>
+          <label>HH Real <input type="number" id="inpHHReal" disabled></label>
+          <label>STD Previsto <input type="number" id="outSTDPrev" disabled></label>
+          <label>STD Real <input type="number" id="outSTDReal" disabled></label>
         </div>
       </div>
     </div>
@@ -80,30 +78,21 @@
       <div class="card">
         <div class="card-title">Velocímetro — Atingimento de ML (% Real / Previsto)</div>
         <svg id="gauge" width="100%" height="180" viewBox="0 0 200 120" preserveAspectRatio="none"></svg>
-        <div class="legend-std">
-          <span class="dot green"></span><span>≥ 100% </span>
-          <span class="dot yellow"></span><span>80%–99% </span>
-          <span class="dot red"></span><span>&lt; 80%</span>
-        </div>
       </div>
 
       <div class="card">
         <div class="card-title">Comparativo Previsto x Real</div>
         <svg id="barChart" width="100%" height="180" viewBox="0 0 100 60" preserveAspectRatio="none"></svg>
-        <div class="bar-legend">
-          <span class="swatch previsto"></span>Previsto
-          <span class="swatch real"></span>Real
-        </div>
       </div>
     </div>
 
-    <!-- Linha 4: Tabela de Atividades e Interferências -->
+    <!-- Linha 4: Tabela de Atividades -->
     <div class="grid linha4">
       <div class="card full">
         <div class="card-title">Atividades Executadas / Interferências</div>
         <div class="table-actions">
-          <button id="btnAddLinha" disabled>Adicionar Linha</button>
-          <button id="btnRemoverSel" disabled>Remover Selecionadas</button>
+          <button id="btnAddLinha">Adicionar Linha</button>
+          <button id="btnRemoverSel">Remover Selecionadas</button>
         </div>
         <div id="tabelaAtivWrapper">
           <table id="tabelaAtiv">
@@ -117,9 +106,7 @@
                 <th>Obs.</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- preenchido pelo JS -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
@@ -129,7 +116,7 @@
     <div class="grid linha5">
       <div class="card full">
         <div class="card-title">Resumo do Turno</div>
-        <textarea id="resumoTurno" rows="4" style="width:100%;" readonly>Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.</textarea>
+        <textarea id="resumoTurno" rows="4" style="width:100%;"></textarea>
       </div>
     </div>
 
@@ -137,7 +124,7 @@
     <div class="grid linha6">
       <div class="card full">
         <div class="card-title">Evidências (Fotos)</div>
-        <input type="file" id="uploadFotos" multiple accept="image/*" disabled>
+        <input type="file" id="uploadFotos" multiple accept="image/*">
         <div id="previewFotos" class="preview-grid"></div>
       </div>
     </div>
@@ -146,6 +133,6 @@
   <!-- Libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <script src="noturno.js"></script>
+  <script src="noturno_edit.js"></script>
 </body>
 </html>
