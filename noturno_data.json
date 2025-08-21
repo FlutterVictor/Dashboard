@@ -1,34 +1,23 @@
 {
-  "2025-08-21_Noturno": {
-    "supervisor": "Carlos Silva",
-    "encarregado": "João Pereira",
-    "local": "ÁREA 31 - Pipe Rack",
-    "disciplina": "Andaime",
-    "montadores": 12,
-    "faltas": 1,
-    "ART": "ART-2025-00123",
-    "data": "2025-08-21",
-    "turno": "Noturno",
-    "hhReal": 98,
-    "mlPrev": 250,
-    "mlReal": 230,
-    "resumo": "Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.",
-    "atividades": [
-      {
-        "atividade": "Montagem de andaime",
-        "ini": "18:00",
-        "fim": "19:30",
-        "interfer": "1:30",
-        "obs": "Sem intercorrências"
-      },
-      {
-        "atividade": "Verificação de segurança",
-        "ini": "19:30",
-        "fim": "20:15",
-        "interfer": "0:45",
-        "obs": "Pequena interferência de material"
-      }
-    ],
-    "fotos": []
-  }
+  "data": "",
+  "turno": "Noturno",
+  "informacoesTurno": {
+    "local": "",
+    "disciplina": "",
+    "montadoresPrevisto": 0,
+    "montadoresReal": 0,
+    "faltas": 0,
+    "ART": "",
+    "MLReal": 0
+  },
+  "calculos": {
+    "HHPrevisto": 0,
+    "HHReal": 0,
+    "MLPrevisto": 0,
+    "STDPrevisto": 0,
+    "STDReal": 0
+  },
+  "atividades": [],
+  "resumoTurno": "",
+  "fotos": []
 }
