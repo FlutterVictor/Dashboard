@@ -1,57 +1,47 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Noturno</title>
-  <link rel="stylesheet" href="noturno.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <header>
-    <h1>Dashboard Noturno</h1>
-    <nav>
-      <button id="voltar">Voltar</button>
-      <button id="atualizar">Atualizar</button>
-    </nav>
-  </header>
+<div class="dashboard">
+  <h1>Dashboard de Andaime</h1>
 
-  <main>
-    <section class="cards">
-      <div class="card">
-        <h2>Produção</h2>
-        <p>325 m³</p>
-      </div>
-      <div class="card">
-        <h2>Equipe</h2>
-        <p>12 colaboradores</p>
-      </div>
-      <div class="card">
-        <h2>Horas Trabalhadas</h2>
-        <p>94h</p>
-      </div>
-      <div class="card">
-        <h2>Eficiência</h2>
-        <p>87%</p>
-      </div>
-    </section>
+  <!-- Indicadores principais -->
+  <div class="cards">
+    <div class="card">
+      <h2>Produção</h2>
+      <p><strong>320 ML</strong></p>
+      <small>Meta: 400 ML</small>
+    </div>
+    <div class="card">
+      <h2>Faltas</h2>
+      <p><strong>2</strong></p>
+    </div>
+    <div class="card">
+      <h2>Interferências</h2>
+      <p><strong>3</strong></p>
+    </div>
+    <div class="card">
+      <h2>STD</h2>
+      <p><strong>0,23</strong></p>
+      <small>Acima do padrão</small>
+    </div>
+  </div>
 
-    <section class="graficos">
-      <div class="grafico-container">
-        <h3>Produção por Turno</h3>
-        <canvas id="graficoTurno"></canvas>
-      </div>
-      <div class="grafico-container">
-        <h3>Eficiência por Equipe</h3>
-        <canvas id="graficoEquipe"></canvas>
-      </div>
-    </section>
-  </main>
+  <!-- Gráfico de velocímetro -->
+  <div class="chart">
+    <h2>STD x Padrão</h2>
+    <canvas id="gaugeChart"></canvas>
+  </div>
 
-  <footer>
-    <p>Dashboard Noturno - Mockup | STD Layout</p>
-  </footer>
+  <!-- Gráfico de colunas -->
+  <div class="chart">
+    <h2>Produção Diária</h2>
+    <canvas id="barChart"></canvas>
+  </div>
 
-  <script src="noturno.js"></script>
-</body>
-</html>
+  <!-- Área de fotos -->
+  <div class="photos">
+    <h2>Registros de Campo</h2>
+    <div class="photo-grid">
+      <img src="foto1.jpg" alt="Foto do campo">
+      <img src="foto2.jpg" alt="Foto do campo">
+      <img src="foto3.jpg" alt="Foto do campo">
+    </div>
+  </div>
+</div>
