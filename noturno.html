@@ -24,7 +24,7 @@
       <button id="btnSalvar">Salvar</button>
       <button id="btnCarregar">Carregar</button>
       <button id="btnExportPDF">Exportar PDF</button>
-      <button id="btnEditar">Editar</button>
+      <button id="btnEditar">Editar</button> <!-- Botão para abrir noturno_edit -->
       <button id="btnVoltarMenu">Voltar ao Menu</button>
     </div>
 
@@ -148,6 +148,19 @@
   <!-- Libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+  <!-- JS -->
   <script src="noturno.js"></script>
+  <script>
+    // BOTÃO EDITAR: abrir noturno_edit com login
+    document.getElementById('btnEditar').addEventListener('click', () => {
+      const senha = prompt("Informe a senha para editar o turno noturno:");
+      if(senha === "1234"){ // senha definida previamente
+        window.open('noturno_edit.html', '_blank');
+      } else {
+        alert("Senha incorreta! Acesso negado.");
+      }
+    });
+  </script>
 </body>
 </html>
