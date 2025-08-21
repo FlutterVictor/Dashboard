@@ -1,13 +1,29 @@
-function toggleIndicadores() {
-  document.getElementById("indicadores").classList.remove("hidden");
-  document.getElementById("relatorios").classList.add("hidden");
-}
+// Mockup JS para relatório noturno
+console.log("Dashboard Noturno carregado");
 
-function toggleRelatorios() {
-  document.getElementById("relatorios").classList.remove("hidden");
-  document.getElementById("indicadores").classList.add("hidden");
-}
+// Pré-visualização das fotos
+const uploadFotos = document.getElementById('uploadFotos');
+const previewFotos = document.getElementById('previewFotos');
 
-function voltar() {
-  alert("Voltando para o menu anterior...");
-}
+uploadFotos.addEventListener('change', (e) => {
+    previewFotos.innerHTML = '';
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '6px';
+            previewFotos.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    });
+});
+
+// Botão Exportar PDF (Mockup)
+document.getElementById('btnExportPDF').addEventListener('click', () => {
+    alert('Exportar PDF do relatório noturno (em desenvolvimento)');
+});
