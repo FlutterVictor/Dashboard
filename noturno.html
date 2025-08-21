@@ -1,77 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Noturno</title>
-<link rel="stylesheet" href="noturno.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Relatório de Produtividade — Noturno</title>
+  <link rel="stylesheet" href="noturno.css">
 </head>
 <body>
-<header>
-  <h1>Dashboard Noturno - Turno 18:00 às 05:00</h1>
-  <button id="btnNovoForm">Gerar formulário novo</button>
-</header>
+  <div class="wrap" id="dashboardWrap">
+    <header>
+      <h1>Relatório de Produtividade — Noturno</h1>
+      <div class="subtitle">Turno das 18:00 às 05:00 • STD Padrão = 0,22</div>
+    </header>
 
-<main>
-  <!-- Filtro de datas -->
-  <div class="filtro-datas">
-    <label>Data início: <input type="date" id="filtroDataInicio"></label>
-    <label>Data fim: <input type="date" id="filtroDataFim"></label>
+    <!-- Filtro e botões -->
+    <div id="filter-container">
+      <label>Data: <input type="date" id="campoData"></label>
+      <label>Turno:
+        <select id="campoTurno">
+          <option value="Noturno" selected>Noturno (18:00–05:00)</option>
+        </select>
+      </label>
+      <button id="btnSalvar">Salvar</button>
+      <button id="btnCarregar">Carregar</button>
+      <button id="btnExportPDF">Exportar PDF</button>
+      <button id="btnVoltarMenu">Voltar ao Menu</button>
+    </div>
+
+    <!-- Linha 1: Cards principais -->
+    <div class="grid linha1">
+      <div class="card kpi">
+        <div class="label">Supervisor</div>
+        <div class="value" id="kpiSupervisor">Carlos Silva</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Encarregado</div>
+        <div class="value" id="kpiEncarregado">João Pereira</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Montadores</div>
+        <div class="value" id="kpiMontadores">12</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Faltas</div>
+        <div class="value" id="kpiFaltas">1</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Interferências</div>
+        <div class="value" id="kpiInterf">2</div>
+      </div>
+    </div>
+
+    <!-- Linha 2: Formulário compacto -->
+    <div class="grid linha2">
+      <div class="card full">
+        <div class="card-title">Informações do Turno</div>
+        <div class="form-grid">
+          <label>Supervisor <input type="text" id="inpSupervisor" value="Carlos Silva"></label>
+          <label>Encarregado <input type="text" id="inpEncarregado" value="João Pereira"></label>
+          <label>Local <input type="text" id="inpLocal" value="ÁREA 31 - Pipe Rack"></label>
+          <label>Disciplina atendida <input type="text" id="inpDisciplina" value="Andaime"></label>
+          <label>Montadores <input type="number" id="inpMontadores" value="12" min="0"></label>
+          <label>Faltas <input type="number" id="inpFaltas" value="1" min="0"></label>
+          <label>ART <input type="text" id="inpART" value="ART-2025-00123"></label>
+          <label>HH Real <input type="number" step="0.1" id="inpHHReal" value="98"></label>
+          <label>ML Previsto <input type="number" id="inpMLPrev" value="250"></label>
+          <label>ML Montado (Real) <input type="number" id="inpMLReal" value="230"></label>
+        </div>
+
+        <div class="auto-calc">
+          <div>HH Previsto = Montadores × 8,8h → <b id="outHHPrev">105,6</b> h</div>
+          <div>STD Previsto = HH Previsto / ML Previsto → <b id="outSTDPrev">0,42</b></div>
+          <div>STD Real = HH Real / ML Real → <b id="outSTDReal">0,43</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Gráficos -->
+    <div class="grid linha3">
+      <div class="card">
+        <div class="card-title">Velocímetro — Atingimento de ML (% Real / Previsto)</div>
+        <svg id="gauge" width="100%" height="180" viewBox="0 0 200 120" preserveAspectRatio="none"></svg>
+        <div class="legend-std">
+          <span class="dot green"></span><span>≥ 100% </span>
+          <span class="dot yellow"></span><span>80%–99% </span>
+          <span class="dot red"></span><span>&lt; 80%</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Comparativo Previsto x Real</div>
+        <svg id="barChart" width="100%" height="180" viewBox="0 0 100 60" preserveAspectRatio="none"></svg>
+        <div class="bar-legend">
+          <span class="swatch previsto"></span>Previsto
+          <span class="swatch real"></span>Real
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 4: Tabela de Atividades e Interferências -->
+    <div class="grid linha4">
+      <div class="card full">
+        <div class="card-title">Atividades Executadas / Interferências</div>
+        <div class="table-actions">
+          <button id="btnAddLinha">Adicionar Linha</button>
+          <button id="btnRemoverSel">Remover Selecionadas</button>
+        </div>
+        <div id="tabelaAtivWrapper">
+          <table id="tabelaAtiv">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Atividade</th>
+                <th>Hora início</th>
+                <th>Hora final</th>
+                <th>Interferência (H)</th>
+                <th>Obs.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- preenchido pelo JS (mock) -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 5: Resumo do turno -->
+    <div class="grid linha5">
+      <div class="card full">
+        <div class="card-title">Resumo do Turno</div>
+        <textarea id="resumoTurno" rows="4" style="width:100%;">Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.</textarea>
+      </div>
+    </div>
+
+    <!-- Linha 6: Evidências (Fotos) -->
+    <div class="grid linha6">
+      <div class="card full">
+        <div class="card-title">Evidências (Fotos)</div>
+        <input type="file" id="uploadFotos" multiple accept="image/*">
+        <div id="previewFotos" class="preview-grid"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Cards principais -->
-  <div class="cards">
-    <div class="card" id="cardInfo"></div>
-    <div class="card" id="cardSTD"></div>
-    <div class="card" id="cardInterferencia"></div>
-  </div>
-
-  <!-- Gráficos -->
-  <div class="graficos">
-    <canvas id="gaugeCanvas" width="300" height="150"></canvas>
-    <canvas id="barCanvas" width="400" height="250"></canvas>
-  </div>
-
-  <!-- Tabela de atividades -->
-  <div class="card">
-    <h2>Atividades Executadas</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Atividade</th>
-          <th>Hora início</th>
-          <th>Hora fim</th>
-          <th>Horas interferência</th>
-          <th>Observação</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaAtividades"></tbody>
-    </table>
-  </div>
-
-  <!-- Resumo do turno -->
-  <div class="card">
-    <h2>Resumo do Turno</h2>
-    <p id="resumoTurno"></p>
-  </div>
-
-  <!-- Fotos -->
-  <div class="card">
-    <h2>Registro Fotográfico</h2>
-    <div id="fotosContainer" class="fotos-container"></div>
-  </div>
-</main>
-
-<script src="noturno.js"></script>
-<script>
-document.getElementById('btnNovoForm').addEventListener('click', ()=>{
-    const senha = prompt("Senha de acesso:");
-    if(senha === '2025'){
-        window.open('noturno_edit.html','_blank');
-    } else {
-        alert("Senha incorreta!");
-    }
-});
-</script>
+  <!-- libs iguais às do STD -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="noturno.js"></script>
 </body>
 </html>
