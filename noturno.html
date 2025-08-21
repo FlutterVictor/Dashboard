@@ -21,10 +21,8 @@
           <option value="Noturno" selected>Noturno (18:00–05:00)</option>
         </select>
       </label>
-      <button id="btnSalvar">Salvar</button>
       <button id="btnCarregar">Carregar</button>
       <button id="btnExportPDF">Exportar PDF</button>
-      <button id="btnEditar">Editar</button> <!-- Botão para abrir noturno_edit -->
       <button id="btnVoltarMenu">Voltar ao Menu</button>
     </div>
 
@@ -32,48 +30,52 @@
     <div class="grid linha1">
       <div class="card kpi">
         <div class="label">Supervisor</div>
-        <div class="value" id="kpiSupervisor">Carlos Silva</div>
+        <div class="value" id="kpiSupervisor">-</div>
       </div>
       <div class="card kpi">
         <div class="label">Encarregado</div>
-        <div class="value" id="kpiEncarregado">João Pereira</div>
+        <div class="value" id="kpiEncarregado">-</div>
       </div>
       <div class="card kpi">
         <div class="label">Montadores</div>
-        <div class="value" id="kpiMontadores">12</div>
+        <div class="value" id="kpiMontadores">-</div>
       </div>
       <div class="card kpi">
         <div class="label">Faltas</div>
-        <div class="value" id="kpiFaltas">1</div>
+        <div class="value" id="kpiFaltas">-</div>
       </div>
       <div class="card kpi">
         <div class="label">Interferências</div>
-        <div class="value" id="kpiInterf">2</div>
+        <div class="value" id="kpiInterf">-</div>
       </div>
     </div>
 
-    <!-- Linha 2: Formulário compacto -->
+    <!-- Linha 2: Cards de informações e ranking -->
     <div class="grid linha2">
+      <!-- Informações do Turno -->
       <div class="card full">
         <div class="card-title">Informações do Turno</div>
-        <div class="form-grid">
-          <label>Supervisor <input type="text" id="inpSupervisor" value="Carlos Silva"></label>
-          <label>Encarregado <input type="text" id="inpEncarregado" value="João Pereira"></label>
-          <label>Local <input type="text" id="inpLocal" value="ÁREA 31 - Pipe Rack"></label>
-          <label>Disciplina atendida <input type="text" id="inpDisciplina" value="Andaime"></label>
-          <label>Montadores <input type="number" id="inpMontadores" value="12" min="0"></label>
-          <label>Faltas <input type="number" id="inpFaltas" value="1" min="0"></label>
-          <label>ART <input type="text" id="inpART" value="ART-2025-00123"></label>
-          <label>HH Real <input type="number" step="0.1" id="inpHHReal" value="98"></label>
-          <label>ML Previsto <input type="number" id="inpMLPrev" value="250"></label>
-          <label>ML Montado (Real) <input type="number" id="inpMLReal" value="230"></label>
+        <div id="infoTurno">
+          <p><b>Local:</b> <span id="infoLocal">-</span></p>
+          <p><b>Disciplina atendida:</b> <span id="infoDisciplina">-</span></p>
+          <p><b>Montadores:</b> <span id="infoMontadores">-</span></p>
+          <p><b>Faltas:</b> <span id="infoFaltas">-</span></p>
+          <p><b>ART:</b> <span id="infoART">-</span></p>
+          <p><b>HH Previsto:</b> <span id="outHHPrev">-</span> h</p>
+          <p><b>HH Real:</b> <span id="outHHReal">-</span> h</p>
+          <p><b>ML Previsto:</b> <span id="outMLPrev">-</span></p>
+          <p><b>ML Real:</b> <span id="outMLReal">-</span></p>
+          <p><b>STD Previsto:</b> <span id="outSTDPrev">-</span></p>
+          <p><b>STD Real:</b> <span id="outSTDReal">-</span></p>
         </div>
+      </div>
 
-        <div class="auto-calc">
-          <div>HH Previsto = Montadores × 8,8h → <b id="outHHPrev">105,6</b> h</div>
-          <div>STD Previsto = HH Previsto / ML Previsto → <b id="outSTDPrev">0,42</b></div>
-          <div>STD Real = HH Real / ML Real → <b id="outSTDReal">0,43</b></div>
-        </div>
+      <!-- Ranking de Interferências -->
+      <div class="card ranking">
+        <div class="card-title">Ranking de Interferências</div>
+        <ol id="rankingInterferencias">
+          <!-- preenchido dinamicamente -->
+        </ol>
       </div>
     </div>
 
@@ -99,19 +101,14 @@
       </div>
     </div>
 
-    <!-- Linha 4: Tabela de Atividades e Interferências -->
+    <!-- Linha 4: Tabela de Atividades -->
     <div class="grid linha4">
       <div class="card full">
         <div class="card-title">Atividades Executadas / Interferências</div>
-        <div class="table-actions">
-          <button id="btnAddLinha">Adicionar Linha</button>
-          <button id="btnRemoverSel">Remover Selecionadas</button>
-        </div>
         <div id="tabelaAtivWrapper">
           <table id="tabelaAtiv">
             <thead>
               <tr>
-                <th></th>
                 <th>Atividade</th>
                 <th>Hora início</th>
                 <th>Hora final</th>
@@ -131,36 +128,21 @@
     <div class="grid linha5">
       <div class="card full">
         <div class="card-title">Resumo do Turno</div>
-        <textarea id="resumoTurno" rows="4" style="width:100%;">Turno ocorreu conforme planejamento. Área 31 liberada às 20:15. Interferência por falta de material entre 22:00 e 23:10.</textarea>
+        <p id="resumoTurno">-</p>
       </div>
     </div>
 
-    <!-- Linha 6: Evidências (Fotos) -->
+    <!-- Linha 6: Fotos -->
     <div class="grid linha6">
       <div class="card full">
         <div class="card-title">Evidências (Fotos)</div>
-        <input type="file" id="uploadFotos" multiple accept="image/*">
-        <div id="previewFotos" class="preview-grid"></div>
+        <div id="previewFotos" class="preview-grid">
+          <!-- fotos carregadas dinamicamente -->
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-  <!-- JS -->
   <script src="noturno.js"></script>
-  <script>
-    // BOTÃO EDITAR: abrir noturno_edit com login
-    document.getElementById('btnEditar').addEventListener('click', () => {
-      const senha = prompt("Informe a senha para editar o turno noturno:");
-      if(senha === "1234"){ // senha definida previamente
-        window.open('noturno_edit.html', '_blank');
-      } else {
-        alert("Senha incorreta! Acesso negado.");
-      }
-    });
-  </script>
 </body>
 </html>
