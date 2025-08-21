@@ -1,108 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Noturno - Andaime</title>
-    <link rel="stylesheet" href="noturno.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Noturno</title>
+<link rel="stylesheet" href="noturno.css">
 </head>
 <body>
-    <header>
-        <h1>Dashboard Noturno - Turno 18:00 às 05:00</h1>
-        <button id="btnNovoFormulario" class="btn-primary">Gerar formulário novo</button>
-    </header>
+<header>
+  <h1>Dashboard Noturno - Turno 18:00 às 05:00</h1>
+  <button id="btnNovoForm">Gerar formulário novo</button>
+</header>
 
-    <main>
-        <!-- Filtro de datas -->
-        <div class="filtro-datas">
-            <label>Data Início: <input type="date" id="dataInicio"></label>
-            <label>Data Fim: <input type="date" id="dataFim"></label>
-            <button id="btnFiltrar">Filtrar</button>
-        </div>
+<main>
+  <!-- Filtro de datas -->
+  <div class="filtro-datas">
+    <label>Data início: <input type="date" id="filtroDataInicio"></label>
+    <label>Data fim: <input type="date" id="filtroDataFim"></label>
+  </div>
 
-        <!-- Cards principais -->
-        <div class="cards-container">
-            <div class="card">Supervisor: <span id="supervisor">Carlos Silva</span></div>
-            <div class="card">Encarregado: <span id="encarregado">João Pereira</span></div>
-            <div class="card">Local: <span id="local">Setor A</span></div>
-            <div class="card">Montadores: <span id="montadores">12</span></div>
-            <div class="card">Faltas: <span id="faltas">2</span></div>
-            <div class="card">ART: <span id="art">12345</span></div>
-            <div class="card card-largo">
-                <p>HH Previsto: <span id="hhPrevisto">105.6</span></p>
-                <p>HH Real: <span id="hhReal">98</span></p>
-                <p>ML Previsto: <span id="mlPrevisto">250</span></p>
-                <p>ML Montado: <span id="mlReal">230</span></p>
-                <p>STD Previsto: <span id="stdPrevisto">0.42</span></p>
-                <p>STD Real: <span id="stdReal">0.43</span></p>
-            </div>
-            <div class="card">Disciplina atendida: <span id="disciplina">Montagem Estrutural</span></div>
-            <div class="card">Interferências (h): <span id="interferencias">1.5</span></div>
-        </div>
+  <!-- Cards principais -->
+  <div class="cards">
+    <div class="card" id="cardInfo"></div>
+    <div class="card" id="cardSTD"></div>
+    <div class="card" id="cardInterferencia"></div>
+  </div>
 
-        <!-- Gráficos -->
-        <div class="graficos-container">
-            <div class="card grafico">
-                <h3>Velocímetro (ML Montado x ML Previsto)</h3>
-                <canvas id="gaugeChart"></canvas>
-            </div>
+  <!-- Gráficos -->
+  <div class="graficos">
+    <canvas id="gaugeCanvas" width="300" height="150"></canvas>
+    <canvas id="barCanvas" width="400" height="250"></canvas>
+  </div>
 
-            <div class="card grafico">
-                <h3>Comparativo Previsto x Real</h3>
-                <canvas id="barChart"></canvas>
-            </div>
-        </div>
+  <!-- Tabela de atividades -->
+  <div class="card">
+    <h2>Atividades Executadas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Atividade</th>
+          <th>Hora início</th>
+          <th>Hora fim</th>
+          <th>Horas interferência</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaAtividades"></tbody>
+    </table>
+  </div>
 
-        <!-- Atividades executadas -->
-        <div class="card">
-            <h3>Atividades Executadas</h3>
-            <table id="atividadesTable">
-                <thead>
-                    <tr>
-                        <th>Atividade</th>
-                        <th>Hora Início</th>
-                        <th>Hora Final</th>
-                        <th>Interferência (h)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Montagem Andaime</td>
-                        <td>18:30</td>
-                        <td>21:30</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>Solda</td>
-                        <td>21:30</td>
-                        <td>22:00</td>
-                        <td>0.5</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <!-- Resumo do turno -->
+  <div class="card">
+    <h2>Resumo do Turno</h2>
+    <p id="resumoTurno"></p>
+  </div>
 
-        <!-- Resumo do turno -->
-        <div class="card">
-            <h3>Resumo do Turno</h3>
-            <p id="resumoTurno">
-                Turno tranquilo, com pequenas interferências devido à falta de material. Produção dentro do esperado.
-            </p>
-        </div>
+  <!-- Fotos -->
+  <div class="card">
+    <h2>Registro Fotográfico</h2>
+    <div id="fotosContainer" class="fotos-container"></div>
+  </div>
+</main>
 
-        <!-- Fotos -->
-        <div class="card fotos-container">
-            <h3>Evidências (Fotos)</h3>
-            <div class="fotos-grid">
-                <div class="foto">Foto 1</div>
-                <div class="foto">Foto 2</div>
-                <div class="foto">Foto 3</div>
-                <div class="foto">Foto 4</div>
-            </div>
-        </div>
-    </main>
-
-    <script src="noturno.js"></script>
+<script src="noturno.js"></script>
+<script>
+document.getElementById('btnNovoForm').addEventListener('click', ()=>{
+    const senha = prompt("Senha de acesso:");
+    if(senha === '2025'){
+        window.open('noturno_edit.html','_blank');
+    } else {
+        alert("Senha incorreta!");
+    }
+});
+</script>
 </body>
 </html>
