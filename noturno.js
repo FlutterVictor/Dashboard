@@ -219,6 +219,18 @@ function path(d,color,width){
   return p;
 }
 
+// Abrir noturno_edit.html
+els.btnEditar.addEventListener('click', ()=>{
+  const key = `${state.data}_${state.turno}`;
+  if(dbNoturno[key]){
+    localStorage.setItem('noturno_edit', JSON.stringify(dbNoturno[key]));
+    window.open('noturno_edit.html','_blank');
+  } else {
+    alert('Nenhum registro salvo para editar!');
+  }
+});
+
+
 /* =========================
    INICIALIZAÇÃO
 ========================= */
