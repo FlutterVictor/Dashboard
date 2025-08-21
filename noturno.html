@@ -1,84 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dashboard Noturno</title>
-    <link rel="stylesheet" href="noturno.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Noturno</title>
+  <link rel="stylesheet" href="noturno.css">
 </head>
 <body>
-    <div class="wrap" id="dashboardWrap">
-        <header>
-            <h1>Relatório Noturno — Andaime</h1>
-            <div class="subtitle">Preenchimento diário do turno da noite</div>
-        </header>
+  <header>
+    <h1>Dashboard Noturno</h1>
+    <nav>
+      <button class="btn">Indicador 1</button>
+      <button class="btn">Indicador 2</button>
+      <button class="btn">Indicador 3</button>
+      <button class="btn voltar">Voltar</button>
+    </nav>
+  </header>
 
-        <!-- Filtro e botões -->
-        <div id="filter-container">
-            <label>Data: <input type="date" id="dataTurno" /></label>
-            <button id="btnApplyFilter">Aplicar filtro</button>
-            <button id="btnExportPDF">Exportar PDF</button>
-        </div>
+  <main>
+    <section class="conteudo">
+      <h2>Mapa Noturno</h2>
+      <p>Aqui você pode visualizar os dados relacionados ao turno da noite.</p>
+    </section>
+  </main>
 
-        <!-- Linha 1: Cards principais -->
-        <div class="grid linha1">
-            <div class="card kpi"><div class="label">Encarregado</div><div class="value" id="encarregado">-</div></div>
-            <div class="card kpi"><div class="label">Supervisor</div><div class="value" id="supervisor">-</div></div>
-            <div class="card kpi"><div class="label">Montadores</div><div class="value" id="montadores">0</div></div>
-            <div class="card kpi"><div class="label">Faltas</div><div class="value" id="faltas">0</div></div>
-            <div class="card kpi"><div class="label">STD Real</div><div class="value" id="stdReal">0,00</div></div>
-        </div>
-
-        <!-- Linha 2: Tabela de atividades -->
-        <div class="grid linha2">
-            <div class="card full">
-                <div class="card-title">Atividades Executadas e Interferências</div>
-                <table id="tabelaAtividades">
-                    <thead>
-                        <tr>
-                            <th>Atividade</th>
-                            <th>Hora Início</th>
-                            <th>Hora Fim</th>
-                            <th>Horas Interferência</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="4" style="text-align:center;color:gray;">Sem dados</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Linha 3: Gráficos -->
-        <div class="grid linha3">
-            <div class="card wide">
-                <div class="card-title">Gráfico Velocímetro (ML Montado x ML Real)</div>
-                <svg id="graficoVelocimetro" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
-            </div>
-            <div class="card wide">
-                <div class="card-title">Gráfico de Barras</div>
-                <svg id="graficoBarras" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
-            </div>
-        </div>
-
-        <!-- Linha 4: Resumo e Evidências -->
-        <div class="grid linha4">
-            <div class="card full">
-                <div class="card-title">Resumo do Turno</div>
-                <textarea id="resumoTurno" rows="4" style="width:100%;"></textarea>
-            </div>
-        </div>
-
-        <div class="grid linha5">
-            <div class="card full">
-                <div class="card-title">Evidências (Fotos)</div>
-                <input type="file" id="uploadFotos" multiple accept="image/*">
-                <div id="previewFotos" style="margin-top:10px; display:flex; gap:10px;"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <script src="noturno.js"></script>
+  <script src="noturno.js"></script>
 </body>
 </html>
