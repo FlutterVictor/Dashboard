@@ -1,65 +1,163 @@
-/* Reaproveita o estilo do STD */
-@import url('style.css');
-
-/* Ajustes específicos do Noturno */
-.form-grid{
-  display:grid;
-  gap:10px;
-  grid-template-columns: repeat(4, minmax(180px,1fr));
-  margin-top:8px;
-}
-.form-grid label{ display:flex; flex-direction:column; font-size:13px; color:var(--dark); }
-.form-grid input, .form-grid select{
-  padding:8px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px; background:#fff; color:var(--dark);
+/* =============================
+   Reset e estilo base
+============================= */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f6fb;
+    color: #0b2340;
 }
 
-.auto-calc{
-  margin-top:12px; display:flex; gap:18px; flex-wrap:wrap; font-size:14px; color:var(--dark);
-}
-.auto-calc b{ color:#0b63d6; }
-
-#filter-container button, .table-actions button{
-  background:#0b63d6; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;
-}
-#btnVoltarMenu{ background:#6b7280; }
-.table-actions{ display:flex; gap:8px; margin-bottom:10px; }
-
-/* Tabela atividades */
-#tabelaAtivWrapper{ max-height:240px; overflow:auto; }
-#tabelaAtiv{ width:100%; border-collapse:collapse; font-size:13px; }
-#tabelaAtiv th, #tabelaAtiv td{ padding:8px; border-bottom:1px solid #f0f2f5; text-align:left; }
-#tabelaAtiv thead th{ background:#f3f6fb; color:#6b7280; font-weight:600; }
-#tabelaAtiv input[type="time"], #tabelaAtiv input[type="text"]{
-  padding:6px; border:1px solid #e5e7eb; border-radius:6px; width:100%; background:#fff; color:var(--dark);
-}
-#tabelaAtiv input[type="checkbox"]{ transform:scale(1.2); }
-
-/* Gauge legend */
-.legend-std{ margin-top:8px; font-size:12px; display:flex; align-items:center; gap:10px; color:#0b2340; }
-.legend-std .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
-.legend-std .green{ background:#14b8a6; }
-.legend-std .yellow{ background:#f59e0b; }
-.legend-std .red{ background:#ef4444; }
-
-/* Bar legend */
-.bar-legend{ margin-top:8px; font-size:12px; display:flex; align-items:center; gap:10px; color:#0b2340; }
-.bar-legend .swatch{ width:12px; height:12px; display:inline-block; border-radius:3px; }
-.bar-legend .previsto{ background:#0b63d6; }
-.bar-legend .real{ background:#6b7280; }
-
-/* Fotos */
-.preview-grid{
-  display:grid; gap:10px; grid-template-columns: repeat(4, minmax(120px,1fr));
-  margin-top:12px;
-}
-.preview-grid .thumb{
-  width:100%; height:120px; object-fit:cover; border-radius:8px; background:#e5e7eb;
+header {
+    background-color: #0b63d6;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* Responsividade */
-@media (max-width: 900px){
-  .form-grid{ grid-template-columns: repeat(2, minmax(160px,1fr)); }
+header h1 {
+    margin: 0;
+    font-size: 1.8em;
 }
-@media (max-width: 600px){
-  .form-grid{ grid-template-columns: 1fr; }
+
+.btn-primary {
+    background-color: #ffffff;
+    color: #0b63d6;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #e5e7eb;
+}
+
+/* =============================
+   Filtro de datas
+============================= */
+.filtro-datas {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filtro-datas input[type="date"] {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.filtro-datas button {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    background-color: #0b63d6;
+    color: white;
+    cursor: pointer;
+}
+
+.filtro-datas button:hover {
+    background-color: #0b2340;
+}
+
+/* =============================
+   Cards
+============================= */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    padding: 20px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.card-largo {
+    grid-column: span 2;
+}
+
+/* =============================
+   Gráficos
+============================= */
+.graficos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.grafico {
+    padding: 15px;
+}
+
+/* =============================
+   Tabela Atividades
+============================= */
+#atividadesTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#atividadesTable th, #atividadesTable td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+#atividadesTable th {
+    background-color: #0b63d6;
+    color: white;
+}
+
+/* =============================
+   Resumo do turno
+============================= */
+#resumoTurno {
+    margin-top: 10px;
+    line-height: 1.4em;
+}
+
+/* =============================
+   Fotos
+============================= */
+.fotos-container .fotos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.fotos-container .foto {
+    background-color: #e5e7eb;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    color: #666;
+}
+
+/* =============================
+   Responsividade
+============================= */
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .graficos-container {
+        grid-template-columns: 1fr;
+    }
 }
