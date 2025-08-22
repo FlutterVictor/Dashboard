@@ -132,8 +132,16 @@ function renderTabela(){
     `;
     const [cb,inpAtv,inpIni,inpFim,inpInterf,inpObs]=tr.querySelectorAll('input');
     inpAtv.addEventListener('input',e=>state.atividades[idx].atividade=e.target.value);
-    inpIni.addEventListener('change',e=>{state.atividades[idx].ini=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards();});
-    inpFim.addEventListener('change',e=>{state.atividades[idx].fim=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards();});
+    inpIni.addEventListener('change',e=>{
+      state.atividades[idx].ini=e.target.value;
+      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
+      renderTabela(); atualizarCards();
+    });
+    inpFim.addEventListener('change',e=>{
+      state.atividades[idx].fim=e.target.value;
+      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
+      renderTabela(); atualizarCards();
+    });
     inpInterf.addEventListener('input',e=>{state.atividades[idx].interfer=e.target.value; atualizarCards();});
     inpObs.addEventListener('input',e=>state.atividades[idx].obs=e.target.value);
     els.tabelaBody.appendChild(tr);
@@ -235,7 +243,7 @@ function atualizarFotos(){
 els.btnSalvar.addEventListener('click',()=>{
   const key=`${state.data}_${state.turno}`;
   dbNoturno[key]=JSON.parse(JSON.stringify(state));
-  localStorage.setItem('noturno_data',JSON.stringify(dbNoturno));
+  localStorage.setItem('dbNoturno',JSON.stringify(dbNoturno));
   alert('Dados salvos com sucesso!');
 });
 
@@ -243,7 +251,7 @@ els.btnSalvar.addEventListener('click',()=>{
    INICIALIZAÇÃO
 ========================= */
 function init(){
-  const stored=localStorage.getItem('noturno_data');
+  const stored=localStorage.getItem('dbNoturno');
   if(stored) dbNoturno=JSON.parse(stored);
   preencherFormulario();
   atualizarCalculos();
