@@ -1,27 +1,30 @@
 /* =========================
-   ESTADO INICIAL (FORMATO JSON)
+   ESTADO INICIAL
 ========================= */
 const state = {
-  data: new Date().toISOString().slice(0,10),
-  turno: "Noturno",
+  supervisor: "Carlos Silva",
+  encarregado: "João Pereira",
   informacoesTurno: {
     local: "",
     disciplina: "",
-    montadoresPrevisto: 0,
+    montadoresPrev: 0,
     montadoresReal: 0,
     faltas: 0,
     ART: "",
-    MLReal: 0
+    mlReal: 0
   },
+  data: new Date().toISOString().slice(0,10),
+  turno: "Noturno",
   calculos: {
-    HHPrevisto: 0,
-    HHReal: 0,
-    MLPrevisto: 0,
-    STDPrevisto: 0,
-    STDReal: 0
+    hhPrev: 0,
+    hhReal: 0,
+    mlPrev: 0,
+    mlReal: 0,
+    stdPrev: 0,
+    stdReal: 0
   },
+  resumo: "",
   atividades: [],
-  resumoTurno: "",
   fotos: []
 };
 
@@ -31,6 +34,12 @@ let dbNoturno = {}; // banco de dados JSON simulado
    ELEMENTOS
 ========================= */
 const els = {
+  inpSupervisor: document.getElementById('inpSupervisor'),
+  inpEncarregado: document.getElementById('inpEncarregado'),
+  kpiMontadores: document.getElementById('kpiMontadores'),
+  kpiFaltas: document.getElementById('kpiFaltas'),
+  kpiInterf: document.getElementById('kpiInterf'),
+
   inpLocal: document.getElementById('inpLocal'),
   inpDisciplina: document.getElementById('inpDisciplina'),
   inpMontadoresPrev: document.getElementById('inpMontadoresPrev'),
@@ -68,45 +77,57 @@ const els = {
 function toFixed(n,d=2){ return isNaN(n)?'0,00':Number(n).toFixed(d).replace('.',','); }
 function parseNum(v){ const n = parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
 function hmToHours(hm){ if(!hm) return 0; const [h,m] = hm.split(':').map(n=>parseInt(n||'0',10)); return (h||0)+(m||0)/60; }
-function diffHM(ini,fim){ const [h1,m1]=ini.split(':').map(n=>parseInt(n,10)); const [h2,m2]=fim.split(':').map(n=>parseInt(n,10)); let t1=h1*60+m1,t2=h2*60+m2; if(t2<t1)t2+=24*60; const d=Math.max(0,t2-t1); return `${Math.floor(d/60)}:${String(d%60).padStart(2,'0')}`; }
+function diffHM(ini,fim){ if(!ini || !fim) return "0:00"; const [h1,m1]=ini.split(':').map(n=>parseInt(n,10)); const [h2,m2]=fim.split(':').map(n=>parseInt(n,10)); let t1=h1*60+m1,t2=h2*60+m2; if(t2<t1)t2+=24*60; const d=Math.max(0,t2-t1); return `${Math.floor(d/60)}:${String(d%60).padStart(2,'0')}`; }
 
 /* =========================
    ATUALIZA UI
 ========================= */
 function atualizarCards(){
-  // KPIs
-  els.outMLPrev.textContent = toFixed(state.calculos.MLPrevisto,0);
-  els.outHHPrev.textContent = toFixed(state.calculos.HHPrevisto,1);
-  els.outHHReal.textContent = toFixed(state.calculos.HHReal,1);
-  els.outSTDPrev.textContent = toFixed(state.calculos.STDPrevisto,2);
-  els.outSTDReal.textContent = toFixed(state.calculos.STDReal,2);
+  // Inputs Supervisor e Encarregado
+  els.inpSupervisor.value = state.supervisor || "";
+  els.inpEncarregado.value = state.encarregado || "";
+
+  // Montadores, Faltas e Interferências
+  els.kpiMontadores.textContent = state.informacoesTurno.montadoresReal;
+  els.kpiFaltas.textContent = state.informacoesTurno.faltas;
+
+  const totalInterf = state.atividades.reduce((acc,a)=>acc+hmToHours(a.interfer),0);
+  els.kpiInterf.textContent = toFixed(totalInterf,1);
 }
 
 function atualizarCalculos(){
   const info = state.informacoesTurno;
+  const calc = state.calculos;
 
-  state.calculos.HHPrevisto = info.montadoresPrevisto * 8.8;
-  state.calculos.HHReal = info.montadoresReal * 8.8;
-  state.calculos.MLPrevisto = info.montadoresPrevisto * 40;
-  state.calculos.MLReal = info.MLReal || info.montadoresReal * 40;
-  state.calculos.STDPrevisto = state.calculos.MLPrevisto>0 ? state.calculos.HHPrevisto/state.calculos.MLPrevisto : 0;
-  state.calculos.STDReal = state.calculos.MLReal>0 ? state.calculos.HHReal/state.calculos.MLReal : 0;
+  calc.hhPrev = info.montadoresPrev * 8.8;
+  calc.hhReal = info.montadoresReal * 8.8;
+  calc.mlPrev = info.montadoresPrev * 40;
+  calc.mlReal = info.mlReal ? info.mlReal : info.montadoresReal * 40;
+  calc.stdPrev = calc.mlPrev>0 ? calc.hhPrev/calc.mlPrev : 0;
+  calc.stdReal = calc.mlReal>0 ? calc.hhReal/calc.mlReal : 0;
 
-  atualizarCards();
+  els.outHHPrev.textContent = toFixed(calc.hhPrev,1);
+  els.outHHReal.textContent = toFixed(calc.hhReal,1);
+  els.outMLPrev.textContent = toFixed(calc.mlPrev,1);
+  els.outSTDPrev.textContent = toFixed(calc.stdPrev,2);
+  els.outSTDReal.textContent = toFixed(calc.stdReal,2);
+
   desenharGauge();
   desenharBarChart();
 }
 
 function preencherFormulario(){
   const info = state.informacoesTurno;
+
   els.inpLocal.value = info.local;
   els.inpDisciplina.value = info.disciplina;
-  els.inpMontadoresPrev.value = info.montadoresPrevisto;
+  els.inpMontadoresPrev.value = info.montadoresPrev;
   els.inpMontadoresReal.value = info.montadoresReal;
   els.inpFaltas.value = info.faltas;
   els.inpART.value = info.ART;
-  els.inpMLReal.value = info.MLReal;
-  els.resumoTurno.value = state.resumoTurno;
+  els.inpMLReal.value = info.mlReal;
+
+  els.resumoTurno.value = state.resumo;
   els.campoData.value = state.data;
   els.campoTurno.value = state.turno;
 }
@@ -125,20 +146,49 @@ function renderTabela(){
     `;
     const [cb,inpAtv,inpIni,inpFim,inpInterf,inpObs]=tr.querySelectorAll('input');
     inpAtv.addEventListener('input',e=>state.atividades[idx].atividade=e.target.value);
-    inpIni.addEventListener('change',e=>{
-      state.atividades[idx].ini=e.target.value;
-      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela();
-    });
-    inpFim.addEventListener('change',e=>{
-      state.atividades[idx].fim=e.target.value;
-      state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela();
-    });
-    inpInterf.addEventListener('input',e=>state.atividades[idx].interfer=e.target.value);
+    inpIni.addEventListener('change',e=>{state.atividades[idx].ini=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards();});
+    inpFim.addEventListener('change',e=>{state.atividades[idx].fim=e.target.value; state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim); renderTabela(); atualizarCards();});
+    inpInterf.addEventListener('input',e=>{state.atividades[idx].interfer=e.target.value; atualizarCards();});
     inpObs.addEventListener('input',e=>state.atividades[idx].obs=e.target.value);
     els.tabelaBody.appendChild(tr);
   });
+}
+
+/* =========================
+   GRÁFICOS (SVG)
+========================= */
+function desenharGauge(){
+  const svg=els.gauge; while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const w=200,h=120,cx=100,cy=110,r=90;
+  const p=state.calculos.mlPrev>0?Math.max(0,Math.min(1,state.calculos.mlReal/state.calculos.mlPrev)):0;
+  const arcPath = describeArc(cx,cy,r,180,0);
+  const bg = path(arcPath,'#e5e7eb',14);
+  svg.appendChild(bg);
+  const color=p>=1?'#14b8a6':(p>=0.8?'#f59e0b':'#ef4444');
+  const progPath=describeArc(cx,cy,r,180,180*(1-p));
+  const fg=path(progPath,color,14);
+  svg.appendChild(fg);
+}
+function desenharBarChart(){
+  const svg=els.barChart; while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const max=Math.max(state.calculos.mlPrev,state.calculos.mlReal);
+  const prevH=state.calculos.mlPrev/max*60 || 0;
+  const realH=state.calculos.mlReal/max*60 || 0;
+  svg.innerHTML=`
+    <rect x="20" y="${60-prevH}" width="20" height="${prevH}" fill="#0b63d6"></rect>
+    <rect x="60" y="${60-realH}" width="20" height="${realH}" fill="#6b7280"></rect>
+  `;
+}
+function path(d,color,w){ const p=document.createElementNS("http://www.w3.org/2000/svg",'path'); p.setAttribute('d',d); p.setAttribute('stroke',color); p.setAttribute('stroke-width',w); p.setAttribute('fill','none'); return p; }
+function describeArc(x,y,r,startAngle,endAngle){
+  const start = polarToCartesian(x,y,r,endAngle);
+  const end = polarToCartesian(x,y,r,startAngle);
+  const largeArcFlag = endAngle - startAngle <=180 ? "0":"1";
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+}
+function polarToCartesian(cx,cy,r,deg){
+  const rad=(deg-90)*Math.PI/180;
+  return {x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};
 }
 
 /* =========================
@@ -146,16 +196,22 @@ function renderTabela(){
 ========================= */
 els.inpLocal.addEventListener('input',e=>state.informacoesTurno.local=e.target.value);
 els.inpDisciplina.addEventListener('input',e=>state.informacoesTurno.disciplina=e.target.value);
-els.inpMontadoresPrev.addEventListener('input',e=>{ state.informacoesTurno.montadoresPrevisto=parseNum(e.target.value); atualizarCalculos(); });
-els.inpMontadoresReal.addEventListener('input',e=>{ state.informacoesTurno.montadoresReal=parseNum(e.target.value); atualizarCalculos(); });
-els.inpFaltas.addEventListener('input',e=>{ state.informacoesTurno.faltas=parseNum(e.target.value); atualizarCalculos(); });
+els.inpMontadoresPrev.addEventListener('input',e=>{state.informacoesTurno.montadoresPrev=parseNum(e.target.value); atualizarCalculos();});
+els.inpMontadoresReal.addEventListener('input',e=>{state.informacoesTurno.montadoresReal=parseNum(e.target.value); atualizarCalculos(); atualizarCards();});
+els.inpFaltas.addEventListener('input',e=>{state.informacoesTurno.faltas=parseNum(e.target.value); atualizarCards();});
 els.inpART.addEventListener('input',e=>state.informacoesTurno.ART=e.target.value);
-els.inpMLReal.addEventListener('input',e=>{ state.informacoesTurno.MLReal=parseNum(e.target.value); atualizarCalculos(); });
-els.resumoTurno.addEventListener('input',e=>state.resumoTurno=e.target.value);
+els.inpMLReal.addEventListener('input',e=>{state.informacoesTurno.mlReal=parseNum(e.target.value); atualizarCalculos();});
+els.resumoTurno.addEventListener('input',e=>state.resumo=e.target.value);
 els.campoData.addEventListener('change',e=>state.data=e.target.value);
 els.campoTurno.addEventListener('change',e=>state.turno=e.target.value);
 
-/* Tabela */
+// Supervisor e Encarregado
+els.inpSupervisor.addEventListener('input', e=>state.supervisor=e.target.value);
+els.inpEncarregado.addEventListener('input', e=>state.encarregado=e.target.value);
+
+/* =========================
+   TABELA
+========================= */
 els.btnAddLinha.addEventListener('click',()=>{
   state.atividades.push({atividade:'',ini:'',fim:'',interfer:'',obs:''});
   renderTabela();
@@ -165,9 +221,12 @@ els.btnRemoverSel.addEventListener('click',()=>{
   const idxs=[...checkboxes].map(cb=>parseInt(cb.dataset.idx,10));
   state.atividades=state.atividades.filter((_,i)=>!idxs.includes(i));
   renderTabela();
+  atualizarCards();
 });
 
-/* Upload Fotos */
+/* =========================
+   UPLOAD DE FOTOS
+========================= */
 els.uploadFotos.addEventListener('change',e=>{
   const files=Array.from(e.target.files);
   files.forEach(f=>{
@@ -189,21 +248,26 @@ function atualizarFotos(){
   });
 }
 
-/* Salvar JSON */
+/* =========================
+   SALVAR EM JSON
+========================= */
 els.btnSalvar.addEventListener('click',()=>{
   const key=`${state.data}_${state.turno}`;
   dbNoturno[key]=JSON.parse(JSON.stringify(state));
-  localStorage.setItem('dbNoturno',JSON.stringify(dbNoturno));
+  localStorage.setItem('noturno_data',JSON.stringify(dbNoturno));
   alert('Dados salvos com sucesso!');
 });
 
-/* Inicialização */
+/* =========================
+   INICIALIZAÇÃO
+========================= */
 function init(){
-  const stored=localStorage.getItem('dbNoturno');
+  const stored=localStorage.getItem('noturno_data');
   if(stored) dbNoturno=JSON.parse(stored);
   preencherFormulario();
   atualizarCalculos();
   renderTabela();
+  atualizarCards();
   atualizarFotos();
 }
 
