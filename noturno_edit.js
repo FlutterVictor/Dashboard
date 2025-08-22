@@ -1,25 +1,27 @@
 /* =========================
-   ESTADO INICIAL
+   ESTADO INICIAL (FORMATO JSON)
 ========================= */
 const state = {
-  supervisor: "Carlos Silva",
-  encarregado: "João Pereira",
-  local: "",
-  disciplina: "",
-  montadoresPrev: 0,
-  montadoresReal: 0,
-  faltas: 0,
-  ART: "",
   data: new Date().toISOString().slice(0,10),
   turno: "Noturno",
-  hhPrev: 0,
-  hhReal: 0,
-  mlPrev: 0,
-  mlReal: 0,
-  stdPrev: 0,
-  stdReal: 0,
-  resumo: "",
+  informacoesTurno: {
+    local: "",
+    disciplina: "",
+    montadoresPrevisto: 0,
+    montadoresReal: 0,
+    faltas: 0,
+    ART: "",
+    MLReal: 0
+  },
+  calculos: {
+    HHPrevisto: 0,
+    HHReal: 0,
+    MLPrevisto: 0,
+    STDPrevisto: 0,
+    STDReal: 0
+  },
   atividades: [],
+  resumoTurno: "",
   fotos: []
 };
 
@@ -29,12 +31,6 @@ let dbNoturno = {}; // banco de dados JSON simulado
    ELEMENTOS
 ========================= */
 const els = {
-  kpiSupervisor: document.getElementById('kpiSupervisor'),
-  kpiEncarregado: document.getElementById('kpiEncarregado'),
-  kpiMontadores: document.getElementById('kpiMontadores'),
-  kpiFaltas: document.getElementById('kpiFaltas'),
-  kpiInterf: document.getElementById('kpiInterf'),
-
   inpLocal: document.getElementById('inpLocal'),
   inpDisciplina: document.getElementById('inpDisciplina'),
   inpMontadoresPrev: document.getElementById('inpMontadoresPrev'),
@@ -78,42 +74,39 @@ function diffHM(ini,fim){ const [h1,m1]=ini.split(':').map(n=>parseInt(n,10)); c
    ATUALIZA UI
 ========================= */
 function atualizarCards(){
-  els.kpiSupervisor.textContent = state.supervisor;
-  els.kpiEncarregado.textContent = state.encarregado;
-  els.kpiMontadores.textContent = state.montadoresReal;
-  els.kpiFaltas.textContent = state.faltas;
-
-  const totalInterf = state.atividades.reduce((acc,a)=>acc+hmToHours(a.interfer),0);
-  els.kpiInterf.textContent = toFixed(totalInterf,1);
+  // KPIs
+  els.outMLPrev.textContent = toFixed(state.calculos.MLPrevisto,0);
+  els.outHHPrev.textContent = toFixed(state.calculos.HHPrevisto,1);
+  els.outHHReal.textContent = toFixed(state.calculos.HHReal,1);
+  els.outSTDPrev.textContent = toFixed(state.calculos.STDPrevisto,2);
+  els.outSTDReal.textContent = toFixed(state.calculos.STDReal,2);
 }
 
 function atualizarCalculos(){
-  state.hhPrev = state.montadoresPrev * 8.8;
-  state.hhReal = state.montadoresReal * 8.8;
-  state.mlPrev = state.montadoresPrev * 40;
-  state.mlReal = state.mlReal ? state.mlReal : state.montadoresReal * 40;
-  state.stdPrev = state.mlPrev>0 ? state.hhPrev/state.mlPrev : 0;
-  state.stdReal = state.mlReal>0 ? state.hhReal/state.mlReal : 0;
+  const info = state.informacoesTurno;
 
-  els.outHHPrev.textContent = toFixed(state.hhPrev,1);
-  els.outHHReal.textContent = toFixed(state.hhReal,1);
-  els.outMLPrev.textContent = toFixed(state.mlPrev,1);
-  els.outSTDPrev.textContent = toFixed(state.stdPrev,2);
-  els.outSTDReal.textContent = toFixed(state.stdReal,2);
+  state.calculos.HHPrevisto = info.montadoresPrevisto * 8.8;
+  state.calculos.HHReal = info.montadoresReal * 8.8;
+  state.calculos.MLPrevisto = info.montadoresPrevisto * 40;
+  state.calculos.MLReal = info.MLReal || info.montadoresReal * 40;
+  state.calculos.STDPrevisto = state.calculos.MLPrevisto>0 ? state.calculos.HHPrevisto/state.calculos.MLPrevisto : 0;
+  state.calculos.STDReal = state.calculos.MLReal>0 ? state.calculos.HHReal/state.calculos.MLReal : 0;
 
+  atualizarCards();
   desenharGauge();
   desenharBarChart();
 }
 
 function preencherFormulario(){
-  els.inpLocal.value = state.local;
-  els.inpDisciplina.value = state.disciplina;
-  els.inpMontadoresPrev.value = state.montadoresPrev;
-  els.inpMontadoresReal.value = state.montadoresReal;
-  els.inpFaltas.value = state.faltas;
-  els.inpART.value = state.ART;
-  els.inpMLReal.value = state.mlReal;
-  els.resumoTurno.value = state.resumo;
+  const info = state.informacoesTurno;
+  els.inpLocal.value = info.local;
+  els.inpDisciplina.value = info.disciplina;
+  els.inpMontadoresPrev.value = info.montadoresPrevisto;
+  els.inpMontadoresReal.value = info.montadoresReal;
+  els.inpFaltas.value = info.faltas;
+  els.inpART.value = info.ART;
+  els.inpMLReal.value = info.MLReal;
+  els.resumoTurno.value = state.resumoTurno;
   els.campoData.value = state.data;
   els.campoTurno.value = state.turno;
 }
@@ -135,72 +128,34 @@ function renderTabela(){
     inpIni.addEventListener('change',e=>{
       state.atividades[idx].ini=e.target.value;
       state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
+      renderTabela();
     });
     inpFim.addEventListener('change',e=>{
       state.atividades[idx].fim=e.target.value;
       state.atividades[idx].interfer=diffHM(state.atividades[idx].ini,state.atividades[idx].fim);
-      renderTabela(); atualizarCards();
+      renderTabela();
     });
-    inpInterf.addEventListener('input',e=>{state.atividades[idx].interfer=e.target.value; atualizarCards();});
+    inpInterf.addEventListener('input',e=>state.atividades[idx].interfer=e.target.value);
     inpObs.addEventListener('input',e=>state.atividades[idx].obs=e.target.value);
     els.tabelaBody.appendChild(tr);
   });
 }
 
 /* =========================
-   GRÁFICOS (SVG)
-========================= */
-function desenharGauge(){
-  const svg=els.gauge; while(svg.firstChild) svg.removeChild(svg.firstChild);
-  const w=200,h=120,cx=100,cy=110,r=90;
-  const p=state.mlPrev>0?Math.max(0,Math.min(1,state.mlReal/state.mlPrev)):0;
-  const arcPath = describeArc(cx,cy,r,180,0);
-  const bg = path(arcPath,'#e5e7eb',14);
-  svg.appendChild(bg);
-  const color=p>=1?'#14b8a6':(p>=0.8?'#f59e0b':'#ef4444');
-  const progPath=describeArc(cx,cy,r,180,180*(1-p));
-  const fg=path(progPath,color,14);
-  svg.appendChild(fg);
-}
-function desenharBarChart(){
-  const svg=els.barChart; while(svg.firstChild) svg.removeChild(svg.firstChild);
-  const max=Math.max(state.mlPrev,state.mlReal);
-  const prevH=state.mlPrev/max*60,realH=state.mlReal/max*60;
-  svg.innerHTML=`
-    <rect x="20" y="${60-prevH}" width="20" height="${prevH}" fill="#0b63d6"></rect>
-    <rect x="60" y="${60-realH}" width="20" height="${realH}" fill="#6b7280"></rect>
-  `;
-}
-function path(d,color,w){ const p=document.createElementNS("http://www.w3.org/2000/svg",'path'); p.setAttribute('d',d); p.setAttribute('stroke',color); p.setAttribute('stroke-width',w); p.setAttribute('fill','none'); return p; }
-function describeArc(x,y,r,startAngle,endAngle){
-  const start = polarToCartesian(x,y,r,endAngle);
-  const end = polarToCartesian(x,y,r,startAngle);
-  const largeArcFlag = endAngle - startAngle <=180 ? "0":"1";
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
-}
-function polarToCartesian(cx,cy,r,deg){
-  const rad=(deg-90)*Math.PI/180;
-  return {x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};
-}
-
-/* =========================
    EVENTOS
 ========================= */
-els.inpLocal.addEventListener('input',e=>state.local=e.target.value);
-els.inpDisciplina.addEventListener('input',e=>state.disciplina=e.target.value);
-els.inpMontadoresPrev.addEventListener('input',e=>{state.montadoresPrev=parseNum(e.target.value); atualizarCalculos();});
-els.inpMontadoresReal.addEventListener('input',e=>{state.montadoresReal=parseNum(e.target.value); atualizarCalculos();});
-els.inpFaltas.addEventListener('input',e=>{state.faltas=parseNum(e.target.value); atualizarCards();});
-els.inpART.addEventListener('input',e=>state.ART=e.target.value);
-els.inpMLReal.addEventListener('input',e=>{state.mlReal=parseNum(e.target.value); atualizarCalculos();});
-els.resumoTurno.addEventListener('input',e=>state.resumo=e.target.value);
+els.inpLocal.addEventListener('input',e=>state.informacoesTurno.local=e.target.value);
+els.inpDisciplina.addEventListener('input',e=>state.informacoesTurno.disciplina=e.target.value);
+els.inpMontadoresPrev.addEventListener('input',e=>{ state.informacoesTurno.montadoresPrevisto=parseNum(e.target.value); atualizarCalculos(); });
+els.inpMontadoresReal.addEventListener('input',e=>{ state.informacoesTurno.montadoresReal=parseNum(e.target.value); atualizarCalculos(); });
+els.inpFaltas.addEventListener('input',e=>{ state.informacoesTurno.faltas=parseNum(e.target.value); atualizarCalculos(); });
+els.inpART.addEventListener('input',e=>state.informacoesTurno.ART=e.target.value);
+els.inpMLReal.addEventListener('input',e=>{ state.informacoesTurno.MLReal=parseNum(e.target.value); atualizarCalculos(); });
+els.resumoTurno.addEventListener('input',e=>state.resumoTurno=e.target.value);
 els.campoData.addEventListener('change',e=>state.data=e.target.value);
 els.campoTurno.addEventListener('change',e=>state.turno=e.target.value);
 
-/* =========================
-   TABELA
-========================= */
+/* Tabela */
 els.btnAddLinha.addEventListener('click',()=>{
   state.atividades.push({atividade:'',ini:'',fim:'',interfer:'',obs:''});
   renderTabela();
@@ -210,12 +165,9 @@ els.btnRemoverSel.addEventListener('click',()=>{
   const idxs=[...checkboxes].map(cb=>parseInt(cb.dataset.idx,10));
   state.atividades=state.atividades.filter((_,i)=>!idxs.includes(i));
   renderTabela();
-  atualizarCards();
 });
 
-/* =========================
-   UPLOAD DE FOTOS
-========================= */
+/* Upload Fotos */
 els.uploadFotos.addEventListener('change',e=>{
   const files=Array.from(e.target.files);
   files.forEach(f=>{
@@ -237,9 +189,7 @@ function atualizarFotos(){
   });
 }
 
-/* =========================
-   SALVAR EM JSON
-========================= */
+/* Salvar JSON */
 els.btnSalvar.addEventListener('click',()=>{
   const key=`${state.data}_${state.turno}`;
   dbNoturno[key]=JSON.parse(JSON.stringify(state));
@@ -247,16 +197,13 @@ els.btnSalvar.addEventListener('click',()=>{
   alert('Dados salvos com sucesso!');
 });
 
-/* =========================
-   INICIALIZAÇÃO
-========================= */
+/* Inicialização */
 function init(){
   const stored=localStorage.getItem('dbNoturno');
   if(stored) dbNoturno=JSON.parse(stored);
   preencherFormulario();
   atualizarCalculos();
   renderTabela();
-  atualizarCards();
   atualizarFotos();
 }
 
