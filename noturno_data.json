@@ -1,23 +1,21 @@
 {
   "data": "",
   "turno": "Noturno",
-  "informacoesTurno": {
-    "local": "",
-    "disciplina": "",
-    "montadoresPrevisto": 0,
-    "montadoresReal": 0,
-    "faltas": 0,
-    "ART": "",
-    "MLReal": 0
-  },
-  "calculos": {
-    "HHPrevisto": 0,
-    "HHReal": 0,
-    "MLPrevisto": 0,
-    "STDPrevisto": 0,
-    "STDReal": 0
-  },
+  "supervisor": "",
+  "encarregado": "",
+  "local": "",
+  "disciplina": "",
+  "montadoresPrev": 0,
+  "montadoresReal": 0,
+  "faltas": 0,
+  "ART": "",
+  "mlReal": 0,
+  "hhPrev": 0,
+  "hhReal": 0,
+  "mlPrev": 0,
+  "stdPrev": 0,
+  "stdReal": 0,
+  "resumo": "",
   "atividades": [],
-  "resumoTurno": "",
   "fotos": []
 }
