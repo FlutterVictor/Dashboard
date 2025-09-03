@@ -13,14 +13,16 @@ function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
 
+    // Formato dd/mm/aaaa ou dd-mm-aaaa
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
-        if (y.length === 2) y = (y > '50' ? '19' : '20') + y;
+        if (y.length === 2) y = (y > '50' ? '19' : '20') + y; 
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
 
+    // Formato ISO aaaa-mm-dd ou aaaa/mm/dd
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
@@ -47,7 +49,9 @@ function diaSemanaIndex(diaJS){
    Filtro de datas
 ========================= */
 function filtrarDadosPorData(dados, dataInicio, dataFim){
-    if(!dataInicio && !dataFim) return dados.filter(r => !!parseDateBR(r['Data']));
+    if(!dataInicio && !dataFim) {
+        return dados.filter(r => !!parseDateBR(r['Data']));
+    }
     const dtInicio = dataInicio ? new Date(dataInicio) : null;
     const dtFim    = dataFim    ? new Date(dataFim)    : null;
 
@@ -67,7 +71,7 @@ function atualizarDashboard(dados){
     if(!dados || dados.length === 0){
         document.getElementById('hhTotal').textContent = '0';
         document.getElementById('mlMontados').textContent = '0 m';
-        document.getElementById('montPresente').textContent = '142'; // fixo
+        document.getElementById('montPresente').textContent = '0';
         document.getElementById('stdSemanal').textContent = '0,00';
         document.getElementById('metaAtingida').textContent = '0%';
         document.getElementById('rankingTable').querySelector('tbody').innerHTML =
@@ -78,7 +82,7 @@ function atualizarDashboard(dados){
         return;
     }
 
-    let somaHH = 0, somaML = 0, somaMLPrevisto = 0;
+    let somaHH = 0, somaML = 0, somaMont = 0, somaMLPrevisto = 0;
     let mlPorDia = Array(7).fill(0);
     let ranking = {};
     let linhasIgnoradas = 0;
@@ -87,15 +91,18 @@ function atualizarDashboard(dados){
         try{
             const hh    = parseNumber(row['HH Total']);
             const ml    = parseNumber(row['ML Montados']);
+            const mont  = parseNumber(row['Mont.Presente']);
             const mlPrev= parseNumber(row['ML PREVISTO']);
 
-            somaHH += hh;
-            somaML += ml;
-            somaMLPrevisto += mlPrev;
+            somaHH += hh; somaML += ml; somaMont += mont; somaMLPrevisto += mlPrev;
 
             const dt = parseDateBR(row['Data']);
-            if (dt) mlPorDia[diaSemanaIndex(dt.getDay())] += ml;
-            else linhasIgnoradas++;
+            if (dt) {
+                const ds = diaSemanaIndex(dt.getDay());
+                mlPorDia[ds] += ml;
+            } else {
+                linhasIgnoradas++;
+            }
 
             const nome = row['Encarregado Responsavel'] ? String(row['Encarregado Responsavel']).trim() : '';
             if (nome){
@@ -112,14 +119,10 @@ function atualizarDashboard(dados){
 
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
-    document.getElementById('montPresente').textContent = '142'; // fixo
-
-    // STD mascarado
-    let std = somaML > 0 ? (somaHH / somaML) : 0;
-    if(std > 0.27) std = 0.27; // limite superior mascarado
+    const mediaMont = somaMont / dados.length;
+    document.getElementById('montPresente').textContent = isFinite(mediaMont) ? mediaMont.toFixed(1) : '0.0';
+    const std = somaML > 0 ? (somaHH / somaML) : 0;
     document.getElementById('stdSemanal').textContent = std.toFixed(2);
-
-    // Meta Atingida
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
@@ -219,6 +222,7 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
+// Upload CSV manual
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file = e.target.files[0];
     if(!file) return;
@@ -247,24 +251,35 @@ function aplicarFiltro(){
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
 // Exportar PDF
-document.getElementById('btnExportPDF').addEventListener('click', ()=>{
-    const dashboardWrap = document.getElementById('dashboardWrap');
+document.getElementById('btnExportPDF').addEventListener('click',()=>{
+    const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height*pdfWidth)/imgProps.width;
+        const imgData=canvas.toDataURL('image/png');
+        const { jsPDF }=window.jspdf;
+        const pdf=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+        const pdfWidth=pdf.internal.pageSize.getWidth();
+        const imgProps=pdf.getImageProperties(imgData);
+        const imgHeight=(imgProps.height*pdfWidth)/imgProps.width;
         pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
         pdf.save('dashboard.pdf');
     });
 });
 
-// Voltar ao menu
-document.getElementById('btnVoltarMenu').addEventListener('click', ()=>{
-    window.location.href = 'index.html'; // altere para a página do menu
-});
+// Botão para abrir o Dashboard 2 (Mapa)
+const btnDash2 = document.getElementById('btnDashboard2');
+if (btnDash2){
+    btnDash2.addEventListener('click', () => {
+        window.location.href = 'mapa.html';
+    });
+}
+
+// Botão Voltar ao Menu (id único)
+const btnVoltarMenu = document.getElementById('btnVoltarMenu');
+if (btnVoltarMenu){
+    btnVoltarMenu.addEventListener('click', () => {
+        window.location.href = 'index.html'; // Página do menu
+    });
+}
 
 /* =========================
    Carregamento automático
