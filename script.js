@@ -227,6 +227,7 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
+// Upload CSV manual
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file = e.target.files[0];
     if(!file) return;
@@ -240,6 +241,7 @@ document.getElementById('fileInput').addEventListener('change', e=>{
     });
 });
 
+// Aplicar filtro
 function aplicarFiltro(){
     const dataInicio = document.getElementById('dataInicio').value;
     const dataFim    = document.getElementById('dataFim').value;
@@ -251,9 +253,9 @@ function aplicarFiltro(){
         alert('Erro ao atualizar o dashboard. Verifique os dados.');
     }
 }
-
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
+// Exportar PDF
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
@@ -268,6 +270,15 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
+// Voltar ao Menu
+const btnVoltarMenu = document.getElementById('btnVoltarMenu');
+if (btnVoltarMenu){
+    btnVoltarMenu.addEventListener('click', () => {
+        window.location.href = 'index.html'; // altere para o caminho correto do menu
+    });
+}
+
+// Dashboard 2 (Mapa)
 const btnDash2 = document.getElementById('btnDashboard2');
 if (btnDash2){
     btnDash2.addEventListener('click', () => {
