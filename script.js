@@ -91,7 +91,9 @@ function atualizarDashboard(dados){
             const ml    = parseNumber(row['ML Montados']);
             const mlPrev= parseNumber(row['ML PREVISTO']);
 
-            somaHH += hh; somaML += ml; somaMLPrevisto += mlPrev;
+            somaHH += hh; 
+            somaML += ml; 
+            somaMLPrevisto += mlPrev;
 
             const dt = parseDateBR(row['Data']);
             if (dt) {
@@ -114,19 +116,16 @@ function atualizarDashboard(dados){
         }
     });
 
+    // Atualiza KPIs
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
     document.getElementById('montPresente').textContent = "142"; // fixo
 
-    // Calcula STD real
-    const std = somaML > 0 ? (somaHH / somaML) : 0;
-
-    // Limites de exibição
+    // Calcula STD e aplica limite mascarado
+    const stdReal = somaML > 0 ? (somaHH / somaML) : 0;
     const STD_MIN = 0.22;
     const STD_MAX = 0.27;
-    let stdExibicao = std;
-    if (stdExibicao < STD_MIN) stdExibicao = STD_MIN;
-    if (stdExibicao > STD_MAX) stdExibicao = STD_MAX;
+    const stdExibicao = Math.min(Math.max(stdReal, STD_MIN), STD_MAX);
     document.getElementById('stdSemanal').textContent = stdExibicao.toFixed(2);
 
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
@@ -135,8 +134,8 @@ function atualizarDashboard(dados){
     // Ranking
     const rankingArr = Object.entries(ranking).map(([nome,val])=>{
         const pctMeta = val.mlPrev > 0 ? (val.ml / val.mlPrev) * 100 : 0;
-        const stdReal = val.ml > 0 ? (val.hh / val.ml) : 0;
-        const indicador = stdReal <= 0.22 ? '↑' : '↓';
+        const stdRealUser = val.ml > 0 ? (val.hh / val.ml) : 0;
+        const indicador = stdRealUser <= 0.22 ? '↑' : '↓';
         return { nome, pctMeta, indicador };
     }).sort((a,b)=> b.pctMeta - a.pctMeta).slice(0,5);
 
@@ -151,7 +150,7 @@ function atualizarDashboard(dados){
         tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
     }
 
-    // Tabela de amostra
+    // Tabela de amostra (até 5 linhas)
     const tbodyDados = document.getElementById('tabelaDados');
     tbodyDados.innerHTML = '';
     dados.slice(0,5).forEach(row=>{
