@@ -19,8 +19,6 @@
             <label>Data Fim: <input type="date" id="dataFim" /></label>
             <button id="btnApplyFilter">Aplicar filtro</button>
             <button id="btnExportPDF">Exportar PDF</button>
-            <button id="btnDashboard2">Mapa de Produtividade</button>
-            <button id="btnAbrirOutroDashboard">Abrir outro Dashboard</button>
         </div>
 
         <!-- Linha 1: Cards principais -->
@@ -50,26 +48,36 @@
                 </table>
             </div>
         </div>
-
-        <!-- Linha 3: Tabela de amostra CSV -->
+<!-- Linha 3: Tabela de amostra CSV -->
         <div class="grid linha3">
             <div class="card full">
                 <div class="card-title">Dados (amostra)</div>
-                <div id="tabelaDadosWrapper">
-                    <table>
+                <div id="tabelaDadosWrapper" class="tabela-wrapper">
+                <table>
                         <thead>
                             <tr>
-                                <th>Semana</th><th>OS</th><th>Matrícula</th><th>Encarregado</th><th>Área</th>
-                                <th>Mont.Presente</th><th>HH Total</th><th>ML Montados</th><th>STD Montado</th><th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaDados">
-                            <tr><td colspan="10" style="text-align:center; color: gray;">Importe o CSV para visualizar</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        <th>Semana</th>
+                        <th>OS</th>
+                        <th>Matrícula</th>
+                        <th>Encarregado</th>
+                        <th>Área</th>
+                        <th>Mont.Presente</th>
+                        <th>HH Total</th>
+                        <th>ML Montados</th>
+                        <th>STD Montado</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaDados">
+                    <tr>
+                        <td colspan="10" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+    </div>
+</div>
+
 
         <!-- Upload CSV -->
         <div style="margin-top:16px;">
