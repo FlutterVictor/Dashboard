@@ -13,16 +13,14 @@ function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
 
-    // Formato dd/mm/aaaa ou dd-mm-aaaa
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
-        if (y.length === 2) y = (y > '50' ? '19' : '20') + y; 
+        if (y.length === 2) y = (y > '50' ? '19' : '20') + y;
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
 
-    // Formato ISO aaaa-mm-dd ou aaaa/mm/dd
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
@@ -119,8 +117,18 @@ function atualizarDashboard(dados){
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
     document.getElementById('montPresente').textContent = "142"; // fixo
+
+    // Calcula STD real
     const std = somaML > 0 ? (somaHH / somaML) : 0;
-    document.getElementById('stdSemanal').textContent = std.toFixed(2);
+
+    // Limites de exibição
+    const STD_MIN = 0.22;
+    const STD_MAX = 0.27;
+    let stdExibicao = std;
+    if (stdExibicao < STD_MIN) stdExibicao = STD_MIN;
+    if (stdExibicao > STD_MAX) stdExibicao = STD_MAX;
+    document.getElementById('stdSemanal').textContent = stdExibicao.toFixed(2);
+
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
