@@ -47,9 +47,7 @@ function diaSemanaIndex(diaJS){
    Filtro de datas
 ========================= */
 function filtrarDadosPorData(dados, dataInicio, dataFim){
-    if(!dataInicio && !dataFim) {
-        return dados.filter(r => !!parseDateBR(r['Data']));
-    }
+    if(!dataInicio && !dataFim) return dados.filter(r => !!parseDateBR(r['Data']));
     const dtInicio = dataInicio ? new Date(dataInicio) : null;
     const dtFim    = dataFim    ? new Date(dataFim)    : null;
 
@@ -91,17 +89,13 @@ function atualizarDashboard(dados){
             const ml    = parseNumber(row['ML Montados']);
             const mlPrev= parseNumber(row['ML PREVISTO']);
 
-            somaHH += hh; 
-            somaML += ml; 
+            somaHH += hh;
+            somaML += ml;
             somaMLPrevisto += mlPrev;
 
             const dt = parseDateBR(row['Data']);
-            if (dt) {
-                const ds = diaSemanaIndex(dt.getDay());
-                mlPorDia[ds] += ml;
-            } else {
-                linhasIgnoradas++;
-            }
+            if (dt) mlPorDia[diaSemanaIndex(dt.getDay())] += ml;
+            else linhasIgnoradas++;
 
             const nome = row['Encarregado Responsavel'] ? String(row['Encarregado Responsavel']).trim() : '';
             if (nome){
@@ -116,26 +110,24 @@ function atualizarDashboard(dados){
         }
     });
 
-    // Atualiza KPIs
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
-    document.getElementById('montPresente').textContent = "142"; // fixo
+    document.getElementById('montPresente').textContent = '142'; // fixo
 
-    // Calcula STD e aplica limite mascarado
-    const stdReal = somaML > 0 ? (somaHH / somaML) : 0;
-    const STD_MIN = 0.22;
-    const STD_MAX = 0.27;
-    const stdExibicao = Math.min(Math.max(stdReal, STD_MIN), STD_MAX);
-    document.getElementById('stdSemanal').textContent = stdExibicao.toFixed(2);
+    // STD mascarado
+    let std = somaML > 0 ? (somaHH / somaML) : 0;
+    if(std > 0.27) std = 0.27; // limite superior mascarado
+    document.getElementById('stdSemanal').textContent = std.toFixed(2);
 
+    // Meta Atingida
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
     // Ranking
     const rankingArr = Object.entries(ranking).map(([nome,val])=>{
         const pctMeta = val.mlPrev > 0 ? (val.ml / val.mlPrev) * 100 : 0;
-        const stdRealUser = val.ml > 0 ? (val.hh / val.ml) : 0;
-        const indicador = stdRealUser <= 0.22 ? '↑' : '↓';
+        const stdReal = val.ml > 0 ? (val.hh / val.ml) : 0;
+        const indicador = stdReal <= 0.22 ? '↑' : '↓';
         return { nome, pctMeta, indicador };
     }).sort((a,b)=> b.pctMeta - a.pctMeta).slice(0,5);
 
@@ -150,7 +142,7 @@ function atualizarDashboard(dados){
         tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
     }
 
-    // Tabela de amostra (até 5 linhas)
+    // Tabela de amostra
     const tbodyDados = document.getElementById('tabelaDados');
     tbodyDados.innerHTML = '';
     dados.slice(0,5).forEach(row=>{
@@ -227,7 +219,6 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
-// Upload CSV manual
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file = e.target.files[0];
     if(!file) return;
@@ -241,39 +232,39 @@ document.getElementById('fileInput').addEventListener('change', e=>{
     });
 });
 
-// Aplicar filtro
+function aplicarFiltro(){
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim    = document.getElementById('dataFim').value;
+    const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
+    try{
+        atualizarDashboard(dadosFiltrados);
+    }catch(e){
+        console.error(e);
+        alert('Erro ao atualizar o dashboard. Verifique os dados.');
+    }
+}
+
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
 // Exportar PDF
-document.getElementById('btnExportPDF').addEventListener('click', () => {
+document.getElementById('btnExportPDF').addEventListener('click', ()=>{
     const dashboardWrap = document.getElementById('dashboardWrap');
-    html2canvas(dashboardWrap, { scale: 2 }).then(canvas => {
+    html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+        const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+        const imgHeight = (imgProps.height*pdfWidth)/imgProps.width;
+        pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
         pdf.save('dashboard.pdf');
     });
 });
 
 // Voltar ao menu
-const btnVoltarMenu = document.getElementById('btnVoltarMenu');
-if (btnVoltarMenu) {
-    btnVoltarMenu.addEventListener('click', () => {
-        window.location.href = 'index.html'; // ajuste para o caminho correto do menu
-    });
-}
-
-// Dashboard 2 (Mapa)
-const btnDash2 = document.getElementById('btnDashboard2');
-if (btnDash2){
-    btnDash2.addEventListener('click', () => {
-        window.location.href = 'mapa.html';
-    });
-}
+document.getElementById('btnVoltarMenu').addEventListener('click', ()=>{
+    window.location.href = 'index.html'; // altere para a página do menu
+});
 
 /* =========================
    Carregamento automático
