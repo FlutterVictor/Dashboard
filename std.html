@@ -23,11 +23,26 @@
 
         <!-- Linha 1: Cards principais -->
         <div class="grid linha1">
-            <div class="card kpi"><div class="label">HH Total (h)</div><div class="value" id="hhTotal">0</div></div>
-            <div class="card kpi"><div class="label">ML Montados</div><div class="value" id="mlMontados">0 m</div></div>
-            <div class="card kpi"><div class="label">Montadores Presentes</div><div class="value" id="montPresente">0</div></div>
-            <div class="card kpi"><div class="label">STD Semanal</div><div class="value" id="stdSemanal">0,00</div></div>
-            <div class="card kpi"><div class="label">Meta Atingida</div><div class="value" id="metaAtingida">0%</div></div>
+            <div class="card kpi">
+                <div class="label">HH Total (h)</div>
+                <div class="value" id="hhTotal">0</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">ML Montados</div>
+                <div class="value" id="mlMontados">0 m</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">Montadores Mobilizados</div>
+                <div class="value" id="montPresente">142</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">STD Semanal</div>
+                <div class="value" id="stdSemanal">0,00</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">Meta Atingida</div>
+                <div class="value" id="metaAtingida">0%</div>
+            </div>
         </div>
 
         <!-- Linha 2: Gráfico e Ranking -->
@@ -40,44 +55,50 @@
                 <div class="card-title">Ranking de Produtividade (Top 5)</div>
                 <table id="rankingTable">
                     <thead>
-                        <tr><th>Nome</th><th>% Meta</th><th>Desempenho</th></tr>
+                        <tr>
+                            <th>Nome</th>
+                            <th>% Meta</th>
+                            <th>Desempenho</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="3" style="text-align:center; color:gray;">Sem dados</td></tr>
+                        <tr>
+                            <td colspan="3" style="text-align:center; color:gray;">Sem dados</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-<!-- Linha 3: Tabela de amostra CSV -->
+
+        <!-- Linha 3: Tabela de amostra CSV -->
         <div class="grid linha3">
             <div class="card full">
                 <div class="card-title">Dados (amostra)</div>
                 <div id="tabelaDadosWrapper" class="tabela-wrapper">
-                <table>
+                    <table>
                         <thead>
                             <tr>
-                        <th>Semana</th>
-                        <th>OS</th>
-                        <th>Matrícula</th>
-                        <th>Encarregado</th>
-                        <th>Área</th>
-                        <th>Mont.Presente</th>
-                        <th>HH Total</th>
-                        <th>ML Montados</th>
-                        <th>STD Montado</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaDados">
-                    <tr>
-                        <td colspan="10" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
-                    </tr>
-                </tbody>
-            </table>
+                                <th>Semana</th>
+                                <th>OS</th>
+                                <th>Matrícula</th>
+                                <th>Encarregado</th>
+                                <th>Área</th>
+                                <th>Mont.Presente</th>
+                                <th>HH Total</th>
+                                <th>ML Montados</th>
+                                <th>STD Montado</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaDados">
+                            <tr>
+                                <td colspan="10" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-
 
         <!-- Upload CSV -->
         <div style="margin-top:16px;">
