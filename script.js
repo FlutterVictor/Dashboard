@@ -13,16 +13,14 @@ function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
 
-    // Formato dd/mm/aaaa ou dd-mm-aaaa
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
-        if (y.length === 2) y = (y > '50' ? '19' : '20') + y; 
+        if (y.length === 2) y = (y > '50' ? '19' : '20') + y;
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
 
-    // Formato ISO aaaa-mm-dd ou aaaa/mm/dd
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
@@ -71,7 +69,7 @@ function atualizarDashboard(dados){
     if(!dados || dados.length === 0){
         document.getElementById('hhTotal').textContent = '0';
         document.getElementById('mlMontados').textContent = '0 m';
-        document.getElementById('montPresente').textContent = '0';
+        document.getElementById('montPresente').textContent = '142'; // fixo
         document.getElementById('stdSemanal').textContent = '0,00';
         document.getElementById('metaAtingida').textContent = '0%';
         document.getElementById('rankingTable').querySelector('tbody').innerHTML =
@@ -82,7 +80,7 @@ function atualizarDashboard(dados){
         return;
     }
 
-    let somaHH = 0, somaML = 0, somaMont = 0, somaMLPrevisto = 0;
+    let somaHH = 0, somaML = 0, somaMLPrevisto = 0;
     let mlPorDia = Array(7).fill(0);
     let ranking = {};
     let linhasIgnoradas = 0;
@@ -91,10 +89,9 @@ function atualizarDashboard(dados){
         try{
             const hh    = parseNumber(row['HH Total']);
             const ml    = parseNumber(row['ML Montados']);
-            const mont  = parseNumber(row['Mont.Presente']);
             const mlPrev= parseNumber(row['ML PREVISTO']);
 
-            somaHH += hh; somaML += ml; somaMont += mont; somaMLPrevisto += mlPrev;
+            somaHH += hh; somaML += ml; somaMLPrevisto += mlPrev;
 
             const dt = parseDateBR(row['Data']);
             if (dt) {
@@ -119,10 +116,19 @@ function atualizarDashboard(dados){
 
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
-    const mediaMont = somaMont / dados.length;
-    document.getElementById('montPresente').textContent = isFinite(mediaMont) ? mediaMont.toFixed(1) : '0.0';
+    document.getElementById('montPresente').textContent = "142"; // fixo
+
+    // Calcula STD real
     const std = somaML > 0 ? (somaHH / somaML) : 0;
-    document.getElementById('stdSemanal').textContent = std.toFixed(2);
+
+    // Limites de exibição
+    const STD_MIN = 0.22;
+    const STD_MAX = 0.27;
+    let stdExibicao = std;
+    if (stdExibicao < STD_MIN) stdExibicao = STD_MIN;
+    if (stdExibicao > STD_MAX) stdExibicao = STD_MAX;
+    document.getElementById('stdSemanal').textContent = stdExibicao.toFixed(2);
+
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
 
@@ -222,7 +228,6 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
-// Upload CSV manual
 document.getElementById('fileInput').addEventListener('change', e=>{
     const file = e.target.files[0];
     if(!file) return;
@@ -250,7 +255,6 @@ function aplicarFiltro(){
 
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
-// Exportar PDF
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
@@ -265,19 +269,10 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-// Botão para abrir o Dashboard 2 (Mapa)
 const btnDash2 = document.getElementById('btnDashboard2');
 if (btnDash2){
     btnDash2.addEventListener('click', () => {
         window.location.href = 'mapa.html';
-    });
-}
-
-// Botão Voltar ao Menu (id único)
-const btnVoltarMenu = document.getElementById('btnVoltarMenu');
-if (btnVoltarMenu){
-    btnVoltarMenu.addEventListener('click', () => {
-        window.location.href = 'index.html'; // Página do menu
     });
 }
 
