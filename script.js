@@ -242,39 +242,28 @@ document.getElementById('fileInput').addEventListener('change', e=>{
 });
 
 // Aplicar filtro
-function aplicarFiltro(){
-    const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim    = document.getElementById('dataFim').value;
-    const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
-    try{
-        atualizarDashboard(dadosFiltrados);
-    }catch(e){
-        console.error(e);
-        alert('Erro ao atualizar o dashboard. Verifique os dados.');
-    }
-}
 document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
 // Exportar PDF
-document.getElementById('btnExportPDF').addEventListener('click',()=>{
-    const dashboardWrap=document.getElementById('dashboardWrap');
-    html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
-        const imgData=canvas.toDataURL('image/png');
-        const { jsPDF }=window.jspdf;
-        const pdf=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-        const pdfWidth=pdf.internal.pageSize.getWidth();
-        const imgProps=pdf.getImageProperties(imgData);
-        const imgHeight=(imgProps.height*pdfWidth)/imgProps.width;
-        pdf.addImage(imgData,'PNG',0,0,pdfWidth,imgHeight);
+document.getElementById('btnExportPDF').addEventListener('click', () => {
+    const dashboardWrap = document.getElementById('dashboardWrap');
+    html2canvas(dashboardWrap, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
         pdf.save('dashboard.pdf');
     });
 });
 
-// Voltar ao Menu
+// Voltar ao menu
 const btnVoltarMenu = document.getElementById('btnVoltarMenu');
-if (btnVoltarMenu){
+if (btnVoltarMenu) {
     btnVoltarMenu.addEventListener('click', () => {
-        window.location.href = 'index.html'; // altere para o caminho correto do menu
+        window.location.href = 'index.html'; // ajuste para o caminho correto do menu
     });
 }
 
