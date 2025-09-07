@@ -274,6 +274,9 @@ if (btnDash2){
         window.location.href = 'mapa.html';
     });
 }
+document.getElementById('btnVoltarMenu').addEventListener('click', () => {
+    window.location.href = 'index.html'; // ajuste o nome do arquivo do seu menu principal
+});
 
 /* =========================
    Carregamento automático
