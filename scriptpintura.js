@@ -1,10 +1,10 @@
+let charts = {};
 let dadosPintura = [];
 let dadosSGE = [];
-let charts = {};
 
 // Função para criar gráficos Chart.js
-function criarGrafico(id, tipo, labels, dados, cores){
-    if(charts[id]) charts[id].destroy();
+function criarGrafico(id, tipo, labels, dados, cores) {
+    if (charts[id]) charts[id].destroy();
     const ctx = document.getElementById(id).getContext('2d');
     charts[id] = new Chart(ctx, {
         type: tipo,
@@ -13,146 +13,111 @@ function criarGrafico(id, tipo, labels, dados, cores){
             datasets: [{
                 label: '',
                 data: dados,
-                backgroundColor: cores.slice(0, dados.length),
+                backgroundColor: gerarCores(dados.length, cores),
                 borderColor: 'rgba(0,0,0,0.1)',
-                borderWidth:1
+                borderWidth: 1
             }]
         },
         options: {
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{
-                legend:{ display:true }
-            }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } }
         }
     });
 }
 
-// Função para atualizar dashboard
-function atualizarDashboard(){
-
-    // AREA DE APLICAÇÃO (LT)
-    const areaAplicacao = {};
-    dadosPintura.forEach(d => {
-        const local = d.Local;
-        const litros = parseFloat(d.Litros.replace(",", ".") || 0);
-        if(local && !isNaN(litros)){
-            areaAplicacao[local] = (areaAplicacao[local] || 0) + litros;
-        }
-    });
-    criarGrafico(
-        "areaAplicacaoChart",
-        "bar",
-        Object.keys(areaAplicacao),
-        Object.values(areaAplicacao),
-        ["#0b63d6"]
-    );
-
-    // CONSUMO HH - fixo em 974
-    const consumoHH = 974;
-    criarGrafico(
-        "consumoHHChart",
-        "bar",
-        ["Horas Consumidas"],
-        [consumoHH],
-        ["#f97316"]
-    );
-
-    // CONSUMO POR OS
-    const consumoOS = {};
-    dadosPintura.forEach(d => {
-        const os = d.OS;
-        const litros = parseFloat(d.Litros.replace(",", ".") || 0);
-        if(os && !isNaN(litros)){
-            consumoOS[os] = (consumoOS[os] || 0) + litros;
-        }
-    });
-    criarGrafico(
-        "consumoOSChart",
-        "bar",
-        Object.keys(consumoOS),
-        Object.values(consumoOS),
-        ["#0b63d6"]
-    );
-
-    // CONSUMO GAD - CARD
-    const consumoGAD = dadosPintura
-        .filter(d => d.Local === "Prédio GAD")
-        .reduce((sum, d) => sum + parseFloat(d.Litros.replace(",", ".") || 0), 0);
-    document.getElementById("valorGAD").textContent = consumoGAD.toFixed(2) + " LT";
-
-    // CONSUMO PCI+UTILIDADES - CARD
-    const consumoPCI = dadosPintura
-        .filter(d => d.Local === "Prédio PCI 3N")
-        .reduce((sum, d) => sum + parseFloat(d.Litros.replace(",", ".") || 0), 0);
-    document.getElementById("valorPCI").textContent = consumoPCI.toFixed(2) + " LT";
-
-    // TINTA UTILIZADA (quantidade)
-    const tintaQtd = {};
-    dadosPintura.forEach(d => {
-        const tipo = d.Tipo;
-        if(tipo) {
-            tintaQtd[tipo] = (tintaQtd[tipo] || 0) + 1;
-        }
-    });
-    criarGrafico(
-        "tintaChart",
-        "doughnut",
-        Object.keys(tintaQtd),
-        Object.values(tintaQtd),
-        ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]
-    );
-
-    // TINTA UTILIZADA (M²)
-    const tintaM2 = {};
-    dadosPintura.forEach(d => {
-        const tipo = d.Tipo;
-        const m2 = parseFloat(d["M²"].replace(",", ".") || 0);
-        if(tipo && !isNaN(m2)) {
-            tintaM2[tipo] = (tintaM2[tipo] || 0) + m2;
-        }
-    });
-    criarGrafico(
-        "tintaM2Chart",
-        "bar",
-        Object.keys(tintaM2),
-        Object.values(tintaM2),
-        ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]
-    );
+// Gera cores repetidas ou padrão
+function gerarCores(qtd, cores) {
+    const result = [];
+    for (let i = 0; i < qtd; i++) {
+        result.push(cores[i % cores.length]);
+    }
+    return result;
 }
 
-// Função para processar CSV (PapaParse)
-function processarCSV(file, tipo){
+// Função para atualizar o dashboard
+function atualizarDashboard() {
+    if (!dadosPintura.length) return;
+
+    // Área de Aplicação (LT)
+    const totalLitrosPorLocal = {};
+    dadosPintura.forEach(d => {
+        totalLitrosPorLocal[d.Local] = (totalLitrosPorLocal[d.Local] || 0) + parseFloat(d.Litros || 0);
+    });
+    criarGrafico('areaAplicacaoChart', 'bar', Object.keys(totalLitrosPorLocal), Object.values(totalLitrosPorLocal), ['#0b63d6']);
+
+    // Consumo HH - fixo 974h
+    criarGrafico('consumoHHChart', 'bar', ['Total HH'], [974], ['#f59e0b']);
+
+    // Consumo por OS
+    const totalPorOS = {};
+    dadosPintura.forEach(d => {
+        totalPorOS[d.OS] = (totalPorOS[d.OS] || 0) + parseFloat(d.Litros || 0);
+    });
+    criarGrafico('consumoOSChart', 'bar', Object.keys(totalPorOS), Object.values(totalPorOS), ['#10b981']);
+
+    // Consumo GAD
+    const gad = dadosPintura.filter(d => d.Local === 'Prédio GAD').reduce((acc, cur) => acc + parseFloat(cur.Litros || 0), 0);
+    document.getElementById('valorGAD').innerText = `${gad} LT`;
+
+    // Consumo PCI
+    const pci = dadosPintura.filter(d => d.Local === 'Prédio PCI 3N').reduce((acc, cur) => acc + parseFloat(cur.Litros || 0), 0);
+    document.getElementById('valorPCI').innerText = `${pci} LT`;
+
+    // Tinta Utilizada
+    const totalTipo = {};
+    dadosPintura.forEach(d => {
+        totalTipo[d.Tipo] = (totalTipo[d.Tipo] || 0) + 1;
+    });
+    criarGrafico('tintaChart', 'bar', Object.keys(totalTipo), Object.values(totalTipo), ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']);
+
+    // Tinta Utilizada (M²)
+    const totalTipoM2 = {};
+    dadosPintura.forEach(d => {
+        totalTipoM2[d.Tipo] = (totalTipoM2[d.Tipo] || 0) + parseFloat(d['M²'] || 0);
+    });
+    criarGrafico('tintaM2Chart', 'bar', Object.keys(totalTipoM2), Object.values(totalTipoM2), ['#6366f1','#f97316','#10b981','#f59e0b','#f87171']);
+}
+
+// Função para ler CSV e converter em array de objetos
+function lerCSV(file, callback) {
     Papa.parse(file, {
-        header:true,
-        skipEmptyLines:true,
-        complete:function(results){
-            if(tipo === "pintura"){
-                dadosPintura = results.data;
-            } else if(tipo === "sge"){
-                dadosSGE = results.data;
-            }
-            atualizarDashboard();
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            callback(results.data);
         }
     });
 }
 
-// Eventos dos uploads
-document.getElementById("uploadPintura").addEventListener("change", function(e){
-    processarCSV(e.target.files[0], "pintura");
+// Upload de Pintura
+document.getElementById('uploadPintura').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    lerCSV(file, (data) => {
+        dadosPintura = data;
+        atualizarDashboard();
+    });
 });
 
-document.getElementById("uploadSGE").addEventListener("change", function(e){
-    processarCSV(e.target.files[0], "sge");
+// Upload de SGE
+document.getElementById('uploadSGE').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    lerCSV(file, (data) => {
+        dadosSGE = data;
+        // Consumo HH agora pode ser atualizado se quiser somar SGE, mas no layout fixamos 974h
+        atualizarDashboard();
+    });
 });
 
-// Exportar PDF simples
-document.getElementById('exportarPDF').addEventListener('click',()=>{
+// Exportar PDF
+document.getElementById('exportarPDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF();
-    pdf.text("Dashboard Pintura - Mockup", 10, 10);
-    pdf.save("dashboard_pintura_mockup.pdf");
+    pdf.text("Dashboard Pintura", 10, 10);
+    pdf.save("dashboard_pintura.pdf");
 });
 
-// Inicializa vazio
-window.addEventListener('load', atualizarDashboard);
+// Botão Filtrar
+document.getElementById('filtrar').addEventListener('click', atualizarDashboard);
