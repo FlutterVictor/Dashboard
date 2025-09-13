@@ -6,10 +6,9 @@
   <title>Dashboard Pintura</title>
   <link rel="stylesheet" href="pintura.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+
 <div class="wrap">
 
   <!-- Header -->
@@ -25,10 +24,8 @@
     </div>
   </header>
 
-  <!-- Conteúdo do dashboard -->
+  <!-- Primeira linha de gráficos -->
   <main class="dashboard-container">
-
-    <!-- Linha 1 -->
     <div class="card">
       <h3>Área de Aplicação (LT)</h3>
       <canvas id="areaAplicacaoChart"></canvas>
@@ -44,38 +41,39 @@
       <canvas id="consumoOSChart"></canvas>
     </div>
 
-    <div class="card" id="cardGAD">
+    <div class="card">
       <h3>Consumo GAD</h3>
-      <p id="valorGAD">0 LT</p>
+      <div id="valorGAD" style="font-size:24px; font-weight:bold; text-align:center; margin-top:40px;">28,2 L</div>
     </div>
 
-    <div class="card" id="cardPCI">
+    <div class="card">
       <h3>Consumo PCI+Utilidades</h3>
-      <p id="valorPCI">0 LT</p>
+      <div id="valorPCI" style="font-size:24px; font-weight:bold; text-align:center; margin-top:40px;">9,44 L</div>
     </div>
+  </main>
 
-    <!-- Linha 2 - Gráficos largos -->
-    <div class="card card-largo">
+  <!-- Segunda linha de gráficos -->
+  <main class="dashboard-container">
+    <div class="card" style="grid-column: span 2;">
       <h3>Tinta Utilizada</h3>
       <canvas id="tintaChart"></canvas>
     </div>
 
-    <div class="card card-largo">
+    <div class="card" style="grid-column: span 2;">
       <h3>Tinta Utilizada (M²)</h3>
       <canvas id="tintaM2Chart"></canvas>
     </div>
-
-    <!-- Upload de arquivos -->
-    <div class="upload-section">
-      <h3>Upload de Planilhas</h3>
-      <input type="file" id="uploadPintura" accept=".csv">
-      <label for="uploadPintura">Upload Planilha Pintura</label>
-
-      <input type="file" id="uploadSGE" accept=".csv">
-      <label for="uploadSGE">Upload Planilha SGE</label>
-    </div>
-
   </main>
+
+  <!-- Upload de arquivos -->
+  <div class="upload-section">
+    <h3>Upload de Planilhas</h3>
+    <input type="file" id="uploadPintura" accept=".csv">
+    <label for="uploadPintura">Escolher Planilha de Pintura</label>
+
+    <input type="file" id="uploadSGE" accept=".csv">
+    <label for="uploadSGE">Escolher Planilha SGE</label>
+  </div>
 
   <footer>
     <p>© 2025 - Sistema de Dashboards</p>
