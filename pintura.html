@@ -6,11 +6,10 @@
   <title>Dashboard Pintura</title>
   <link rel="stylesheet" href="pintura.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-
 <div class="wrap">
 
   <!-- Header -->
@@ -26,31 +25,56 @@
     </div>
   </header>
 
-  <!-- Dashboard -->
+  <!-- Conteúdo do dashboard -->
   <main class="dashboard-container">
-    <!-- Primeira linha -->
-    <div class="linha">
-      <div class="card"><h3>Área de Aplicação (LT)</h3><canvas id="areaAplicacaoChart"></canvas></div>
-      <div class="card"><h3>Consumo HH</h3><canvas id="hhChart"></canvas></div>
-      <div class="card"><h3>Consumo por OS</h3><canvas id="osChart"></canvas></div>
-      <div class="card"><h3>Consumo GAD</h3><canvas id="gadChart"></canvas></div>
-      <div class="card"><h3>Consumo PCI+Utilidades</h3><canvas id="pciChart"></canvas></div>
+
+    <!-- Linha 1 -->
+    <div class="card">
+      <h3>Área de Aplicação (LT)</h3>
+      <canvas id="areaAplicacaoChart"></canvas>
     </div>
 
-    <!-- Segunda linha -->
-    <div class="linha">
-      <div class="card largo"><h3>Tinta Utilizada</h3><canvas id="tintaChart"></canvas></div>
-      <div class="card largo"><h3>Tinta Utilizada (M²)</h3><canvas id="tintaM2Chart"></canvas></div>
+    <div class="card">
+      <h3>Consumo HH</h3>
+      <canvas id="consumoHHChart"></canvas>
     </div>
 
-    <!-- Botões de upload -->
+    <div class="card">
+      <h3>Consumo por OS</h3>
+      <canvas id="consumoOSChart"></canvas>
+    </div>
+
+    <div class="card" id="cardGAD">
+      <h3>Consumo GAD</h3>
+      <p id="valorGAD">0 LT</p>
+    </div>
+
+    <div class="card" id="cardPCI">
+      <h3>Consumo PCI+Utilidades</h3>
+      <p id="valorPCI">0 LT</p>
+    </div>
+
+    <!-- Linha 2 - Gráficos largos -->
+    <div class="card card-largo">
+      <h3>Tinta Utilizada</h3>
+      <canvas id="tintaChart"></canvas>
+    </div>
+
+    <div class="card card-largo">
+      <h3>Tinta Utilizada (M²)</h3>
+      <canvas id="tintaM2Chart"></canvas>
+    </div>
+
+    <!-- Upload de arquivos -->
     <div class="upload-section">
-      <h3>Carregar Planilhas</h3>
+      <h3>Upload de Planilhas</h3>
       <input type="file" id="uploadPintura" accept=".csv">
-      <label for="uploadPintura">Planilha de Pintura</label>
+      <label for="uploadPintura">Upload Planilha Pintura</label>
+
       <input type="file" id="uploadSGE" accept=".csv">
-      <label for="uploadSGE">Planilha de HH (SGE)</label>
+      <label for="uploadSGE">Upload Planilha SGE</label>
     </div>
+
   </main>
 
   <footer>
