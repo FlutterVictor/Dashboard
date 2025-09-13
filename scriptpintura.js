@@ -2,16 +2,16 @@ let pinturaData = [];
 let sgeData = [];
 let charts = {};
 
-// --- Função para limpar e normalizar o CSV
+// --- Função para limpar e normalizar CSV
 function limparCSV(csv) {
     return csv.map(item => {
         const obj = {};
         for (let key in item) {
-            // Remove acentos, espaços extras e deixa maiúscula/minúscula consistente
             const cleanKey = key
                 .trim()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s/g, ""); // remove espaços
             obj[cleanKey] = item[key]?.trim();
         }
         return obj;
@@ -66,37 +66,37 @@ function atualizarDashboard() {
     // --- Área de Aplicação (LT)
     const areaMap = {};
     pinturaData.forEach(item => {
-        const area = item["AREADEAPLICACAO"];
-        const qtd = parseNumber(item["Qtd"]);
-        if (!area) return;
-        areaMap[area] = (areaMap[area] || 0) + qtd;
+        const local = item["Local"];
+        const litros = parseNumber(item["Litros"]);
+        if (!local) return;
+        areaMap[local] = (areaMap[local] || 0) + litros;
     });
     crearGrafico("areaAplicacaoChart", "bar", Object.keys(areaMap), Object.values(areaMap), ["#0b63d6"]);
 
     // --- Consumo PCI+Utilidades
     const pciTotal = pinturaData.reduce((sum, item) => {
-        const area = item["AREADEAPLICACAO"]?.toLowerCase();
-        const qtd = parseNumber(item["Qtd"]);
-        return sum + (area === "predio pci 3n" ? qtd : 0);
+        const local = item["Local"]?.toLowerCase();
+        const litros = parseNumber(item["Litros"]);
+        return sum + (local === "prédio pci 3n" || local === "predio pci 3n" ? litros : 0);
     }, 0);
     crearGrafico("pciChart", "doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
 
     // --- Tinta Utilizada
     const tintaMap = {};
     pinturaData.forEach(item => {
-        const tinta = item["DESCRICAOPRODUTO"];
-        if (!tinta) return;
-        tintaMap[tinta] = (tintaMap[tinta] || 0) + 1;
+        const tipo = item["Tipo"];
+        if (!tipo) return;
+        tintaMap[tipo] = (tintaMap[tipo] || 0) + 1;
     });
     crearGrafico("tintaChart", "bar", Object.keys(tintaMap), Object.values(tintaMap), ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]);
 
     // --- Tinta Utilizada (M²)
     const tintaM2Map = {};
     pinturaData.forEach(item => {
-        const tinta = item["DESCRICAOPRODUTO"];
-        const m2 = parseNumber(item["m2"]);
-        if (!tinta) return;
-        tintaM2Map[tinta] = (tintaM2Map[tinta] || 0) + m2;
+        const tipo = item["Tipo"];
+        const m2 = parseNumber(item["M²"]);
+        if (!tipo) return;
+        tintaM2Map[tipo] = (tintaM2Map[tipo] || 0) + m2;
     });
     crearGrafico("tintaM2Chart", "bar", Object.keys(tintaM2Map), Object.values(tintaM2Map), ["#6366f1"]);
 
@@ -104,7 +104,7 @@ function atualizarDashboard() {
     const hhTotal = sgeData.reduce((sum, item) => {
         const cargo = item["Cargo"]?.toLowerCase();
         const contrato = item["Contrato"];
-        const horas = parseNumber(item["TotalHoras"]);
+        const horas = parseNumber(item["TotalHoras"] || item["TotalHoras"]);
         if ((cargo === "pintor de estruturas metalicas" || cargo === "pintor de obras") && contrato === "4600184457") {
             return sum + horas;
         }
@@ -114,9 +114,9 @@ function atualizarDashboard() {
 
     // --- Consumo GAD
     const gadTotal = pinturaData.reduce((sum, item) => {
-        const area = item["AREADEAPLICACAO"]?.toLowerCase();
-        const qtd = parseNumber(item["Qtd"]);
-        return sum + (area === "predio gad" ? qtd : 0);
+        const local = item["Local"]?.toLowerCase();
+        const litros = parseNumber(item["Litros"]);
+        return sum + (local === "prédio gad" || local === "predio gad" ? litros : 0);
     }, 0);
     crearGrafico("gadChart", "doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
 
@@ -124,9 +124,9 @@ function atualizarDashboard() {
     const osMap = {};
     pinturaData.forEach(item => {
         const os = item["OS"];
-        const qtd = parseNumber(item["Qtd"]);
+        const litros = parseNumber(item["Litros"]);
         if (!os) return;
-        osMap[os] = (osMap[os] || 0) + qtd;
+        osMap[os] = (osMap[os] || 0) + litros;
     });
     crearGrafico("osChart", "bar", Object.keys(osMap), Object.values(osMap), ["#f97316"]);
 }
