@@ -8,7 +8,7 @@ function readCSV(file, callback) {
   const reader = new FileReader();
   reader.onload = function (e) {
     const text = e.target.result;
-    const rows = text.split("\n").map(r => r.split(";")); // CSV separado por ;
+    const rows = text.split("\n").map(r => r.split(",")); // CSV separado por ;
     const headers = rows.shift().map(h => h.trim());
     const data = rows
       .filter(r => r.length === headers.length && r.some(cell => cell.trim() !== ""))
