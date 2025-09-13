@@ -12,7 +12,7 @@
 
 <div class="wrap">
 
-  <!-- Header estilo STD -->
+  <!-- Header -->
   <header class="dashboard-header">
     <h1>Dashboard Pintura</h1>
     <div class="dashboard-buttons">
@@ -27,41 +27,44 @@
 
   <!-- Conteúdo do dashboard -->
   <main class="dashboard-container">
+
     <div class="card">
-      <h3>Efetivo Presente/Falta</h3>
-      <canvas id="efetivoChart"></canvas>
+      <h3>Área de Aplicação (LT)</h3>
+      <canvas id="areaAplicacaoChart"></canvas>
     </div>
 
     <div class="card">
-      <h3>HH Trabalhado por OS</h3>
+      <h3>Consumo PCI+Utilidades</h3>
+      <canvas id="pciChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Tinta Utilizada</h3>
+      <canvas id="tintaChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Tinta Utilizada (M²)</h3>
+      <canvas id="tintaM2Chart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Consumo de HH</h3>
       <canvas id="hhChart"></canvas>
     </div>
 
-    <div class="card">
-      <h3>Litros Utilizados no Mês</h3>
-      <canvas id="litrosMesChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Total de Litros por OS</h3>
-      <canvas id="litrosOSChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Cores e Tipos de Tintas Utilizados</h3>
-      <canvas id="tintasChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>M² Pintados por Mês</h3>
-      <canvas id="m2MesChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>M² Pintados por OS</h3>
-      <canvas id="m2OSChart"></canvas>
-    </div>
   </main>
+
+  <!-- Upload de arquivos -->
+  <section class="upload-section">
+    <h3>Importar Dados</h3>
+    <p>Faça upload dos arquivos CSV para atualizar os gráficos:</p>
+    <input type="file" id="uploadPintura" accept=".csv">
+    <label for="uploadPintura">📂 Upload Planilha de Pintura</label>
+    <br><br>
+    <input type="file" id="uploadSGE" accept=".csv">
+    <label for="uploadSGE">📂 Upload Planilha de Horas SGE</label>
+  </section>
 
   <footer>
     <p>© 2025 - Sistema de Dashboards</p>
