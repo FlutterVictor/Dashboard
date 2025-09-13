@@ -52,7 +52,7 @@ function atualizarDashboard() {
 
     // Consumo GAD e PCI - cards
     document.getElementById('valorGAD').innerText = '40,78 L';
-    document.getElementById('valorPCI').innerText = '9,44 L';
+    document.getElementById('valorPCI').innerText = '17,48 L';
 
     // Tinta Utilizada (quantidade)
     criarGrafico('tintaChart','bar',
