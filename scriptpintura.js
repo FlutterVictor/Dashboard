@@ -1,130 +1,216 @@
-// Dados fictícios (mockup)
-const dadosMockup = {
-    efetivo: { presente: 45, falta: 5 },
-    hhPorOS: [
-        { os: 'OS001', hh: 120 },
-        { os: 'OS002', hh: 95 },
-        { os: 'OS003', hh: 150 }
-    ],
-    litrosMes: [
-        { mes: 'Jan', litros: 300 },
-        { mes: 'Fev', litros: 280 },
-        { mes: 'Mar', litros: 350 }
-    ],
-    litrosPorOS: [
-        { os: 'OS001', litros: 120 },
-        { os: 'OS002', litros: 100 },
-        { os: 'OS003', litros: 150 }
-    ],
-    tintas: [
-        { cor: 'Vermelho', qtd: 10 },
-        { cor: 'Azul', qtd: 15 },
-        { cor: 'Verde', qtd: 8 },
-        { cor: 'Amarelo', qtd: 5 }
-    ],
-    m2Mes: [
-        { mes: 'Jan', m2: 500 },
-        { mes: 'Fev', m2: 480 },
-        { mes: 'Mar', m2: 520 }
-    ],
-    m2PorOS: [
-        { os: 'OS001', m2: 200 },
-        { os: 'OS002', m2: 180 },
-        { os: 'OS003', m2: 220 }
-    ]
-};
+// Variáveis globais
+let pinturaData = [];
+let sgeData = [];
 
-let charts = {};
-
-// Função para criar gráficos Chart.js
-function criarGrafico(id, tipo, labels, dados, cores){
-    if(charts[id]) charts[id].destroy(); // destrói gráfico antigo
-    const ctx = document.getElementById(id).getContext('2d');
-    charts[id] = new Chart(ctx, {
-        type: tipo,
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '',
-                data: dados,
-                backgroundColor: coloresAleatorias(dados.length, cores),
-                borderColor: 'rgba(0,0,0,0.1)',
-                borderWidth:1
-            }]
-        },
-        options: {
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{
-                legend:{ display:true }
-            }
-        }
-    });
+// Função para ler CSV
+function readCSV(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const text = e.target.result;
+    const rows = text.split("\n").map(r => r.split(";")); // CSV separado por ponto e vírgula
+    const headers = rows.shift().map(h => h.trim());
+    const data = rows
+      .filter(r => r.length === headers.length && r.some(cell => cell.trim() !== ""))
+      .map(r => {
+        let obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = r[i] ? r[i].trim() : "";
+        });
+        return obj;
+      });
+    callback(data);
+  };
+  reader.readAsText(file, "UTF-8");
 }
 
-// Gera cores repetindo ou usando cores padrão
-function coloresAleatorias(qtd, cores){
-    const result = [];
-    for(let i=0;i<qtd;i++){
-        result.push(cores[i % cores.length]);
+// ==================== GRÁFICOS ====================
+
+// Área de Aplicação (LT)
+function renderAreaAplicacao() {
+  const ctx = document.getElementById("areaAplicacaoChart").getContext("2d");
+  const counts = {};
+  pinturaData.forEach(item => {
+    const area = item["ÁREA DE APLICAÇÃO"];
+    if (area) {
+      counts[area] = (counts[area] || 0) + 1;
     }
-    return result;
+  });
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        label: "Quantidade",
+        data: Object.values(counts),
+        backgroundColor: "rgba(54, 162, 235, 0.7)"
+      }]
+    }
+  });
 }
 
-// Atualiza todos os gráficos com mockup
-function atualizarDashboardMockup(){
-    // Efetivo Presente/Falta
-    criarGrafico('efetivoChart','doughnut',['Presente','Falta'],
-        [dadosMockup.efetivo.presente, dadosMockup.efetivo.falta],
-        ['#0b63d6','#f87171']);
-
-    // HH Trabalhado por OS
-    criarGrafico('hhChart','bar',
-        dadosMockup.hhPorOS.map(d=>d.os),
-        dadosMockup.hhPorOS.map(d=>d.hh),
-        ['#0b63d6']);
-
-    // Litros Utilizados no Mês
-    criarGrafico('litrosMesChart','bar',
-        dadosMockup.litrosMes.map(d=>d.mes),
-        dadosMockup.litrosMes.map(d=>d.litros),
-        ['#0b63d6']);
-
-    // Total de Litros por OS
-    criarGrafico('litrosOSChart','bar',
-        dadosMockup.litrosPorOS.map(d=>d.os),
-        dadosMockup.litrosPorOS.map(d=>d.litros),
-        ['#f59e0b']);
-
-    // Cores e Tipos de Tintas
-    criarGrafico('tintasChart','doughnut',
-        dadosMockup.tintas.map(d=>d.cor),
-        dadosMockup.tintas.map(d=>d.qtd),
-        ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']);
-
-    // M² Pintados por Mês
-    criarGrafico('m2MesChart','bar',
-        dadosMockup.m2Mes.map(d=>d.mes),
-        dadosMockup.m2Mes.map(d=>d.m2),
-        ['#6366f1']);
-
-    // M² Pintados por OS
-    criarGrafico('m2OSChart','bar',
-        dadosMockup.m2PorOS.map(d=>d.os),
-        dadosMockup.m2PorOS.map(d=>d.m2),
-        ['#f97316']);
+// Consumo PCI+Utilidades
+function renderPCI() {
+  const ctx = document.getElementById("pciChart").getContext("2d");
+  let total = 0;
+  pinturaData.forEach(item => {
+    if (item["ÁREA DE APLICAÇÃO"] === "Prédio PCI 3N") {
+      total += parseFloat(item["Qtd."] || 0);
+    }
+  });
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Prédio PCI 3N"],
+      datasets: [{
+        data: [total],
+        backgroundColor: ["rgba(255, 99, 132, 0.7)"]
+      }]
+    }
+  });
 }
 
-// Exportar PDF simples
-document.getElementById('exportarPDF').addEventListener('click',()=>{
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    pdf.text("Dashboard Pintura - Mockup", 10, 10);
-    pdf.save("dashboard_pintura_mockup.pdf");
+// Tinta Utilizada
+function renderTinta() {
+  const ctx = document.getElementById("tintaChart").getContext("2d");
+  const counts = {};
+  pinturaData.forEach(item => {
+    const tinta = item["DESCRIÇÃO"];
+    if (tinta) {
+      counts[tinta] = (counts[tinta] || 0) + 1;
+    }
+  });
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        label: "Quantidade",
+        data: Object.values(counts),
+        backgroundColor: "rgba(75, 192, 192, 0.7)"
+      }]
+    }
+  });
+}
+
+// Tinta Utilizada (M²)
+function renderTintaM2() {
+  const ctx = document.getElementById("tintaM2Chart").getContext("2d");
+  const totals = {};
+  pinturaData.forEach(item => {
+    const tinta = item["DESCRIÇÃO"];
+    const m2 = parseFloat(item["m²"] || 0);
+    if (tinta) {
+      totals[tinta] = (totals[tinta] || 0) + m2;
+    }
+  });
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(totals),
+      datasets: [{
+        label: "M²",
+        data: Object.values(totals),
+        backgroundColor: "rgba(153, 102, 255, 0.7)"
+      }]
+    }
+  });
+}
+
+// Consumo de HH
+function renderHH() {
+  const ctx = document.getElementById("hhChart").getContext("2d");
+  let totalHoras = 0;
+  sgeData.forEach(item => {
+    const cargo = item["Cargo"];
+    const contrato = item["Contrato"];
+    if ((cargo === "Pintor de estruturas metálicas" || cargo === "Pintor de Obras") &&
+        contrato === "4600184457") {
+      totalHoras += parseFloat(item["Total Horas"] || 0);
+    }
+  });
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Consumo de HH"],
+      datasets: [{
+        label: "Total de Horas",
+        data: [totalHoras],
+        backgroundColor: "rgba(255, 206, 86, 0.7)"
+      }]
+    }
+  });
+}
+
+// Consumo GAD
+function renderGAD() {
+  const ctx = document.getElementById("gadChart").getContext("2d");
+  let total = 0;
+  pinturaData.forEach(item => {
+    if (item["ÁREA DE APLICAÇÃO"] === "Prédio GAD") {
+      total += parseFloat(item["Qtd."] || 0);
+    }
+  });
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Prédio GAD"],
+      datasets: [{
+        data: [total],
+        backgroundColor: ["rgba(54, 162, 235, 0.7)"]
+      }]
+    }
+  });
+}
+
+// Consumo por OS
+function renderConsumoOS() {
+  const ctx = document.getElementById("osChart").getContext("2d");
+  const totals = {};
+  pinturaData.forEach(item => {
+    const os = item["O.S"];
+    const qtd = parseFloat(item["Qtd."] || 0);
+    if (os) {
+      totals[os] = (totals[os] || 0) + qtd;
+    }
+  });
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(totals),
+      datasets: [{
+        label: "Qtd. Utilizada",
+        data: Object.values(totals),
+        backgroundColor: "rgba(255, 159, 64, 0.7)"
+      }]
+    }
+  });
+}
+
+// ==================== EVENTOS ====================
+
+// Upload Planilha de Pintura
+document.getElementById("uploadPintura").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  if (file) {
+    readCSV(file, data => {
+      pinturaData = data;
+      renderAreaAplicacao();
+      renderPCI();
+      renderTinta();
+      renderTintaM2();
+      renderGAD();
+      renderConsumoOS();
+    });
+  }
 });
 
-// Botão Filtrar (aqui não faz nada, só visual)
-document.getElementById('filtrar').addEventListener('click', atualizarDashboardMockup);
-
-// Inicializa com mockup
-window.addEventListener('load', atualizarDashboardMockup);
+// Upload Planilha de Horas SGE
+document.getElementById("uploadSGE").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  if (file) {
+    readCSV(file, data => {
+      sgeData = data;
+      renderHH();
+    });
+  }
+});
