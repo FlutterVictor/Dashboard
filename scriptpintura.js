@@ -1,6 +1,4 @@
 let charts = {};
-let dadosPintura = [];
-let dadosSGE = [];
 
 // Função para criar gráficos Chart.js
 function criarGrafico(id, tipo, labels, dados, cores) {
@@ -13,7 +11,7 @@ function criarGrafico(id, tipo, labels, dados, cores) {
             datasets: [{
                 label: '',
                 data: dados,
-                backgroundColor: gerarCores(dados.length, cores),
+                backgroundColor: cores,
                 borderColor: 'rgba(0,0,0,0.1)',
                 borderWidth: 1
             }]
@@ -26,98 +24,35 @@ function criarGrafico(id, tipo, labels, dados, cores) {
     });
 }
 
-// Gera cores repetidas ou padrão
-function gerarCores(qtd, cores) {
-    const result = [];
-    for (let i = 0; i < qtd; i++) {
-        result.push(cores[i % cores.length]);
-    }
-    return result;
-}
-
-// Função para atualizar o dashboard
+// Atualiza todos os gráficos com valores fixos
 function atualizarDashboard() {
-    if (!dadosPintura.length) return;
+    // Área de Aplicação (LT) - exemplo fictício
+    criarGrafico('areaAplicacaoChart', 'bar', ['ÁREA A', 'ÁREA B'], [20, 15], ['#0b63d6','#f59e0b']);
 
-    // Área de Aplicação (LT)
-    const totalLitrosPorLocal = {};
-    dadosPintura.forEach(d => {
-        totalLitrosPorLocal[d.Local] = (totalLitrosPorLocal[d.Local] || 0) + parseFloat(d.Litros || 0);
-    });
-    criarGrafico('areaAplicacaoChart', 'bar', Object.keys(totalLitrosPorLocal), Object.values(totalLitrosPorLocal), ['#0b63d6']);
-
-    // Consumo HH - fixo 974h
+    // Consumo HH - fixo
     criarGrafico('consumoHHChart', 'bar', ['Total HH'], [974], ['#f59e0b']);
 
-    // Consumo por OS
-    const totalPorOS = {};
-    dadosPintura.forEach(d => {
-        totalPorOS[d.OS] = (totalPorOS[d.OS] || 0) + parseFloat(d.Litros || 0);
-    });
-    criarGrafico('consumoOSChart', 'bar', Object.keys(totalPorOS), Object.values(totalPorOS), ['#10b981']);
+    // Consumo por OS - valores fixos
+    criarGrafico('consumoOSChart', 'bar', ['37131','37132'], [28.2, 9.44], ['#10b981','#6366f1']);
 
-    // Consumo GAD
-    const gad = dadosPintura.filter(d => d.Local === 'Prédio GAD').reduce((acc, cur) => acc + parseFloat(cur.Litros || 0), 0);
-    document.getElementById('valorGAD').innerText = `${gad} LT`;
+    // Consumo GAD e PCI - cards
+    document.getElementById('valorGAD').innerText = '28,2 L';
+    document.getElementById('valorPCI').innerText = '9,44 L';
 
-    // Consumo PCI
-    const pci = dadosPintura.filter(d => d.Local === 'Prédio PCI 3N').reduce((acc, cur) => acc + parseFloat(cur.Litros || 0), 0);
-    document.getElementById('valorPCI').innerText = `${pci} LT`;
+    // Tinta Utilizada (quantidade) - exemplo fictício
+    criarGrafico('tintaChart', 'bar',
+        ['Tinta 1','Tinta 2','Tinta 3','Tinta 4','Tinta 5'],
+        [10, 5, 12, 7, 8],
+        ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']
+    );
 
-    // Tinta Utilizada
-    const totalTipo = {};
-    dadosPintura.forEach(d => {
-        totalTipo[d.Tipo] = (totalTipo[d.Tipo] || 0) + 1;
-    });
-    criarGrafico('tintaChart', 'bar', Object.keys(totalTipo), Object.values(totalTipo), ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']);
-
-    // Tinta Utilizada (M²)
-    const totalTipoM2 = {};
-    dadosPintura.forEach(d => {
-        totalTipoM2[d.Tipo] = (totalTipoM2[d.Tipo] || 0) + parseFloat(d['M²'] || 0);
-    });
-    criarGrafico('tintaM2Chart', 'bar', Object.keys(totalTipoM2), Object.values(totalTipoM2), ['#6366f1','#f97316','#10b981','#f59e0b','#f87171']);
+    // Tinta Utilizada (M²) - valores fixos
+    criarGrafico('tintaM2Chart', 'bar',
+        ['TINTA EPOXI, N2630 CINZA PREIME','TINTA MACROPOX 646 VERMELHO OXIDO','TINTA MACROPOX CINZA 6.5','TINTA N2677 AMARELO SINTÉTICO 5Y8/12','TINTA N2677 CINZA GELO N8'],
+        [24.5,16.1,52.5,32.5,59.1],
+        ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']
+    );
 }
 
-// Função para ler CSV e converter em array de objetos
-function lerCSV(file, callback) {
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            callback(results.data);
-        }
-    });
-}
-
-// Upload de Pintura
-document.getElementById('uploadPintura').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    lerCSV(file, (data) => {
-        dadosPintura = data;
-        atualizarDashboard();
-    });
-});
-
-// Upload de SGE
-document.getElementById('uploadSGE').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    lerCSV(file, (data) => {
-        dadosSGE = data;
-        // Consumo HH agora pode ser atualizado se quiser somar SGE, mas no layout fixamos 974h
-        atualizarDashboard();
-    });
-});
-
-// Exportar PDF
-document.getElementById('exportarPDF').addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    pdf.text("Dashboard Pintura", 10, 10);
-    pdf.save("dashboard_pintura.pdf");
-});
-
-// Botão Filtrar
-document.getElementById('filtrar').addEventListener('click', atualizarDashboard);
+// Inicializa dashboard
+window.addEventListener('load', atualizarDashboard);
