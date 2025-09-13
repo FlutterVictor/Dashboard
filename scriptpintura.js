@@ -18,10 +18,15 @@ function limparCSV(csv) {
     });
 }
 
-// --- Converte string em número, trata vírgula decimal
+// --- Converte string em número, trata vírgula decimal e espaços
 function parseNumber(valor) {
     if (!valor) return 0;
-    return parseFloat(valor.toString().replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
+    return parseFloat(valor.toString().replace(/\s/g, "").replace(",", ".")) || 0;
+}
+
+// --- Normaliza texto para comparação
+function normalizeText(txt) {
+    return txt?.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, "") || "";
 }
 
 // --- Cria gráficos Chart.js
@@ -75,9 +80,9 @@ function atualizarDashboard() {
 
     // --- Consumo PCI+Utilidades
     const pciTotal = pinturaData.reduce((sum, item) => {
-        const local = item["Local"]?.toLowerCase();
+        const local = normalizeText(item["Local"]);
         const litros = parseNumber(item["Litros"]);
-        return sum + (local === "prédio pci 3n" || local === "predio pci 3n" ? litros : 0);
+        return sum + (local === "prediopci3n" ? litros : 0);
     }, 0);
     crearGrafico("pciChart", "doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
 
@@ -102,10 +107,10 @@ function atualizarDashboard() {
 
     // --- Consumo de HH
     const hhTotal = sgeData.reduce((sum, item) => {
-        const cargo = item["Cargo"]?.toLowerCase();
-        const contrato = item["Contrato"];
-        const horas = parseNumber(item["TotalHoras"] || item["TotalHoras"]);
-        if ((cargo === "pintor de estruturas metalicas" || cargo === "pintor de obras") && contrato === "4600184457") {
+        const cargo = normalizeText(item["Cargo"]);
+        const contrato = item["Contrato"]?.trim();
+        const horas = parseNumber(item["TotalHoras"] || item["Total Horas"]);
+        if ((cargo === "pintordeestruturasmetalicas" || cargo === "pintordeobras") && contrato === "4600184457") {
             return sum + horas;
         }
         return sum;
@@ -114,9 +119,9 @@ function atualizarDashboard() {
 
     // --- Consumo GAD
     const gadTotal = pinturaData.reduce((sum, item) => {
-        const local = item["Local"]?.toLowerCase();
+        const local = normalizeText(item["Local"]);
         const litros = parseNumber(item["Litros"]);
-        return sum + (local === "prédio gad" || local === "predio gad" ? litros : 0);
+        return sum + (local === "prediogad" ? litros : 0);
     }, 0);
     crearGrafico("gadChart", "doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
 
