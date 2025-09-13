@@ -65,6 +65,19 @@
     </div>
   </main>
 
+  <!-- Terceira linha de gráficos - RNC -->
+  <main class="dashboard-container">
+    <div class="card">
+      <h3>RNC Registradas</h3>
+      <canvas id="rncStatusChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>RNC por Área</h3>
+      <canvas id="rncAreaChart"></canvas>
+    </div>
+  </main>
+
   <!-- Upload de arquivos -->
   <div class="upload-section">
     <h3>Upload de Planilhas</h3>
@@ -79,6 +92,22 @@
     <p>© 2025 - Sistema de Dashboards</p>
   </footer>
 
+</div>
+
+<!-- Card flutuante RNC -->
+<div id="cardRNC" class="hidden"
+     style="position:fixed; top:20%; left:50%; transform:translateX(-50%);
+            width:60%; background:#fff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.2); 
+            z-index:1000; padding:20px; display:none;">
+
+  <h3 style="margin-bottom:10px; font-size:18px; color:#0b63d6;">Não Conformidades</h3>
+  <div id="pdfViewer" style="max-height:400px; overflow:auto; padding:10px; text-align:center; font-size:16px; color:#555;">
+      📄 Em breve exibição do PDF
+  </div>
+  <button onclick="document.getElementById('cardRNC').style.display='none'" 
+          style="margin-top:15px; padding:8px 16px; background:#f87171; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+      Fechar
+  </button>
 </div>
 
 <script src="scriptpintura.js"></script>
