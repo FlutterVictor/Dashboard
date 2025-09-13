@@ -13,7 +13,7 @@
 
 <div class="wrap">
 
-  <!-- Header estilo STD -->
+  <!-- Header -->
   <header class="dashboard-header">
     <h1>Dashboard Pintura</h1>
     <div class="dashboard-buttons">
@@ -26,44 +26,24 @@
     </div>
   </header>
 
-  <!-- Conteúdo do dashboard -->
+  <!-- Dashboard -->
   <main class="dashboard-container">
-    <div class="card">
-      <h3>Área de Aplicação (LT)</h3>
-      <canvas id="areaAplicacaoChart"></canvas>
+    <!-- Primeira linha -->
+    <div class="linha">
+      <div class="card"><h3>Área de Aplicação (LT)</h3><canvas id="areaAplicacaoChart"></canvas></div>
+      <div class="card"><h3>Consumo HH</h3><canvas id="hhChart"></canvas></div>
+      <div class="card"><h3>Consumo por OS</h3><canvas id="osChart"></canvas></div>
+      <div class="card"><h3>Consumo GAD</h3><canvas id="gadChart"></canvas></div>
+      <div class="card"><h3>Consumo PCI+Utilidades</h3><canvas id="pciChart"></canvas></div>
     </div>
 
-    <div class="card">
-      <h3>Consumo PCI+Utilidades</h3>
-      <canvas id="pciChart"></canvas>
+    <!-- Segunda linha -->
+    <div class="linha">
+      <div class="card largo"><h3>Tinta Utilizada</h3><canvas id="tintaChart"></canvas></div>
+      <div class="card largo"><h3>Tinta Utilizada (M²)</h3><canvas id="tintaM2Chart"></canvas></div>
     </div>
 
-    <div class="card">
-      <h3>Consumo GAD</h3>
-      <canvas id="gadChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Tinta Utilizada</h3>
-      <canvas id="tintaChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Tinta Utilizada (M²)</h3>
-      <canvas id="tintaM2Chart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Consumo de HH</h3>
-      <canvas id="hhChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Consumo por OS</h3>
-      <canvas id="osChart"></canvas>
-    </div>
-
-    <!-- Botões de upload no final -->
+    <!-- Botões de upload -->
     <div class="upload-section">
       <h3>Carregar Planilhas</h3>
       <input type="file" id="uploadPintura" accept=".csv">
