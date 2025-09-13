@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="pintura.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
 <div class="wrap">
 
-  <!-- Header -->
+  <!-- Header estilo STD -->
   <header class="dashboard-header">
     <h1>Dashboard Pintura</h1>
     <div class="dashboard-buttons">
@@ -63,18 +64,17 @@
       <canvas id="osChart"></canvas>
     </div>
 
-  </main>
+    <div class="card">
+      <h3>Upload Planilha Pintura</h3>
+      <input type="file" id="uploadPintura" accept=".csv">
+    </div>
 
-  <!-- Upload de arquivos -->
-  <section class="upload-section">
-    <h3>Importar Dados</h3>
-    <p>Faça upload dos arquivos CSV para atualizar os gráficos:</p>
-    <input type="file" id="uploadPintura" accept=".csv">
-    <label for="uploadPintura">📂 Upload Planilha de Pintura</label>
-    <br><br>
-    <input type="file" id="uploadSGE" accept=".csv">
-    <label for="uploadSGE">📂 Upload Planilha de Horas SGE</label>
-  </section>
+    <div class="card">
+      <h3>Upload Planilha SGE</h3>
+      <input type="file" id="uploadSGE" accept=".csv">
+    </div>
+
+  </main>
 
   <footer>
     <p>© 2025 - Sistema de Dashboards</p>
