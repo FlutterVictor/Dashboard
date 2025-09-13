@@ -2,31 +2,10 @@ let pinturaData = [];
 let sgeData = [];
 let charts = {};
 
-// --- Função para limpar e normalizar CSV
-function limparCSV(csv) {
-    return csv.map(item => {
-        const obj = {};
-        for (let key in item) {
-            const cleanKey = key
-                .trim()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\s/g, ""); // remove espaços
-            obj[cleanKey] = item[key]?.trim();
-        }
-        return obj;
-    });
-}
-
-// --- Converte string em número, trata vírgula decimal e espaços
+// --- Converte string em número
 function parseNumber(valor) {
     if (!valor) return 0;
-    return parseFloat(valor.toString().replace(/\s/g, "").replace(",", ".")) || 0;
-}
-
-// --- Normaliza texto para comparação
-function normalizeText(txt) {
-    return txt?.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, "") || "";
+    return parseFloat(valor.toString().replace(",", ".").replace(/\s/g,'')) || 0;
 }
 
 // --- Cria gráficos Chart.js
@@ -40,7 +19,7 @@ function crearGrafico(id, tipo, labels, dados, cores) {
             datasets: [{
                 label: "",
                 data: dados,
-                backgroundColor: coloresAleatorias(dados.length, cores),
+                backgroundColor: cores,
                 borderColor: "rgba(0,0,0,0.1)",
                 borderWidth: 1
             }]
@@ -48,20 +27,9 @@ function crearGrafico(id, tipo, labels, dados, cores) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: true }
-            }
+            plugins: { legend: { display:true } }
         }
     });
-}
-
-// --- Gera cores
-function coloresAleatorias(qtd, cores) {
-    const result = [];
-    for (let i = 0; i < qtd; i++) {
-        result.push(cores[i % cores.length]);
-    }
-    return result;
 }
 
 // --- Atualiza todos os gráficos
@@ -73,98 +41,75 @@ function atualizarDashboard() {
     pinturaData.forEach(item => {
         const local = item["Local"];
         const litros = parseNumber(item["Litros"]);
-        if (!local) return;
+        if(!local) return;
         areaMap[local] = (areaMap[local] || 0) + litros;
     });
-    crearGrafico("areaAplicacaoChart", "bar", Object.keys(areaMap), Object.values(areaMap), ["#0b63d6"]);
+    crearGrafico("areaAplicacaoChart","bar", Object.keys(areaMap), Object.values(areaMap), ["#0b63d6"]);
 
     // --- Consumo PCI+Utilidades
-    const pciTotal = pinturaData.reduce((sum, item) => {
-        const local = normalizeText(item["Local"]);
-        const litros = parseNumber(item["Litros"]);
-        return sum + (local === "prediopci3n" ? litros : 0);
-    }, 0);
-    crearGrafico("pciChart", "doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
+    const pciTotal = pinturaData.reduce((sum,item)=>{
+        return sum + (item["Local"]==="Prédio PCI 3N" ? parseNumber(item["Litros"]) : 0);
+    },0);
+    crearGrafico("pciChart","doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
 
     // --- Tinta Utilizada
     const tintaMap = {};
-    pinturaData.forEach(item => {
+    pinturaData.forEach(item=>{
         const tipo = item["Tipo"];
-        if (!tipo) return;
+        if(!tipo) return;
         tintaMap[tipo] = (tintaMap[tipo] || 0) + 1;
     });
-    crearGrafico("tintaChart", "bar", Object.keys(tintaMap), Object.values(tintaMap), ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]);
+    crearGrafico("tintaChart","bar", Object.keys(tintaMap), Object.values(tintaMap), ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]);
 
     // --- Tinta Utilizada (M²)
     const tintaM2Map = {};
-    pinturaData.forEach(item => {
+    pinturaData.forEach(item=>{
         const tipo = item["Tipo"];
         const m2 = parseNumber(item["M²"]);
-        if (!tipo) return;
+        if(!tipo) return;
         tintaM2Map[tipo] = (tintaM2Map[tipo] || 0) + m2;
     });
-    crearGrafico("tintaM2Chart", "bar", Object.keys(tintaM2Map), Object.values(tintaM2Map), ["#6366f1"]);
+    crearGrafico("tintaM2Chart","bar", Object.keys(tintaM2Map), Object.values(tintaM2Map), ["#6366f1"]);
 
     // --- Consumo de HH
-    const hhTotal = sgeData.reduce((sum, item) => {
-        const cargo = normalizeText(item["Cargo"]);
-        const contrato = item["Contrato"]?.trim();
+    const hhTotal = sgeData.reduce((sum,item)=>{
+        const cargo = (item["Cargo"] || "").toLowerCase();
+        const contrato = item["Contrato"];
         const horas = parseNumber(item["TotalHoras"] || item["Total Horas"]);
-        if ((cargo === "pintordeestruturasmetalicas" || cargo === "pintordeobras") && contrato === "4600184457") {
+        if((cargo.includes("pintor de estruturas metalicas") || cargo.includes("pintor de obras")) && contrato==="4600184457") {
             return sum + horas;
         }
         return sum;
-    }, 0);
-    crearGrafico("hhChart", "bar", ["Total Horas"], [hhTotal], ["#0b63d6"]);
+    },0);
+    crearGrafico("hhChart","bar", ["Total Horas"], [hhTotal], ["#0b63d6"]);
 
     // --- Consumo GAD
-    const gadTotal = pinturaData.reduce((sum, item) => {
-        const local = normalizeText(item["Local"]);
-        const litros = parseNumber(item["Litros"]);
-        return sum + (local === "prediogad" ? litros : 0);
-    }, 0);
-    crearGrafico("gadChart", "doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
+    const gadTotal = pinturaData.reduce((sum,item)=>{
+        return sum + (item["Local"]==="Prédio GAD" ? parseNumber(item["Litros"]) : 0);
+    },0);
+    crearGrafico("gadChart","doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
 
     // --- Consumo por OS
     const osMap = {};
-    pinturaData.forEach(item => {
+    pinturaData.forEach(item=>{
         const os = item["OS"];
         const litros = parseNumber(item["Litros"]);
-        if (!os) return;
+        if(!os) return;
         osMap[os] = (osMap[os] || 0) + litros;
     });
-    crearGrafico("osChart", "bar", Object.keys(osMap), Object.values(osMap), ["#f97316"]);
+    crearGrafico("osChart","bar", Object.keys(osMap), Object.values(osMap), ["#f97316"]);
 }
 
-// --- Upload Planilha Pintura
-document.getElementById("uploadPintura").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: results => {
-            pinturaData = limparCSV(results.data);
-            console.log("Pintura Data:", pinturaData[0]);
-            atualizarDashboard();
-        }
-    });
-});
-
-// --- Upload Planilha SGE
-document.getElementById("uploadSGE").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: results => {
-            sgeData = limparCSV(results.data);
-            console.log("SGE Data:", sgeData[0]);
-            atualizarDashboard();
-        }
-    });
-});
+// --- Carrega o JSON
+fetch("output.json")
+    .then(res=>res.json())
+    .then(data=>{
+        pinturaData = data.pintura || [];
+        sgeData = data.sge || [];
+        atualizarDashboard();
+        console.log("Dashboard carregado com sucesso!");
+    })
+    .catch(err=>console.error("Erro ao carregar output.json:", err));
 
 // --- Exportar PDF
 document.getElementById("exportarPDF").addEventListener("click", () => {
@@ -176,6 +121,3 @@ document.getElementById("exportarPDF").addEventListener("click", () => {
 
 // --- Botão Filtrar (por datas)
 document.getElementById("filtrar").addEventListener("click", atualizarDashboard);
-
-// Inicializa vazio
-window.addEventListener("load", atualizarDashboard);
