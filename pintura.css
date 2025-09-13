@@ -25,7 +25,7 @@ body {
     padding: 15px;
 }
 
-/* Header igual STD */
+/* Header estilo STD */
 .dashboard-header {
     background: linear-gradient(90deg, var(--blue), #1370e8);
     color: white;
@@ -74,12 +74,12 @@ body {
     opacity: 0.85;
 }
 
-/* Main container - grid responsivo */
-.dashboard-container {
+/* Linhas do dashboard */
+.linha {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 16px;
-    margin-top: 20px;
+    margin-bottom: 16px;
 }
 
 /* Cards */
@@ -88,9 +88,9 @@ body {
     border-radius: 10px;
     padding: 14px;
     box-shadow: 0 6px 18px rgba(7, 22, 48, 0.06);
-    min-height: 220px;
     display: flex;
     flex-direction: column;
+    min-height: 220px;
 }
 
 .card h3 {
@@ -98,31 +98,15 @@ body {
     margin-bottom: 10px;
 }
 
-/* Canvas ocupa o máximo do card */
 .card canvas {
     flex: 1;
     max-height: 250px;
 }
 
-/* Gráficos maiores para Tinta */
-#tintaChart,
-#tintaM2Chart {
-    max-height: 350px;
-}
-
-@media (min-width: 768px) {
-    #tintaChart,
-    #tintaM2Chart {
-        grid-column: span 2;
-    }
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    margin-top: 30px;
-    font-size: 12px;
-    color: var(--gray);
+/* Cards largos (segunda linha) */
+.card.largo {
+    grid-column: span 2;
+    max-height: 400px;
 }
 
 /* Upload de arquivos */
@@ -161,49 +145,47 @@ footer {
     opacity: 0.85;
 }
 
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 12px;
+    color: var(--gray);
+}
+
 /* RESPONSIVO */
+@media (max-width: 1024px) {
+    .card.largo {
+        grid-column: span 1;
+    }
+}
+
 @media (max-width: 768px) {
-    .dashboard-header {
-        padding: 12px;
+    .linha {
+        grid-template-columns: 1fr 1fr;
     }
-
-    .dashboard-buttons {
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .dashboard-buttons input[type="date"],
-    .dashboard-buttons button,
-    .dashboard-buttons a {
-        width: 100%;
-        text-align: center;
-    }
-
     .card canvas {
         max-height: 200px;
     }
 }
 
 @media (max-width: 480px) {
-    .wrap {
-        padding: 10px;
+    .linha {
+        grid-template-columns: 1fr;
     }
-
     .card {
         min-height: 180px;
     }
-
     .card h3 {
         font-size: 14px;
     }
-
     .dashboard-buttons button,
     .dashboard-buttons a,
     .dashboard-buttons input[type="date"] {
+        width: 100%;
         font-size: 13px;
         padding: 5px 8px;
     }
-
     .upload-section label {
         font-size: 13px;
         padding: 5px 8px;
