@@ -2,14 +2,30 @@ let pinturaData = [];
 let sgeData = [];
 let charts = {};
 
-// Converte string em número (tratando vírgulas e espaços)
+// --- Função para limpar e normalizar o CSV
+function limparCSV(csv) {
+    return csv.map(item => {
+        const obj = {};
+        for (let key in item) {
+            // Remove acentos, espaços extras e deixa maiúscula/minúscula consistente
+            const cleanKey = key
+                .trim()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+            obj[cleanKey] = item[key]?.trim();
+        }
+        return obj;
+    });
+}
+
+// --- Converte string em número, trata vírgula decimal
 function parseNumber(valor) {
     if (!valor) return 0;
     return parseFloat(valor.toString().replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
 }
 
-// Cria gráficos Chart.js
-function criarGrafico(id, tipo, labels, dados, cores) {
+// --- Cria gráficos Chart.js
+function crearGrafico(id, tipo, labels, dados, cores) {
     if (charts[id]) charts[id].destroy();
     const ctx = document.getElementById(id).getContext("2d");
     charts[id] = new Chart(ctx, {
@@ -34,7 +50,7 @@ function criarGrafico(id, tipo, labels, dados, cores) {
     });
 }
 
-// Gera cores repetindo se necessário
+// --- Gera cores
 function coloresAleatorias(qtd, cores) {
     const result = [];
     for (let i = 0; i < qtd; i++) {
@@ -43,79 +59,79 @@ function coloresAleatorias(qtd, cores) {
     return result;
 }
 
-// Atualiza todos os gráficos
+// --- Atualiza todos os gráficos
 function atualizarDashboard() {
     if (!pinturaData.length && !sgeData.length) return;
 
     // --- Área de Aplicação (LT)
     const areaMap = {};
     pinturaData.forEach(item => {
-        const area = item["ÁREA DE APLICAÇÃO"]?.trim();
-        const qtd = parseNumber(item["Qtd."]);
+        const area = item["AREADEAPLICACAO"];
+        const qtd = parseNumber(item["Qtd"]);
         if (!area) return;
         areaMap[area] = (areaMap[area] || 0) + qtd;
     });
-    criarGrafico("areaAplicacaoChart", "bar", Object.keys(areaMap), Object.values(areaMap), ["#0b63d6"]);
+    crearGrafico("areaAplicacaoChart", "bar", Object.keys(areaMap), Object.values(areaMap), ["#0b63d6"]);
 
     // --- Consumo PCI+Utilidades
     const pciTotal = pinturaData.reduce((sum, item) => {
-        const area = item["ÁREA DE APLICAÇÃO"]?.trim().toLowerCase();
-        const qtd = parseNumber(item["Qtd."]);
-        return sum + (area === "prédio pci 3n" ? qtd : 0);
+        const area = item["AREADEAPLICACAO"]?.toLowerCase();
+        const qtd = parseNumber(item["Qtd"]);
+        return sum + (area === "predio pci 3n" ? qtd : 0);
     }, 0);
-    criarGrafico("pciChart", "doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
+    crearGrafico("pciChart", "doughnut", ["Prédio PCI 3N"], [pciTotal], ["#f59e0b"]);
 
     // --- Tinta Utilizada
     const tintaMap = {};
     pinturaData.forEach(item => {
-        const tinta = item["DESCRIÇÃO DO PRODUTO"]?.trim();
+        const tinta = item["DESCRICAOPRODUTO"];
         if (!tinta) return;
         tintaMap[tinta] = (tintaMap[tinta] || 0) + 1;
     });
-    criarGrafico("tintaChart", "bar", Object.keys(tintaMap), Object.values(tintaMap), ["#0b63d6", "#f87171", "#fbbf24", "#10b981", "#8b5cf6"]);
+    crearGrafico("tintaChart", "bar", Object.keys(tintaMap), Object.values(tintaMap), ["#0b63d6","#f87171","#fbbf24","#10b981","#8b5cf6"]);
 
     // --- Tinta Utilizada (M²)
     const tintaM2Map = {};
     pinturaData.forEach(item => {
-        const tinta = item["DESCRIÇÃO DO PRODUTO"]?.trim();
-        const m2 = parseNumber(item["m²"]);
+        const tinta = item["DESCRICAOPRODUTO"];
+        const m2 = parseNumber(item["m2"]);
         if (!tinta) return;
         tintaM2Map[tinta] = (tintaM2Map[tinta] || 0) + m2;
     });
-    criarGrafico("tintaM2Chart", "bar", Object.keys(tintaM2Map), Object.values(tintaM2Map), ["#6366f1"]);
+    crearGrafico("tintaM2Chart", "bar", Object.keys(tintaM2Map), Object.values(tintaM2Map), ["#6366f1"]);
 
     // --- Consumo de HH
     const hhTotal = sgeData.reduce((sum, item) => {
-        const cargo = item["Cargo"]?.trim().toLowerCase();
-        const contrato = item["Contrato"]?.trim();
-        const horas = parseNumber(item["Total Horas"]);
-        if ((cargo === "pintor de estruturas metálicas" || cargo === "pintor de obras") && contrato === "4600184457") {
+        const cargo = item["Cargo"]?.toLowerCase();
+        const contrato = item["Contrato"];
+        const horas = parseNumber(item["TotalHoras"]);
+        if ((cargo === "pintor de estruturas metalicas" || cargo === "pintor de obras") && contrato === "4600184457") {
             return sum + horas;
         }
         return sum;
     }, 0);
-    criarGrafico("hhChart", "bar", ["Total Horas"], [hhTotal], ["#0b63d6"]);
+    crearGrafico("hhChart", "bar", ["Total Horas"], [hhTotal], ["#0b63d6"]);
 
     // --- Consumo GAD
     const gadTotal = pinturaData.reduce((sum, item) => {
-        const area = item["ÁREA DE APLICAÇÃO"]?.trim().toLowerCase();
-        const qtd = parseNumber(item["Qtd."]);
-        return sum + (area === "prédio gad" ? qtd : 0);
+        const area = item["AREADEAPLICACAO"]?.toLowerCase();
+        const qtd = parseNumber(item["Qtd"]);
+        return sum + (area === "predio gad" ? qtd : 0);
     }, 0);
-    criarGrafico("gadChart", "doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
+    crearGrafico("gadChart", "doughnut", ["Prédio GAD"], [gadTotal], ["#10b981"]);
 
     // --- Consumo por OS
     const osMap = {};
     pinturaData.forEach(item => {
-        const os = item["O.S"]?.trim();
-        const qtd = parseNumber(item["Qtd."]);
+        const os = item["OS"];
+        const qtd = parseNumber(item["Qtd"]);
         if (!os) return;
         osMap[os] = (osMap[os] || 0) + qtd;
     });
-    criarGrafico("osChart", "bar", Object.keys(osMap), Object.values(osMap), ["#f97316"]);
+    crearGrafico("osChart", "bar", Object.keys(osMap), Object.values(osMap), ["#f97316"]);
 }
 
-// --- Upload Pintura
+// --- Upload Planilha Pintura
 document.getElementById("uploadPintura").addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -123,13 +139,14 @@ document.getElementById("uploadPintura").addEventListener("change", e => {
         header: true,
         skipEmptyLines: true,
         complete: results => {
-            pinturaData = results.data;
+            pinturaData = limparCSV(results.data);
+            console.log("Pintura Data:", pinturaData[0]);
             atualizarDashboard();
         }
     });
 });
 
-// --- Upload SGE
+// --- Upload Planilha SGE
 document.getElementById("uploadSGE").addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -137,7 +154,8 @@ document.getElementById("uploadSGE").addEventListener("change", e => {
         header: true,
         skipEmptyLines: true,
         complete: results => {
-            sgeData = results.data;
+            sgeData = limparCSV(results.data);
+            console.log("SGE Data:", sgeData[0]);
             atualizarDashboard();
         }
     });
