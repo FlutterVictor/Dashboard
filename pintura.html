@@ -6,8 +6,8 @@
   <title>Dashboard Pintura</title>
   <link rel="stylesheet" href="pintura.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
@@ -28,7 +28,6 @@
 
   <!-- Conteúdo do dashboard -->
   <main class="dashboard-container">
-
     <div class="card">
       <h3>Área de Aplicação (LT)</h3>
       <canvas id="areaAplicacaoChart"></canvas>
@@ -37,6 +36,11 @@
     <div class="card">
       <h3>Consumo PCI+Utilidades</h3>
       <canvas id="pciChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Consumo GAD</h3>
+      <canvas id="gadChart"></canvas>
     </div>
 
     <div class="card">
@@ -55,26 +59,18 @@
     </div>
 
     <div class="card">
-      <h3>Consumo GAD</h3>
-      <canvas id="gadChart"></canvas>
-    </div>
-
-    <div class="card">
       <h3>Consumo por OS</h3>
       <canvas id="osChart"></canvas>
     </div>
 
-    <!-- Upload das planilhas -->
-    <div class="card">
-      <h3>Upload Planilha Pintura</h3>
+    <!-- Botões de upload no final -->
+    <div class="upload-section">
+      <h3>Carregar Planilhas</h3>
       <input type="file" id="uploadPintura" accept=".csv">
-    </div>
-
-    <div class="card">
-      <h3>Upload Planilha SGE</h3>
+      <label for="uploadPintura">Planilha de Pintura</label>
       <input type="file" id="uploadSGE" accept=".csv">
+      <label for="uploadSGE">Planilha de HH (SGE)</label>
     </div>
-
   </main>
 
   <footer>
