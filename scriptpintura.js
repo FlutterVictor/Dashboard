@@ -27,7 +27,7 @@ function criarGrafico(id, tipo, labels, dados, cores) {
 // Atualiza todos os gráficos com valores fixos
 function atualizarDashboard() {
     // Área de Aplicação (LT) - exemplo fictício
-    criarGrafico('areaAplicacaoChart', 'bar', ['ÁREA A', 'ÁREA B'], [20, 15], ['#0b63d6','#f59e0b']);
+    criarGrafico('areaAplicacaoChart', 'bar', ['Prédio GAD', 'Prédio PCI/Utilidades'], [28.2 Litros, 9.44 Litros], ['#0b63d6','#f59e0b']);
 
     // Consumo HH - fixo
     criarGrafico('consumoHHChart', 'bar', ['Total HH'], [974], ['#f59e0b']);
@@ -41,8 +41,8 @@ function atualizarDashboard() {
 
     // Tinta Utilizada (quantidade) - exemplo fictício
     criarGrafico('tintaChart', 'bar',
-        ['Tinta 1','Tinta 2','Tinta 3','Tinta 4','Tinta 5'],
-        [10, 5, 12, 7, 8],
+        ['TINTA EPOXI, N2630 CINZA PREIME','TINTA MACROPOX 646 VERMELHO OXIDO ','TINTA MACROPOX CINZA 6.5','TINTA N2677 AMARELO SINTÉTICO  5Y8/12','TINTA N2677 CINZA GELO N8'],
+        [4.9, 3.22, 10.5, 6.5, 12.52],
         ['#0b63d6','#f87171','#fbbf24','#10b981','#8b5cf6']
     );
 
