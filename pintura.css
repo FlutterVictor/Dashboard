@@ -104,6 +104,19 @@ body {
     max-height: 250px;
 }
 
+/* Gráficos maiores para Tinta */
+#tintaChart,
+#tintaM2Chart {
+    max-height: 350px;
+}
+
+@media (min-width: 768px) {
+    #tintaChart,
+    #tintaM2Chart {
+        grid-column: span 2;
+    }
+}
+
 /* Footer */
 footer {
     text-align: center;
@@ -119,6 +132,9 @@ footer {
     border-radius: 10px;
     box-shadow: 0 6px 18px rgba(7, 22, 48, 0.06);
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .upload-section h3 {
@@ -138,7 +154,6 @@ footer {
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    margin-top: 5px;
     transition: 0.3s;
 }
 
