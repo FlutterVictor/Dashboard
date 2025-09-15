@@ -11,15 +11,7 @@
 body{margin:0;background:var(--muted);color:var(--dark);}
 .wrap{max-width:1400px;margin:28px auto;padding:20px}
 
-header{
-    background:linear-gradient(90deg,var(--blue),#1370e8);
-    color:white;
-    padding:18px;
-    border-radius:12px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-}
+header{background:linear-gradient(90deg,var(--blue),#1370e8);color:white;padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:4px;}
 header h1{margin:0;font-size:22px}
 .subtitle{font-size:14px;opacity:.9}
 
@@ -33,22 +25,6 @@ header h1{margin:0;font-size:22px}
 .kpi{padding:20px;text-align:center}
 .kpi .label{font-size:14px;color:var(--gray)}
 .kpi .value{font-size:24px;font-weight:700;margin-top:6px}
-
-/* Card Montadores Mobilizados - ajuste múltiplas infos */
-#cardMontadores .kpi {
-    padding:12px;
-    text-align:center;
-}
-#cardMontadores .kpi .value {
-    font-size:20px; /* menor que o original */
-    font-weight:700;
-    margin-top:4px;
-}
-#cardMontadores .kpi .sub-info {
-    font-size:12px;  /* informações adicionais menores */
-    color:var(--gray);
-    margin-top:2px;
-}
 
 .ranking table{width:100%;border-collapse:collapse;font-size:13px}
 .ranking th, .ranking td{padding:6px;text-align:left;border-bottom:1px solid #f0f2f5}
@@ -137,22 +113,45 @@ header h1{margin:0;font-size:22px}
 /* 📱 Responsividade para Mobile */
 /* ============================= */
 @media (max-width: 900px) {
-    .linha1 {grid-template-columns: repeat(2,1fr);}
-    .linha2 {grid-template-columns: 1fr;}
+    .linha1 {
+        grid-template-columns: repeat(2,1fr);
+    }
+    .linha2 {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 600px) {
-    header h1 {font-size: 18px;}
-    .subtitle {font-size: 12px;}
-    .linha1 {grid-template-columns: 1fr;}
-    .linha2 {grid-template-columns: 1fr;}
+    header h1 {
+        font-size: 18px;
+    }
+    .subtitle {
+        font-size: 12px;
+    }
+    .linha1 {
+        grid-template-columns: 1fr;
+    }
+    .linha2 {
+        grid-template-columns: 1fr;
+    }
     #filter-container {
         flex-direction: column;
         align-items: stretch;
     }
-    #filter-container label {width: 100%;}
-    #filter-container button {width: 100%;}
-    .kpi .value {font-size: 20px;}
-    #cardMontadores .kpi .value {font-size:18px;}
-    #cardMontadores .kpi .sub-info {font-size:11px;}
+    #filter-container label {
+        width: 100%;
+    }
+    #filter-container button {
+        width: 100%;
+    }
+    .kpi .value {
+        font-size: 20px;
+    }
+}
+
+/* 🔹 Ajuste específico do card Montadores Mobilizados */
+#montPresenteCard {
+    font-size: 14px;      /* diminui tamanho da fonte */
+    line-height: 1.3;     /* ajusta espaçamento entre linhas */
+    text-align: left;     /* alinha à esquerda */
 }
