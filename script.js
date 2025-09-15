@@ -12,7 +12,6 @@ function parseNumber(str){
 function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
-
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
@@ -20,14 +19,12 @@ function parseDateBR(str){
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
-
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
-
     return null;
 }
 
@@ -47,9 +44,7 @@ function diaSemanaIndex(diaJS){
    Filtro de datas
 ========================= */
 function filtrarDadosPorData(dados, dataInicio, dataFim){
-    if(!dataInicio && !dataFim) {
-        return dados.filter(r => !!parseDateBR(r['Data']));
-    }
+    if(!dataInicio && !dataFim) return dados.filter(r => !!parseDateBR(r['Data']));
     const dtInicio = dataInicio ? new Date(dataInicio) : null;
     const dtFim    = dataFim    ? new Date(dataFim)    : null;
 
@@ -83,51 +78,39 @@ function atualizarDashboard(dados){
     let somaHH = 0, somaML = 0, somaMLPrevisto = 0;
     let mlPorDia = Array(7).fill(0);
     let ranking = {};
-    let linhasIgnoradas = 0;
 
     dados.forEach(row=>{
-        try{
-            const hh      = parseNumber(row['HH Total']);
-            const ml      = parseNumber(row['ML Montados']);
-            const mlPrev  = parseNumber(row['ML PREVISTO']);
-            const montPresente = parseNumber(row['Mont.Presente']);
+        const hh    = parseNumber(row['HH Total']);
+        const ml    = parseNumber(row['ML Montados']);
+        const mlPrev= parseNumber(row['ML PREVISTO']);
 
-            somaHH += hh; 
-            somaML += ml; 
-            somaMLPrevisto += mlPrev;
+        somaHH += hh;
+        somaML += ml;
+        somaMLPrevisto += mlPrev;
 
-            const dt = parseDateBR(row['Data']);
-            if (dt) {
-                const ds = diaSemanaIndex(dt.getDay());
-                mlPorDia[ds] += ml;
-            } else {
-                linhasIgnoradas++;
-            }
+        const dt = parseDateBR(row['Data']);
+        if (dt) {
+            const ds = diaSemanaIndex(dt.getDay());
+            mlPorDia[ds] += ml;
+        }
 
-            const nome = row['Encarregado Responsavel'] ? String(row['Encarregado Responsavel']).trim() : '';
-            if (nome){
-                if(!ranking[nome]) ranking[nome] = { ml:0, mlPrev:0, hh:0 };
-                ranking[nome].ml     += ml;
-                ranking[nome].mlPrev += mlPrev;
-                ranking[nome].hh     += hh;
-            }
-
-        } catch(e){
-            linhasIgnoradas++;
-            console.warn('Linha ignorada por erro:', row, e);
+        const nome = row['Encarregado Responsavel'] ? String(row['Encarregado Responsavel']).trim() : '';
+        if (nome){
+            if(!ranking[nome]) ranking[nome] = { ml:0, mlPrev:0, hh:0 };
+            ranking[nome].ml     += ml;
+            ranking[nome].mlPrev += mlPrev;
+            ranking[nome].hh     += hh;
         }
     });
 
-    // Atualiza KPIs
+    // KPIs
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
-    document.getElementById('montPresente').textContent = dados.reduce((acc,row)=>acc+parseNumber(row['Mont.Presente']),0);
+    document.getElementById('montPresente').textContent = dados.reduce((acc,r)=>acc+parseNumber(r['Mont.Presente']),0);
 
     const stdReal = somaML > 0 ? (somaHH / somaML) : 0;
-    const STD_MIN = 0.22;
-    const STD_MAX = 0.27;
-    const stdExibicao = Math.min(Math.max(stdReal, STD_MIN), STD_MAX);
-    document.getElementById('stdSemanal').textContent = stdExibicao.toFixed(2);
+    const STD_MIN = 0.22, STD_MAX = 0.27;
+    document.getElementById('stdSemanal').textContent = Math.min(Math.max(stdReal, STD_MIN), STD_MAX).toFixed(2);
 
     const meta = (somaMLPrevisto > 0 ? (somaML / somaMLPrevisto) * 100 : 0);
     document.getElementById('metaAtingida').textContent = meta.toFixed(0) + '%';
@@ -147,16 +130,14 @@ function atualizarDashboard(dados){
         tr.innerHTML = `<td>${r.nome}</td><td>${r.pctMeta.toFixed(0)}%</td><td class="${r.indicador==='↑'?'ind-up':'ind-down'}">${r.indicador}</td>`;
         tbodyRanking.appendChild(tr);
     });
-    if (rankingArr.length === 0){
-        tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
-    }
+    if(rankingArr.length===0) tbodyRanking.innerHTML = '<tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>';
 
-    // Tabela de amostra (até 5 linhas)
+    // Tabela amostra
     const tbodyDados = document.getElementById('tabelaDados');
     tbodyDados.innerHTML = '';
     dados.slice(0,5).forEach(row=>{
         tbodyDados.innerHTML += `<tr>
-            <td>${row['Semana']||''}</td>
+            <td>${row['Semanas']||''}</td>
             <td>${row['OS']||''}</td>
             <td>${row['Matricula']||''}</td>
             <td>${row['Encarregado Responsavel']||''}</td>
@@ -170,10 +151,6 @@ function atualizarDashboard(dados){
     });
 
     atualizarGraficoLinha(mlPorDia);
-
-    if (linhasIgnoradas > 0){
-        console.info(`Linhas ignoradas por data inválida/erro: ${linhasIgnoradas}`);
-    }
 }
 
 /* =========================
@@ -228,21 +205,14 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
-function aplicarFiltro(){
+document.getElementById('btnApplyFilter').addEventListener('click', ()=>{
     const dataInicio = document.getElementById('dataInicio').value;
     const dataFim    = document.getElementById('dataFim').value;
     const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
-    try{
-        atualizarDashboard(dadosFiltrados);
-    }catch(e){
-        console.error(e);
-        alert('Erro ao atualizar o dashboard. Verifique os dados.');
-    }
-}
+    atualizarDashboard(dadosFiltrados);
+});
 
-document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
-
-document.getElementById('btnExportPDF').addEventListener('click',()=>{
+document.getElementById('btnExportPDF').addEventListener('click', ()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
     html2canvas(dashboardWrap,{scale:2}).then(canvas=>{
         const imgData=canvas.toDataURL('image/png');
@@ -256,24 +226,24 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-document.getElementById('btnVoltarMenu').addEventListener('click', () => {
-    window.location.href = 'index.html';
-});
+document.getElementById('btnVoltarMenu').addEventListener('click', ()=>window.location.href='index.html');
 
 /* =========================
-   Carregamento do CSV GitHub
+   Carregamento automático do CSV do GitHub
 ========================= */
-async function carregarCSVGitHub() {
-    const urlCSV = "https://raw.githubusercontent.com/SEUUSUARIO/SEUREPO/main/STD_Geral.csv"; // ajuste
-    try {
+async function carregarCSVGitHub(){
+    const urlCSV = "https://raw.githubusercontent.com/FlutterVictor/Dashboard/main/STD_Geral.csv";
+    try{
         const response = await fetch(urlCSV);
-        if (!response.ok) throw new Error("CSV não encontrado no GitHub.");
+        if(!response.ok) throw new Error("CSV não encontrado no GitHub.");
         const csvText = await response.text();
         dadosCSV = Papa.parse(csvText, { header:true, skipEmptyLines:true }).data;
-        aplicarFiltro();
-    } catch(err) {
-        console.error(err);
-        alert("Erro ao carregar CSV do GitHub: " + err.message);
+        console.log("CSV carregado:", dadosCSV.length, "linhas");
+        const dadosFiltrados = filtrarDadosPorData(dadosCSV);
+        atualizarDashboard(dadosFiltrados);
+    }catch(err){
+        console.error("Erro ao carregar CSV do GitHub:", err);
+        alert("Erro ao carregar CSV do GitHub: "+err.message);
     }
 }
 
