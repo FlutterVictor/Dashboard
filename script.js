@@ -1,5 +1,4 @@
 let dadosCSV = [];
-let db = null;
 
 /* =========================
    Utilidades de parsing
@@ -13,6 +12,7 @@ function parseNumber(str){
 function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
+
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
@@ -20,12 +20,14 @@ function parseDateBR(str){
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
+
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
+
     return null;
 }
 
@@ -67,7 +69,7 @@ function atualizarDashboard(dados){
     if(!dados || dados.length === 0){
         document.getElementById('hhTotal').textContent = '0';
         document.getElementById('mlMontados').textContent = '0 m';
-        document.getElementById('montPresente').textContent = '142'; // fixo
+        document.getElementById('montPresente').textContent = '0';
         document.getElementById('stdSemanal').textContent = '0,00';
         document.getElementById('metaAtingida').textContent = '0%';
         document.getElementById('rankingTable').querySelector('tbody').innerHTML =
@@ -85,9 +87,10 @@ function atualizarDashboard(dados){
 
     dados.forEach(row=>{
         try{
-            const hh    = parseNumber(row['HH Total']);
-            const ml    = parseNumber(row['ML Montados']);
-            const mlPrev= parseNumber(row['ML PREVISTO']);
+            const hh      = parseNumber(row['HH Total']);
+            const ml      = parseNumber(row['ML Montados']);
+            const mlPrev  = parseNumber(row['ML PREVISTO']);
+            const montPresente = parseNumber(row['Mont.Presente']);
 
             somaHH += hh; 
             somaML += ml; 
@@ -108,6 +111,7 @@ function atualizarDashboard(dados){
                 ranking[nome].mlPrev += mlPrev;
                 ranking[nome].hh     += hh;
             }
+
         } catch(e){
             linhasIgnoradas++;
             console.warn('Linha ignorada por erro:', row, e);
@@ -117,9 +121,8 @@ function atualizarDashboard(dados){
     // Atualiza KPIs
     document.getElementById('hhTotal').textContent = somaHH.toFixed(1);
     document.getElementById('mlMontados').textContent = somaML.toFixed(0) + ' m';
-    document.getElementById('montPresente').textContent = "142"; // fixo
+    document.getElementById('montPresente').textContent = dados.reduce((acc,row)=>acc+parseNumber(row['Mont.Presente']),0);
 
-    // Calcula STD e aplica limite mascarado
     const stdReal = somaML > 0 ? (somaHH / somaML) : 0;
     const STD_MIN = 0.22;
     const STD_MAX = 0.27;
@@ -153,7 +156,7 @@ function atualizarDashboard(dados){
     tbodyDados.innerHTML = '';
     dados.slice(0,5).forEach(row=>{
         tbodyDados.innerHTML += `<tr>
-            <td>${row['Semanas']||''}</td>
+            <td>${row['Semana']||''}</td>
             <td>${row['OS']||''}</td>
             <td>${row['Matricula']||''}</td>
             <td>${row['Encarregado Responsavel']||''}</td>
@@ -225,12 +228,19 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
-document.getElementById('btnApplyFilter').addEventListener('click', () => {
+function aplicarFiltro(){
     const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim = document.getElementById('dataFim').value;
+    const dataFim    = document.getElementById('dataFim').value;
     const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
-    atualizarDashboard(dadosFiltrados);
-});
+    try{
+        atualizarDashboard(dadosFiltrados);
+    }catch(e){
+        console.error(e);
+        alert('Erro ao atualizar o dashboard. Verifique os dados.');
+    }
+}
+
+document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
 
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
@@ -251,14 +261,20 @@ document.getElementById('btnVoltarMenu').addEventListener('click', () => {
 });
 
 /* =========================
-   Carregamento automático do CSV do GitHub
+   Carregamento do CSV GitHub
 ========================= */
 async function carregarCSVGitHub() {
     const urlCSV = "https://raw.githubusercontent.com/SEUUSUARIO/SEUREPO/main/STD_Geral.csv"; // ajuste
-    const response = await fetch(urlCSV);
-    const csvText = await response.text();
-    dadosCSV = Papa.parse(csvText, { header:true, skipEmptyLines:true }).data;
-    atualizarDashboard(dadosCSV);
+    try {
+        const response = await fetch(urlCSV);
+        if (!response.ok) throw new Error("CSV não encontrado no GitHub.");
+        const csvText = await response.text();
+        dadosCSV = Papa.parse(csvText, { header:true, skipEmptyLines:true }).data;
+        aplicarFiltro();
+    } catch(err) {
+        console.error(err);
+        alert("Erro ao carregar CSV do GitHub: " + err.message);
+    }
 }
 
 window.addEventListener('load', carregarCSVGitHub);
