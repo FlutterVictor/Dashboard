@@ -29,12 +29,17 @@
                 <div class="value" id="hhTotal">0</div>
             </div>
             <div class="card kpi">
-                <div class="label">ML Montados</div>
-                <div class="value" id="mlMontados">0 m</div>
+                <div class="card-title">Montadores Mobilizados</div>
+                <div class="value" id="montPresenteCard">
+                    Mobilizado: 140<br>
+                    Média Presente: 96<br>
+                    Média Faltas: 25<br>
+                    Aguardando Crachá: 19
+                </div>
             </div>
             <div class="card kpi">
-                <div class="label">Montadores Mobilizados</div>
-                <div class="value" id="montPresente">142</div>
+                <div class="label">ML Montados</div>
+                <div class="value" id="mlMontados">0 m</div>
             </div>
             <div class="card kpi">
                 <div class="label">STD Semanal</div>
@@ -49,7 +54,7 @@
         <!-- Linha 2: Gráfico e Ranking -->
         <div class="grid linha2">
             <div class="card wide">
-                <div class="card-title">Tendência semanal — ML montados / dia</div>
+                <div class="card-title">Tendência mensal — ML montados / mês</div>
                 <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
             </div>
             <div class="card ranking">
@@ -79,9 +84,6 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Semana</th>
-                                <th>OS</th>
-                                <th>Matrícula</th>
                                 <th>Encarregado</th>
                                 <th>Área</th>
                                 <th>Mont.Presente</th>
@@ -93,7 +95,7 @@
                         </thead>
                         <tbody id="tabelaDados">
                             <tr>
-                                <td colspan="10" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
+                                <td colspan="7" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
                             </tr>
                         </tbody>
                     </table>
