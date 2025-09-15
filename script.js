@@ -1,4 +1,5 @@
 let dadosCSV = [];
+let db = null;
 
 /* =========================
    Utilidades de parsing
@@ -12,7 +13,6 @@ function parseNumber(str){
 function parseDateBR(str){
     if(!str) return null;
     const s = String(str).trim();
-
     let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
     if (m) {
         let [ , d, mo, y ] = m;
@@ -20,14 +20,12 @@ function parseDateBR(str){
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
-
     m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if (m) {
         const [ , y, mo, d ] = m;
         const dt = new Date(+y, +mo - 1, +d);
         return isValidDate(dt, +d, +mo, +y) ? dt : null;
     }
-
     return null;
 }
 
@@ -227,32 +225,12 @@ function atualizarGraficoLinha(mlPorDia){
 /* =========================
    Eventos de UI
 ========================= */
-document.getElementById('fileInput').addEventListener('change', e=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    Papa.parse(file,{
-        header:true, skipEmptyLines:true,
-        complete: results=>{
-            dadosCSV = results.data.filter(r => !!parseDateBR(r['Data']));
-            aplicarFiltro();
-        },
-        error: err => alert('Erro ao ler o arquivo: ' + err)
-    });
-});
-
-function aplicarFiltro(){
+document.getElementById('btnApplyFilter').addEventListener('click', () => {
     const dataInicio = document.getElementById('dataInicio').value;
-    const dataFim    = document.getElementById('dataFim').value;
+    const dataFim = document.getElementById('dataFim').value;
     const dadosFiltrados = filtrarDadosPorData(dadosCSV, dataInicio, dataFim);
-    try{
-        atualizarDashboard(dadosFiltrados);
-    }catch(e){
-        console.error(e);
-        alert('Erro ao atualizar o dashboard. Verifique os dados.');
-    }
-}
-
-document.getElementById('btnApplyFilter').addEventListener('click', aplicarFiltro);
+    atualizarDashboard(dadosFiltrados);
+});
 
 document.getElementById('btnExportPDF').addEventListener('click',()=>{
     const dashboardWrap=document.getElementById('dashboardWrap');
@@ -268,33 +246,19 @@ document.getElementById('btnExportPDF').addEventListener('click',()=>{
     });
 });
 
-const btnDash2 = document.getElementById('btnDashboard2');
-if (btnDash2){
-    btnDash2.addEventListener('click', () => {
-        window.location.href = 'mapa.html';
-    });
-}
 document.getElementById('btnVoltarMenu').addEventListener('click', () => {
-    window.location.href = 'index.html'; // ajuste o nome do arquivo do seu menu principal
+    window.location.href = 'index.html';
 });
 
 /* =========================
-   Carregamento automático
+   Carregamento automático do CSV do GitHub
 ========================= */
-function carregarCSVPadrao(){
-    fetch('STD_Geral.csv')
-        .then(r => {
-            if (!r.ok) throw new Error("CSV padrão não encontrado.");
-            return r.text();
-        })
-        .then(csvText => {
-            const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true });
-            dadosCSV = parsed.data.filter(r => !!parseDateBR(r['Data']));
-            aplicarFiltro();
-        })
-        .catch(err => {
-            console.warn("Aviso:", err.message);
-        });
+async function carregarCSVGitHub() {
+    const urlCSV = "https://raw.githubusercontent.com/SEUUSUARIO/SEUREPO/main/STD_Geral.csv"; // ajuste
+    const response = await fetch(urlCSV);
+    const csvText = await response.text();
+    dadosCSV = Papa.parse(csvText, { header:true, skipEmptyLines:true }).data;
+    atualizarDashboard(dadosCSV);
 }
 
-window.addEventListener('load', carregarCSVPadrao);
+window.addEventListener('load', carregarCSVGitHub);
