@@ -1,117 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dashboard STD Andaime</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pintura</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="wrap" id="dashboardWrap">
-        <header>
-            <h1>STD Dashboard — Andaime</h1>
-            <div class="subtitle">Visão diária e semanal de montagem / desmontagem — Padrão STD = 0,22</div>
-        </header>
 
-        <!-- Filtro e botões -->
-        <div id="filter-container">
-            <label>Data Início: <input type="date" id="dataInicio" /></label>
-            <label>Data Fim: <input type="date" id="dataFim" /></label>
-            <button id="btnApplyFilter">Aplicar filtro</button>
-            <button id="btnExportPDF">Exportar PDF</button>
-            <button id="btnVoltarMenu">Voltar ao Menu</button>
-        </div>
+        <header>
+            <h1>Dashboard Pintura</h1>
+            <div class="subtitle">Resumo de produtividade</div>
+        </header>
 
         <!-- Linha 1: Cards principais -->
         <div class="grid linha1">
-            <div class="card kpi">
-                <div class="label">HH Total (h)</div>
-                <div class="value" id="hhTotal">0</div>
-            </div>
-            <div class="card kpi">
-                <div class="card-title">Montadores Mobilizados</div>
-                <div class="value" id="montPresenteCard">
-                    Mobilizado: 140<br>
-                    Média Presente: 96<br>
-                    Média Faltas: 25<br>
-                    Aguardando Crachá: 19
+            <!-- Card Montadores -->
+            <div class="card card-montadores">
+                <h3>Montadores Mobilizados</h3>
+                <div class="info">
+                    <span id="mobilizado">Mobilizado: 140</span>
+                    <span id="mediaPresente">Média Presente: 96</span>
+                    <span id="mediaFaltas">Média Faltas: 25</span>
+                    <span id="aguardandoCracha">Aguardando Crachá: 19</span>
                 </div>
             </div>
+
+            <!-- Card HH Total -->
+            <div class="card kpi">
+                <div class="label">HH Total</div>
+                <div class="value" id="hhTotal">0</div>
+            </div>
+
+            <!-- Card ML Montados -->
             <div class="card kpi">
                 <div class="label">ML Montados</div>
                 <div class="value" id="mlMontados">0 m</div>
             </div>
+
+            <!-- Card STD -->
             <div class="card kpi">
                 <div class="label">STD Semanal</div>
                 <div class="value" id="stdSemanal">0,00</div>
             </div>
+
+            <!-- Card Meta Atingida -->
             <div class="card kpi">
                 <div class="label">Meta Atingida</div>
                 <div class="value" id="metaAtingida">0%</div>
             </div>
         </div>
 
-        <!-- Linha 2: Gráfico e Ranking -->
+        <!-- Linha 2: Ranking e gráfico -->
         <div class="grid linha2">
-            <div class="card wide">
-                <div class="card-title">Tendência mensal — ML montados / mês</div>
-                <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
-            </div>
+            <!-- Ranking -->
             <div class="card ranking">
-                <div class="card-title">Ranking de Produtividade (Top 5)</div>
+                <div class="card-title">Ranking Encarregados</div>
                 <table id="rankingTable">
                     <thead>
                         <tr>
-                            <th>Nome</th>
+                            <th>Encarregado</th>
                             <th>% Meta</th>
-                            <th>Desempenho</th>
+                            <th>STD</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr><td colspan="3" style="text-align:center;color:gray;">Sem dados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Gráfico de linha -->
+            <div class="card">
+                <div class="card-title">Produção por Mês</div>
+                <svg id="graficoLinha" width="100%" height="50"></svg>
+            </div>
+        </div>
+
+        <!-- Linha 3: Tabela de Amostras -->
+        <div class="grid linha3">
+            <div class="card tabela-wrapper">
+                <div class="card-title">Amostras Recentes</div>
+                <table id="tabelaDados">
+                    <thead>
                         <tr>
-                            <td colspan="3" style="text-align:center; color:gray;">Sem dados</td>
+                            <th>Encarregado</th>
+                            <th>Área</th>
+                            <th>Mont. Presente</th>
+                            <th>HH Total</th>
+                            <th>ML Montados</th>
+                            <th>STD Montado</th>
+                            <th>Data</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" style="text-align:center;color:gray;">Sem dados</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Linha 3: Tabela de amostra CSV -->
-        <div class="grid linha3">
-            <div class="card full">
-                <div class="card-title">Dados (amostra)</div>
-                <div id="tabelaDadosWrapper" class="tabela-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Encarregado</th>
-                                <th>Área</th>
-                                <th>Mont.Presente</th>
-                                <th>HH Total</th>
-                                <th>ML Montados</th>
-                                <th>STD Montado</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaDados">
-                            <tr>
-                                <td colspan="7" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- Filtros e ações -->
+        <div id="filter-container">
+            <label>
+                Data Início: <input type="date" id="dataInicio">
+            </label>
+            <label>
+                Data Fim: <input type="date" id="dataFim">
+            </label>
+            <button id="btnApplyFilter">Aplicar Filtro</button>
+            <button id="btnExportPDF">Exportar PDF</button>
         </div>
 
-        <!-- Upload CSV -->
-        <div style="margin-top:16px;">
-            <input type="file" id="fileInput" accept=".csv" />
-        </div>
+        <!-- Upload CSV (somente você) -->
+        <input type="file" id="fileInput" accept=".csv" style="margin-top:12px">
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <script src="dashboard.js"></script>
 </body>
 </html>
