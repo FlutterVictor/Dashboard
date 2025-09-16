@@ -10,7 +10,7 @@
     <div class="wrap" id="dashboardWrap">
         <header>
             <h1>STD Dashboard — Andaime</h1>
-            <div class="subtitle">Visão diária e semanal de montagem / desmontagem — Padrão STD = 0,22</div>
+            <div class="subtitle">Visão Geral de montagem / desmontagem — Padrão STD = 0,22</div>
         </header>
 
         <!-- Filtro e botões -->
@@ -28,21 +28,22 @@
                 <div class="label">HH Total (h)</div>
                 <div class="value" id="hhTotal">0</div>
             </div>
-            <div class="card kpi">
-                <div class="card-title">Montadores Mobilizados</div>
-                <div class="value" id="montPresente">
-                    Mobilizado: 140<br>
-                    Média Presente: 96<br>
-                    Média Faltas: 25<br>
-                    Aguardando Crachá: 19
-                </div>
+        <div class="card kpi montadores">
+            <div class="card-title">Montadores Mobilizados</div>
+            <div class="montadores-info">
+                <p>Mobilizado: 140</p>
+                <p>Média Presente: 96</p>
+                <p>Média Faltas: 25</p>
+                <p>Aguardando Crachá: 19</p>
             </div>
+        </div>
+
             <div class="card kpi">
                 <div class="label">ML Montados</div>
                 <div class="value" id="mlMontados">0 m</div>
             </div>
             <div class="card kpi">
-                <div class="label">STD Semanal</div>
+                <div class="label">STD Geral</div>
                 <div class="value" id="stdSemanal">0,00</div>
             </div>
             <div class="card kpi">
