@@ -1,32 +1,5 @@
 let charts = {};
 
-// Mapeamento de PDFs por OS
-const pdfMap = {
-    '37131': [ // GAD
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20160%20OS-37131%20Interna.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20168%20OS-37131%20Interna.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20179%20OS-37131%20Interna.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20207%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20208%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20209%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20210%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20211%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20212%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20237%20-%20OS%2037131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20238%20-%20OS%2037131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20297%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20299%20OS-37131.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20310%20OS-37131.pdf?raw=true'
-    ],
-    '37132': [ // PCI/Utilidades
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20163%20OS-37132%20Interna.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20166%20OS-37132.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20239%20-%20OS%2037132.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20276%20OS-37132.pdf?raw=true',
-        'https://github.com/FlutterVictor/Dashboard/blob/main/PDFs/PCI%20309%20OS-37132.pdf?raw=true'
-    ]
-};
-
 // Função para criar gráficos Chart.js
 function criarGrafico(id, tipo, labels, dados, cores, options = {}) {
     if (charts[id]) charts[id].destroy();
@@ -59,7 +32,7 @@ function coloresAleatorias(qtd, cores) {
     return result;
 }
 
-// Inicializa dashboards
+// Inicializa os dashboards com valores fixos
 function atualizarDashboard() {
     // Área de Aplicação (L)
     criarGrafico('areaAplicacaoChart','bar',['Prédio GAD','Prédio PCI/Utilidades'],[40.78,17.48],['#0b63d6','#f59e0b']);
@@ -90,45 +63,81 @@ function atualizarDashboard() {
 
     // Gráficos RNC
     criarGrafico('rncStatusChart','doughnut',['Em Execução','Concluídas'],[19,1],['#f59e0b','#10b981']);
-    criarGrafico('rncAreaChart','bar',['GAD','PCI/Utilidades'],[12,8],['#0b63d6','#f59e0b'], {
+    criarGrafico('rncAreaChart','bar',['GAD','PCI','Utilidades'],[12,3,5],['#0b63d6','#f59e0b','#10b981'], {
         onClick: function(evt, elements) {
             if(elements.length > 0) {
                 const idx = elements[0].index;
                 const area = this.data.labels[idx];
-                abrirCardPDF(area);
+                abrirCardRNC(area);
             }
         }
     });
 }
 
-// Abre card com PDFs filtrados por área
-function abrirCardPDF(area) {
+// Card flutuante RNC com PDF.js
+function abrirCardRNC(area) {
     const card = document.getElementById("cardRNC");
-    const viewer = document.getElementById("pdfViewer");
     card.style.display = 'block';
 
-    // Mapear área para OS
-    const os = area === 'GAD' ? '37131' : '37132';
-    const pdfs = pdfMap[os] || [];
+// Mapear área para PDF correspondente
+const pdfMap = {
+    "GAD": [
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20160%20OS-37131%20Interna.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20168%20OS-37131%20Interna.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20179%20OS-37131%20Interna.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20207%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20208%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20209%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20210%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20211%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20212%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20237%20-%20OS%2037131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20238%20-%20OS%2037131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20297%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20299%20OS-37131.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20310%20OS-37131.pdf"
+    ],
+        "PCI/Utilidades": [
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20163%20OS-37132%20Interna.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20166%20OS-37132.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20239%20-%20OS%2037132.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20276%20OS-37132.pdf",
+            "https://github.com/FlutterVictor/Dashboard/raw/main/PDFs/PCI%20309%20OS-37132.pdf"
+        ]
+    };
 
-    if(pdfs.length === 0){
-        viewer.innerHTML = `<div style="padding:20px; text-align:center; font-size:16px; color:#555;">📄 Nenhum PDF encontrado para ${area}</div>`;
+    const urlPDF = pdfMap[area];
+    if (!urlPDF) {
+        alert("PDF não encontrado para esta área!");
         return;
     }
 
-    viewer.innerHTML = pdfs.map(url => `
-        <div style="margin-bottom:10px;">
-            <iframe src="${url}" width="100%" height="400px"></iframe>
-        </div>
-    `).join('');
+    // Renderizar PDF usando pdf.js
+    const canvas = document.getElementById("pdfCanvas");
+    const ctx = canvas.getContext("2d");
+
+    pdfjsLib.getDocument(urlPDF).promise.then(pdf => {
+        pdf.getPage(1).then(page => {
+            const viewport = page.getViewport({ scale: 1.2 });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            const renderContext = { canvasContext: ctx, viewport: viewport };
+            page.render(renderContext);
+        });
+    });
 }
 
-// Função para ler CSV em array de objetos
-function csvParaArray(strCSV){
+// Fechar card
+function fecharCardRNC() {
+    document.getElementById("cardRNC").style.display = 'none';
+}
+
+// Função para ler CSV e transformar em array de objetos
+function csvParaArray(strCSV) {
     const linhas = strCSV.split('\n').filter(l => l.trim() !== '');
-    const cabecalho = linhas[0].split(',').map(c=>c.trim());
+    const cabecalho = linhas[0].split(',').map(c => c.trim());
     return linhas.slice(1).map(linha => {
-        const valores = linha.split(',').map(v=>v.trim());
+        const valores = linha.split(',').map(v => v.trim());
         const obj = {};
         cabecalho.forEach((c,i)=> obj[c]=valores[i]);
         return obj;
@@ -137,6 +146,7 @@ function csvParaArray(strCSV){
 
 // Atualiza gráficos e cards com CSV de pintura
 function atualizarDashboardComCSV(dados) {
+    // Tinta Utilizada M²
     const tintasMap = {};
     dados.forEach(d => {
         if(d['Tipo'] && d['M²']){
