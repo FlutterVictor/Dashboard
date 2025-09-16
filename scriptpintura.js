@@ -6,8 +6,22 @@ function criarGrafico(id, tipo, labels, dados, cores, options = {}) {
     const ctx = document.getElementById(id).getContext('2d');
     charts[id] = new Chart(ctx, {
         type: tipo,
-        data: { labels: labels, datasets: [{ label: '', data: dados, backgroundColor: coloresAleatorias(dados.length, cores), borderColor: 'rgba(0,0,0,0.1)', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, ...options }
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '',
+                data: dados,
+                backgroundColor: coloresAleatorias(dados.length, cores),
+                borderColor: 'rgba(0,0,0,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } },
+            ...options
+        }
     });
 }
 
@@ -18,7 +32,7 @@ function coloresAleatorias(qtd, cores) {
     return result;
 }
 
-// Inicializa os dashboards
+// Inicializa os dashboards com valores fixos
 function atualizarDashboard() {
     // Área de Aplicação (L)
     criarGrafico('areaAplicacaoChart','bar',['Prédio GAD','Prédio PCI/Utilidades'],[40.78,17.48],['#0b63d6','#f59e0b']);
@@ -85,7 +99,7 @@ function csvParaArray(strCSV) {
     });
 }
 
-// Atualiza gráficos com CSV de pintura
+// Atualiza gráficos e cards com CSV de pintura
 function atualizarDashboardComCSV(dados) {
     // Tinta Utilizada M²
     const tintasMap = {};
