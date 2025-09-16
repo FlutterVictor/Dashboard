@@ -1,98 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Pintura</title>
-  <link rel="stylesheet" href="pintura.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    /* Ajustes apenas no card */
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 10px;
-    }
-
-    .card h3 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: #333;
-    }
-
-    .card p {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #007bff;
-    }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard STD Andaime</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Dashboard de Pintura</h1>
-  </header>
+    <div class="wrap" id="dashboardWrap">
+        <header>
+            <h1>STD Dashboard — Andaime</h1>
+            <div class="subtitle">Visão diária e semanal de montagem / desmontagem — Padrão STD = 0,22</div>
+        </header>
 
-  <main>
-    <section class="cards">
-      <div class="card">
-        <h3>Produção</h3>
-        <p>1200 m²</p>
-      </div>
-      <div class="card">
-        <h3>Meta</h3>
-        <p>1500 m²</p>
-      </div>
-      <div class="card">
-        <h3>Eficiência</h3>
-        <p>80%</p>
-      </div>
-      <div class="card">
-        <h3>Equipe</h3>
-        <p>15 Colaboradores</p>
-      </div>
-    </section>
+        <!-- Filtro e botões -->
+        <div id="filter-container">
+            <label>Data Início: <input type="date" id="dataInicio" /></label>
+            <label>Data Fim: <input type="date" id="dataFim" /></label>
+            <button id="btnApplyFilter">Aplicar filtro</button>
+            <button id="btnExportPDF">Exportar PDF</button>
+            <button id="btnVoltarMenu">Voltar ao Menu</button>
+        </div>
 
-    <section class="graficos">
-      <canvas id="graficoProducao"></canvas>
-      <canvas id="graficoEficiencia"></canvas>
-    </section>
-  </main>
+        <!-- Linha 1: Cards principais -->
+        <div class="grid linha1">
+            <div class="card kpi">
+                <div class="label">HH Total (h)</div>
+                <div class="value" id="hhTotal">0</div>
+            </div>
+            <div class="card kpi">
+                <div class="card-title">Montadores Mobilizados</div>
+                <div class="value" id="montPresente">
+                    Mobilizado: 140<br>
+                    Média Presente: 96<br>
+                    Média Faltas: 25<br>
+                    Aguardando Crachá: 19
+                </div>
+            </div>
+            <div class="card kpi">
+                <div class="label">ML Montados</div>
+                <div class="value" id="mlMontados">0 m</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">STD Semanal</div>
+                <div class="value" id="stdSemanal">0,00</div>
+            </div>
+            <div class="card kpi">
+                <div class="label">Meta Atingida</div>
+                <div class="value" id="metaAtingida">0%</div>
+            </div>
+        </div>
 
-  <script>
-    const ctx1 = document.getElementById('graficoProducao');
-    new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'],
-        datasets: [{
-          label: 'Produção (m²)',
-          data: [200, 250, 300, 220, 230],
-          borderWidth: 1
-        }]
-      }
-    });
+        <!-- Linha 2: Gráfico e Ranking -->
+        <div class="grid linha2">
+            <div class="card wide">
+                <div class="card-title">Tendência mensal — ML montados / mês</div>
+                <svg id="graficoLinha" width="100%" height="160" viewBox="0 0 100 35" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="card ranking">
+                <div class="card-title">Ranking de Produtividade (Top 5)</div>
+                <table id="rankingTable">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>% Meta</th>
+                            <th>Desempenho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" style="text-align:center; color:gray;">Sem dados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    const ctx2 = document.getElementById('graficoEficiencia');
-    new Chart(ctx2, {
-      type: 'line',
-      data: {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'],
-        datasets: [{
-          label: 'Eficiência (%)',
-          data: [75, 80, 85, 78, 82],
-          fill: false,
-          borderWidth: 2
-        }]
-      }
-    });
-  </script>
+        <!-- Linha 3: Tabela de amostra CSV -->
+        <div class="grid linha3">
+            <div class="card full">
+                <div class="card-title">Dados (amostra)</div>
+                <div id="tabelaDadosWrapper" class="tabela-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Encarregado</th>
+                                <th>Área</th>
+                                <th>Mont.Presente</th>
+                                <th>HH Total</th>
+                                <th>ML Montados</th>
+                                <th>STD Montado</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaDados">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color: gray;">Importe o CSV para visualizar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload CSV -->
+        <div style="margin-top:16px;">
+            <input type="file" id="fileInput" accept=".csv" />
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
